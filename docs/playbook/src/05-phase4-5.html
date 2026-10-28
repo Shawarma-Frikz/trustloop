@@ -1,0 +1,449 @@
+<!-- ================= 08 PHASE 4 ================= -->
+<h1><span class="num">CHAPTER 08 · PHASE 4</span>Accounts, ownership, and persistence</h1>
+
+<p class="chapter-intro">Authentication is deliberately last because it is an access feature, not a prerequisite for scoring. When it arrives, it brings the first database and the first durable user data. The rule that protects the project is simple: accounts may own metadata about a scan, but never the review text, the review key, or a persistent fingerprint.</p>
+
+<div class="callout ok">
+  <span class="tag">Phase exit condition</span>
+  <p>The access matrix is verified by tests. Admin functions require an authenticated admin role. History ownership and retention are enforced. No raw review text is stored. Migrations reproduce from an empty database. Tokens, passwords, and deletion behave as documented.</p>
+</div>
+
+<h2>8.1 Decide the scope before writing a schema</h2>
+
+<p>Do not start with tables. Start with the answers a schema must encode. Write them into a decision row and into the phase evidence; a schema without a retention rule is a liability.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:44mm;">Decision</th><th>Recommended starting point</th></tr></thead>
+  <tbody>
+    <tr><td>What history stores</td><td>Metadata only: timestamp, hostname, adapter ID, status, score/verdict when scored, evidence quality, engine, model version, reason code. Never text, key, URL, or fingerprint.</td></tr>
+    <tr><td>Who owns a history row</td><td>Exactly one user. Every read, delete, and export filters by the authenticated user ID.</td></tr>
+    <tr><td>Retention</td><td>Define a maximum (for example 180 days) and enforce a scheduled purge. The user can clear earlier. Local history remains 30 days/100 entries.</td></tr>
+    <tr><td>Account deletion</td><td>Deletes the user, refresh tokens, history, and audit references according to the audit policy; requires re-authentication.</td></tr>
+    <tr><td>Roles</td><td><span class="mono">USER</span> and <span class="mono">ADMIN</span>. No self-service role elevation.</td></tr>
+    <tr><td>Admin protection</td><td>Every <span class="mono">/api/v1/admin/**</span> route requires <span class="mono">ADMIN</span>. The local <span class="mono">dev-admin</span> profile remains a separate, loopback-only development tool.</td></tr>
+    <tr><td>Email verification</td><td>Optional. If not implemented, state the limitation and do not claim verified accounts. Password reset requires an email channel; if absent, omit it rather than faking it.</td></tr>
+    <tr><td>Token model</td><td>Short-lived access token (for example 15 minutes) plus a rotating refresh token (for example 30 days). Passwords hashed with Argon2id or BCrypt cost ≥ 12.</td></tr>
+    <tr><td>Contract impact</td><td>New endpoints and auth error codes are a contract event. Do not add them silently to the frozen analysis schemas.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout rule">
+  <span class="tag">Do not retrofit text storage</span>
+  <p>“Save the review so history is useful” is the shortcut that turns a privacy-preserving design into a content database. History is useful without text: the user can still see when a scan happened, what status it returned, and what the score was. If a future feature needs text, it needs a new decision, consent, retention, and deletion design.</p>
+</div>
+
+<h2>8.2 Introduce PostgreSQL with migrations first</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 4.1</span><h3>Schema, constraints, and Flyway</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 3–4 days &nbsp;|&nbsp; <b>Depends</b> 8.1 decisions</div>
+
+  <p><strong>Goal.</strong> A reproducible schema with database-level guards against invalid result combinations, and migrations that build from an empty database.</p>
+
+  <div class="cmd">
+    <div class="cmd-label">SQL · core tables (illustrative; refine names to the course conventions)</div>
+<pre>CREATE TABLE users (
+  id            UUID PRIMARY KEY,
+  email         TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role          TEXT NOT NULL CHECK (role IN ('USER', 'ADMIN')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  disabled_at   TIMESTAMPTZ
+);
+
+CREATE TABLE refresh_tokens (
+  id          UUID PRIMARY KEY,
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  BYTEA NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  revoked_at  TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE scan_history (
+  id               BIGSERIAL PRIMARY KEY,
+  user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  hostname         TEXT NOT NULL,
+  adapter_id       TEXT NOT NULL,
+  status           TEXT NOT NULL CHECK (status IN ('SCORED', 'SIGNALS_ONLY', 'UNKNOWN')),
+  trust_score      SMALLINT CHECK (trust_score BETWEEN 0 AND 100),
+  verdict          TEXT,
+  evidence_quality TEXT CHECK (evidence_quality IN ('LOW', 'ADEQUATE')),
+  engine           TEXT NOT NULL CHECK (engine IN ('MODEL', 'SIGNALS_ONLY')),
+  model_version    TEXT,
+  reason_code      TEXT,
+  CHECK (
+    (status = 'SCORED'      AND trust_score IS NOT NULL AND verdict IS NOT NULL)
+ OR (status = 'SIGNALS_ONLY' AND trust_score IS NULL AND verdict IS NULL)
+ OR (status = 'UNKNOWN'      AND trust_score IS NULL AND verdict IS NULL AND reason_code IS NOT NULL)
+  )
+);</pre>
+  </div>
+
+  <p class="label">Rules</p>
+  <ul>
+    <li>Use Flyway (or Liquibase if the course requires it) with versioned migrations. Never edit an applied migration; add the next one.</li>
+    <li>Keep DTOs separate from entities. The API never serializes an entity directly.</li>
+    <li>Index <span class="mono">scan_history(user_id, created_at DESC)</span> for the history query, and <span class="mono">refresh_tokens(user_id)</span> for revocation. Do not index fields that are never queried.</li>
+    <li>Store timestamps in UTC with <span class="mono">TIMESTAMPTZ</span>. Do not store a local timezone or a formatted date.</li>
+    <li>Add a database check that enforces the status/score/verdict consistency above. The application also validates, but the database is the last line of defence.</li>
+    <li>No column may hold review text, a review key, a URL, a fingerprint, or a reviewer identifier. A test queries <span class="mono">information_schema.columns</span> against a forbidden-name list.</li>
+  </ul>
+
+  <div class="callout warn">
+    <span class="tag">Contract event</span>
+    <p>Auth and history add endpoints and error codes. Publish them as a contract release — for example <span class="mono">contracts/v2/</span> for the account surface while the analysis schemas remain v1 — or promote the whole surface together. What you must not do is add <span class="mono">UNAUTHORIZED</span> and <span class="mono">FORBIDDEN</span> to the frozen v1 reason-code list without a version change. Record the choice in the decision register and update the contract tests.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Flyway migrates an empty database to the current schema with one command.</li>
+      <li>A second run is idempotent; no migration is applied twice.</li>
+      <li>The database rejects a scored row without a score and an unknown row with a score.</li>
+      <li>No forbidden column exists; the inspection test passes.</li>
+      <li>Deleting a user cascades refresh tokens and history, and the behaviour is tested.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>8.3 Implement authentication and roles</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 4.2</span><h3>Registration, login, refresh, logout, and the access matrix</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 5–7 days &nbsp;|&nbsp; <b>Depends</b> 4.1; contract decision</div>
+
+  <p><strong>Goal.</strong> Passwords stored safely, tokens short-lived and revocable, roles enforced at the route level, and no account enumeration through error messages.</p>
+
+  <table class="grid">
+    <thead><tr><th style="width:52mm;">Endpoint</th><th>Access</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">POST /api/v1/auth/register</span></td><td>Public, rate-limited</td><td>Create a user with <span class="mono">USER</span> role; validate email and password policy; do not reveal whether an email exists in a way that enables enumeration beyond the necessary response.</td></tr>
+      <tr><td><span class="mono">POST /api/v1/auth/login</span></td><td>Public, strict rate limit</td><td>Verify Argon2id/BCrypt hash; return a short access token and a rotating refresh token; generic failure message.</td></tr>
+      <tr><td><span class="mono">POST /api/v1/auth/refresh</span></td><td>Refresh token</td><td>Rotate the refresh token; detect reuse of a revoked token and revoke the family.</td></tr>
+      <tr><td><span class="mono">POST /api/v1/auth/logout</span></td><td>Authenticated</td><td>Revoke the presented refresh token; access token expires naturally.</td></tr>
+      <tr><td><span class="mono">GET /api/v1/me</span></td><td>Authenticated</td><td>Return id, email, role, created date. No password hash, no token.</td></tr>
+      <tr><td><span class="mono">GET /api/v1/history</span></td><td>Authenticated</td><td>Return only the caller’s rows; paginate; no text or URL.</td></tr>
+      <tr><td><span class="mono">DELETE /api/v1/history</span></td><td>Authenticated</td><td>Clear the caller’s history; idempotent.</td></tr>
+      <tr><td><span class="mono">DELETE /api/v1/me</span></td><td>Authenticated + re-auth</td><td>Disable/delete the account and cascade; record a content-free audit event.</td></tr>
+      <tr><td><span class="mono">/api/v1/admin/**</span></td><td>ADMIN</td><td>Require role; return 403 for USER and 401 for unauthenticated; never 404 to hide a route that is documented.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Password and token rules</p>
+  <ul>
+    <li>Hash passwords with Argon2id via Spring Security’s encoder. If the native dependency is unavailable on the course environment, use BCrypt with cost 12 and document the choice. Never store or log the plaintext.</li>
+    <li>Access token: signed JWT, 15-minute lifetime, subject = user ID, role claim, issuer and audience set. Do not put email, name, or any review data in the token.</li>
+    <li>Refresh token: 256-bit random value, stored only as a hash, 30-day lifetime, rotated on every use. Reuse of an old token revokes the family.</li>
+    <li>Signing key from the environment, at least 256 bits. Never commit it. Rotate with a key ID so old tokens can be validated during a short overlap.</li>
+    <li>Login rate limit stricter than the general API limit (for example 5 attempts per minute per IP and per account), with a generic error message and a constant-time-ish path that does not reveal whether the account exists.</li>
+    <li>Logout revokes the refresh token. Client-side token deletion alone is not logout.</li>
+  </ul>
+
+  <p class="label">Extension token storage</p>
+  <ul>
+    <li>Keep the access token in memory in the service worker. Keep the refresh token in <span class="mono">chrome.storage.local</span> only if refresh is implemented; never sync it.</li>
+    <li>Do not put tokens in content scripts, DOM attributes, URLs, or logs. Content scripts request an analysis through the worker.</li>
+    <li>On logout or account deletion, clear every token and every history entry.</li>
+    <li>If the extension is ever published to a store, review the privacy policy and host-permission justification. For the course, an unpacked build is sufficient.</li>
+  </ul>
+
+  <div class="callout warn">
+    <span class="tag">401, 403, and 404 mean different things</span>
+    <p>401: no valid authentication. 403: authenticated but not allowed. 404: the resource does not exist or is not visible to this user. Do not return 404 for a documented admin route to “hide” it; that makes debugging impossible and does not add security. Do return 404 for another user’s history row to avoid confirming its existence.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A password hash is present in the database and the plaintext is absent from logs and responses.</li>
+      <li>An access token expires; an expired token returns 401; a refresh rotates and the old refresh token is rejected.</li>
+      <li>A USER calling an admin route gets 403; an unauthenticated caller gets 401.</li>
+      <li>User A cannot read, delete, or infer User B’s history; the response is 404 or an empty scoped list, never B’s data.</li>
+      <li>Login failures are rate-limited and use a generic message.</li>
+      <li>No token appears in a URL, a log, or a response body other than the token endpoint.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>8.4 Implement history ownership and retention</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 4.3</span><h3>Ownership filters, purge job, and deletion</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 2–3 days &nbsp;|&nbsp; <b>Depends</b> 4.2</div>
+
+  <p><strong>Goal.</strong> Every history row is owned, every read is scoped, and old data disappears on schedule without a manual cleanup.</p>
+
+  <p class="label">Rules</p>
+  <ul>
+    <li>Never accept a <span class="mono">userId</span> from the client. Derive it from the authenticated principal.</li>
+    <li>Write history only after a result is returned, and only if the user has enabled server history. The analysis path must work with history disabled.</li>
+    <li>Store the same metadata as local history: timestamp, hostname, adapter ID, status, score/verdict when scored, evidence, engine, model version, reason code. No text, key, URL, IP, or user agent.</li>
+    <li>Purge rows older than the retention limit with a scheduled job. Log only the count and duration, never a row’s content.</li>
+    <li>Account deletion cascades history and refresh tokens. Audit entries keep an actor ID according to the audit policy, or are anonymized; decide and test.</li>
+    <li>Pagination is required. An unbounded history query is a denial-of-service vector and a privacy exposure.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Two users with history see only their own rows, including after pagination.</li>
+      <li>A history row cannot be created with a score and status UNKNOWN, or with no owner.</li>
+      <li>The purge job removes only expired rows and reports a count.</li>
+      <li>Deleting an account removes its history and refresh tokens.</li>
+      <li>The database contains no review text, key, URL, or fingerprint column.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>8.5 Protect the admin surface</h2>
+
+<ul>
+  <li>Phase 2’s <span class="mono">dev-admin</span> profile remains local-only, loopback, and unauthenticated for development. It is not the hosted admin.</li>
+  <li>Hosted admin routes require <span class="mono">ADMIN</span> and are enabled only when the account surface is enabled. A USER receives 403; an unauthenticated caller receives 401.</li>
+  <li>Admin actions that change state (enable/disable an adapter, purge a cache) write a content-free audit row: actor, action, target, timestamp, result. No request body.</li>
+  <li>Do not expose adapter authoring. The files remain versioned; the admin surface inspects and toggles local state only.</li>
+  <li>Test the boot guard again after security is added; a new filter chain must not accidentally expose the local profile through a different bind.</li>
+</ul>
+
+<div class="gate-block">
+<h2>8.6 Phase 4 gate</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:12mm;">#</th><th>Gate check</th><th style="width:42mm;">Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Migrations reproduce the schema from empty.</td><td>Testcontainers migration test.</td></tr>
+    <tr><td>2</td><td>Access matrix is covered by tests: public, USER, ADMIN, unauthenticated.</td><td>MockMvc/security test report.</td></tr>
+    <tr><td>3</td><td>Token expiry, refresh rotation, reuse detection, and logout revocation pass.</td><td>Auth test report.</td></tr>
+    <tr><td>4</td><td>Ownership isolation passes for read, delete, and pagination.</td><td>IDOR tests.</td></tr>
+    <tr><td>5</td><td>Retention purge and account deletion pass.</td><td>Scheduler test + cascade test.</td></tr>
+    <tr><td>6</td><td>No raw review text, key, URL, or fingerprint in the database.</td><td>Column inspection + data test.</td></tr>
+    <tr><td>7</td><td>Admin requires ADMIN; dev-admin remains loopback-only.</td><td>403/401 tests + boot guard test.</td></tr>
+    <tr><td>8</td><td>Auth endpoints and error codes are in the contract release.</td><td>Contract fixtures + versioned schemas.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout ok">
+  <span class="tag">Close the phase</span>
+  <p>Tag <span class="mono">phase-4-complete</span> and close M4. Update the architecture document with the persistence decision, the access matrix, and the retention rules. Authentication is now an access feature; it must not change the score contract.</p>
+</div>
+</div>
+
+<!-- ================= 09 PHASE 5 ================= -->
+<h1><span class="num">CHAPTER 09 · PHASE 5</span>Deployment and expansion</h1>
+
+<p class="chapter-intro">A hosted demo is optional. If the project hosts, it must carry the controls the local design relied on: authentication, quotas, a private scoring network, TLS, secret management, monitoring, and a retention policy. Expansion is also optional, and each new site or language needs its own gate.</p>
+
+<div class="callout ok">
+  <span class="tag">Phase exit condition</span>
+  <p>If hosted: the deployment reproduces the local behaviour with authentication, quotas, edge limits, HTTPS, secrets management, monitoring, backups, and a documented rollback. If not hosted: the decision is recorded. Expansion items each have fixtures, tests, and an honest unsupported state.</p>
+</div>
+
+<h2>9.1 Choose the hosting shape</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:40mm;">Option</th><th>Fits when</th><th>Trade-off</th></tr></thead>
+  <tbody>
+    <tr><td>Local only</td><td>The course accepts a local demo and the defense runs on one machine.</td><td>No public exposure; simplest and safest. This is the baseline recommendation.</td></tr>
+    <tr><td>Single VPS + Docker Compose + Caddy</td><td>A public demo is desired and one operator can manage patches and backups.</td><td>Full control, moderate operational work; you own TLS renewal, updates, and backups.</td></tr>
+    <tr><td>PaaS with private services (Fly.io, Render, Railway)</td><td>You want managed TLS and deploys with less server maintenance.</td><td>Private networking and persistent Postgres cost money or impose limits; verify the scoring service is not publicly reachable.</td></tr>
+    <tr><td>Kubernetes</td><td>Not for this project unless the course requires it.</td><td>Operational overhead far exceeds the product value.</td></tr>
+  </tbody>
+</table>
+
+<p>The extension itself is distributed as an unpacked build or a ZIP for the course. A Chrome Web Store listing requires a developer account, a privacy policy, permission justification, and review; treat it as out of scope unless the course asks for it.</p>
+
+<h2>9.2 Containerize without exposing internals</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 5.1</span><h3>Images, compose network, and health checks</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead + ML lead &nbsp;|&nbsp; <b>Time</b> 2–3 days &nbsp;|&nbsp; <b>Depends</b> Phase 4 stable</div>
+
+  <p><strong>Goal.</strong> Reproducible images, a private network for scoring and Postgres, and no host port for anything except the edge proxy.</p>
+
+  <div class="cmd">
+    <div class="cmd-label">Dockerfile · backend</div>
+<pre>FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn -B -ntp dependency:go-offline
+COPY src src
+RUN mvn -B -ntp package -DskipTests
+
+FROM eclipse-temurin:21-jre
+RUN useradd --system --uid 1001 trustloop
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+USER 1001
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]</pre>
+  </div>
+
+  <div class="cmd">
+    <div class="cmd-label">Dockerfile · scoring service</div>
+<pre>FROM python:3.12-slim
+RUN useradd --system --uid 1001 trustloop
+WORKDIR /app
+COPY requirements.lock .
+RUN pip install --no-cache-dir -r requirements.lock
+COPY app app
+COPY artifacts artifacts
+USER 1001
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", \
+     "--port", "8000", "--no-access-log"]</pre>
+  </div>
+
+  <div class="cmd">
+    <div class="cmd-label">YAML · compose shape</div>
+<pre>services:
+  db:
+    image: postgres:16
+    env_file: .env.production
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [internal]
+
+  scoring:
+    build: ./scoring-service
+    env_file: .env.production
+    expose: ["8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    networks: [internal]
+
+  backend:
+    build: ./backend
+    env_file: .env.production
+    expose: ["8080"]
+    depends_on:
+      db: { condition: service_healthy }
+      scoring: { condition: service_healthy }
+    networks: [internal, edge]
+
+  caddy:
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [backend]
+    networks: [edge]
+
+volumes: { pgdata: {}, caddy_data: {} }
+networks:
+  internal: { internal: true }
+  edge: {}</pre>
+  </div>
+
+  <p class="label">Rules</p>
+  <ul>
+    <li>Only Caddy publishes host ports. Postgres and scoring are on the internal network with no host port.</li>
+    <li>Backend reaches scoring at <span class="mono">http://scoring:8000</span> on the internal network; the browser never can.</li>
+    <li>Run containers as non-root. Drop Linux capabilities where possible; mount the filesystem read-only for the scoring image if the framework permits.</li>
+    <li>Pin image tags (including Postgres minor) and record the digests in the release. Do not deploy <span class="mono">latest</span>.</li>
+    <li>Set memory and CPU limits; the model’s memory footprint is part of the capacity plan.</li>
+    <li>Do not bake secrets into images. Pass them through the environment or Docker secrets.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li><span class="mono">docker compose up</span> reaches healthy for db, scoring, backend, and edge from a clean volume.</li>
+      <li>Scoring and Postgres are unreachable from the host and from the public internet.</li>
+      <li>The backend starts only after scoring is healthy and the database is migrated.</li>
+      <li>Images run as non-root and contain no token or password.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>9.3 Edge, TLS, secrets, and quotas</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:40mm;">Control</th><th>Requirement</th></tr></thead>
+  <tbody>
+    <tr><td>TLS</td><td>HTTPS only; automatic certificate renewal; HSTS after confirming the domain. No mixed content.</td></tr>
+    <tr><td>Request size</td><td>Edge limit at or below 131,072 bytes; backend repeats the check.</td></tr>
+    <tr><td>Rate limit</td><td>Edge limit per IP plus application limit per IP/user. The application limit is the contract; the edge limit absorbs abuse.</td></tr>
+    <tr><td>CORS</td><td>Only the pinned packed extension ID and, if a web admin exists, its exact origin. No wildcard.</td></tr>
+    <tr><td>Authentication</td><td>Required for history and admin. Public analysis may remain available with quotas, or require auth if abuse is a concern; record the decision.</td></tr>
+    <tr><td>Quotas</td><td>Per-user daily analysis quota and per-IP burst limit. Return 429 with a clear retry policy.</td></tr>
+    <tr><td>Secrets</td><td>Environment or secret manager; never in the image, repository, or logs. Rotate on exposure.</td></tr>
+    <tr><td>Headers</td><td><span class="mono">Strict-Transport-Security</span>, <span class="mono">X-Content-Type-Options: nosniff</span>, a restrictive <span class="mono">Content-Security-Policy</span> for any served HTML, and a referrer policy.</td></tr>
+  </tbody>
+</table>
+
+<div class="cmd">
+  <div class="cmd-label">Caddyfile · shape, not a complete policy</div>
+<pre>trustloop.example.com {
+    encode zstd gzip
+    request_body {
+        max_size 131072
+    }
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+    }
+    reverse_proxy backend:8080
+}</pre>
+  </div>
+
+<p>Rate limiting is not a built-in Caddy directive in the standard distribution. Use a maintained plugin, a cloud edge (Cloudflare, a load balancer), or enforce the limit in the application and accept that the edge is not a shield. Do not invent a directive that silently does nothing.</p>
+
+<h2>9.4 Observability, backups, and rollback</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:38mm;">Area</th><th>Minimum</th></tr></thead>
+  <tbody>
+    <tr><td>Logs</td><td>Structured JSON to stdout, shipped by the platform; content-free fields; request ID correlation. No bodies.</td></tr>
+    <tr><td>Metrics</td><td>Request rate, error rate, p50/p95/p99 latency, scoring readiness, model version, DB connections. Internal endpoint only.</td></tr>
+    <tr><td>Alerts</td><td>5xx rate, scoring unready, latency above budget, disk above 80%, certificate expiry.</td></tr>
+    <tr><td>Uptime</td><td>External check on <span class="mono">/api/v1/health</span>; alert on 503 for more than two minutes.</td></tr>
+    <tr><td>Backups</td><td>Daily Postgres dump, encrypted, retained per policy; test a restore, not just the backup.</td></tr>
+    <tr><td>Migrations</td><td>Expand/contract: add nullable columns and backfill before making them required; never drop a column in the same release that stops writing it.</td></tr>
+    <tr><td>Rollback</td><td>Keep the previous image tags; reverse the application first, then the schema only if the migration is backward-compatible. A migration that cannot roll back needs a forward fix.</td></tr>
+    <tr><td>Release</td><td>Immutable image tag per release; deploy from the protected <span class="mono">main</span>; record the commit and image digest in the release notes.</td></tr>
+  </tbody>
+</table>
+
+<h2>9.5 Expansion rules</h2>
+
+<ul>
+  <li><strong>New adapter:</strong> manifest, selectors, supported-page description, fixtures, spike criteria, and an explicit unsupported state. It does not reuse the MVP adapter’s selectors silently.</li>
+  <li><strong>New language:</strong> its own manual evaluation sample and gate. A translated UI is not model support. A failing gate returns <span class="mono">UNKNOWN</span> or a validated <span class="mono">SIGNALS_ONLY</span>.</li>
+  <li><strong>New model:</strong> a new <span class="mono">tl-text</span> version, a new gate, a new artifact hash, and a model card update. No silent replacement of the artifact behind the same version.</li>
+  <li><strong>New input type</strong> (rating, verified purchase, images): a new decision and a new model version; model v1 remains text-only.</li>
+  <li><strong>Page aggregate:</strong> still prohibited. Mixed evidence must not be averaged into a product score.</li>
+  <li><strong>Feature flags:</strong> avoid them unless a rollout requires one. A flag that changes score meaning is a hidden contract change.</li>
+</ul>
+
+<div class="gate-block">
+<h2>9.6 Phase 5 gate</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:12mm;">#</th><th>Gate check</th><th style="width:42mm;">Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Hosting decision recorded; if hosted, the deployment reproduces local behaviour.</td><td>Decision row + smoke test.</td></tr>
+    <tr><td>2</td><td>Scoring and database are private; only the edge is public.</td><td>Network probe from outside.</td></tr>
+    <tr><td>3</td><td>TLS, HSTS, request size, rate limit, quotas, and CORS are configured and tested.</td><td>Header and limit tests.</td></tr>
+    <tr><td>4</td><td>Secrets are environment-scoped and absent from images and history.</td><td>Secret scan + image inspection.</td></tr>
+    <tr><td>5</td><td>Logs are structured and content-free; alerts cover health, errors, latency, and disk.</td><td>Log sample + alert configuration.</td></tr>
+    <tr><td>6</td><td>Backup and restore are demonstrated; rollback is documented.</td><td>Restore log + runbook.</td></tr>
+    <tr><td>7</td><td>Every expansion has fixtures, tests, and a gate; no silent reuse of the MVP model.</td><td>Adapter/language evidence.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout ok">
+  <span class="tag">Close the phase</span>
+  <p>Tag the release, attach the images and artifacts, and record the hosted URL and model version if one exists. If the team chose not to host, record that decision and the reasoning. A local, reproducible, honest demo is a complete outcome.</p>
+</div>
+</div>

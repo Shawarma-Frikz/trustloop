@@ -1,0 +1,310 @@
+<!-- ================= 10 STANDARDS ================= -->
+<h1><span class="num">CHAPTER 10</span>Cross-cutting standards</h1>
+
+<p class="chapter-intro">These rules apply in every phase. They are the difference between three components that happen to work together and a system a reviewer can trust. When a standard conflicts with a deadline, cut scope — not the standard.</p>
+
+<h2>10.1 Errors</h2>
+
+<p>There are two error surfaces: per-result states inside a successful batch, and request-level errors with a separate envelope. Do not collapse them. A timeout on one batch is not a 500 for the whole API, and an invalid request is not a per-review unknown.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:34mm;">Situation</th><th style="width:16mm;">HTTP</th><th>Code</th><th>UI behaviour</th></tr></thead>
+  <tbody>
+    <tr><td>Invalid shape, empty batch, too many reviews, bad field</td><td>400</td><td><span class="mono">INVALID_REQUEST</span></td><td>Generic failure; log request ID; do not retry automatically.</td></tr>
+    <tr><td>Body over the limit</td><td>413</td><td><span class="mono">PAYLOAD_TOO_LARGE</span></td><td>Generic failure; extension should not produce this if it truncates correctly.</td></tr>
+    <tr><td>Rate limit exceeded</td><td>429</td><td><span class="mono">RATE_LIMITED</span></td><td>Show wait/retry; respect <span class="mono">Retry-After</span>.</td></tr>
+    <tr><td>Unexpected backend failure</td><td>500</td><td><span class="mono">INTERNAL_ERROR</span></td><td>Unavailable state; retry offered.</td></tr>
+    <tr><td>Scoring timeout</td><td>200</td><td>Result <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_TIMEOUT</span></td><td>“Analysis timed out. Try again.”</td></tr>
+    <tr><td>Scoring unavailable, malformed, version mismatch</td><td>200</td><td>Result <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span></td><td>“Analysis is unavailable right now. Try again.”</td></tr>
+    <tr><td>Insufficient text</td><td>200</td><td>Result <span class="mono">UNKNOWN</span> / <span class="mono">INSUFFICIENT_TEXT</span></td><td>“Not enough text to estimate.” No retry.</td></tr>
+    <tr><td>Unsupported language</td><td>200</td><td>Result <span class="mono">UNKNOWN</span> / <span class="mono">UNSUPPORTED_LANGUAGE</span></td><td>“This language is not supported yet.” No retry.</td></tr>
+    <tr><td>No auth (Phase 4)</td><td>401</td><td><span class="mono">UNAUTHORIZED</span></td><td>Sign-in prompt; no token echo.</td></tr>
+    <tr><td>Authenticated but not allowed (Phase 4)</td><td>403</td><td><span class="mono">FORBIDDEN</span></td><td>Access denied; no resource details.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Rules.</strong> The message is a fixed, safe string; the request ID is always present. No stack trace, exception class, SQL fragment, internal URL, token, or review text crosses the public boundary. The internal cause is logged content-free. A per-result unknown is never encoded as 0, 50, or null. A request-level error never contains a partial results array.</p>
+
+<h2>10.2 Logging and privacy</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:40mm;">Allowed</th><th>Forbidden</th></tr></thead>
+  <tbody>
+    <tr><td>timestamp, level, event, requestId, adapterId, reviewCount, status, reasonCode, engine, modelVersion, latencyMs, httpStatus</td><td>review text, review key, URL, hostname, reviewer name, request/response body, token, password, email, raw stack trace in public logs, model coefficients that reconstruct text</td></tr>
+  </tbody>
+</table>
+
+<p>Use one structured event per lifecycle step: <span class="mono">api.request.received</span>, <span class="mono">api.scoring.completed</span>, <span class="mono">api.scoring.failed</span>, <span class="mono">api.response.sent</span>. Put the request ID in MDC and include it in every line for that request. Remove it in a <span class="mono">finally</span> block.</p>
+
+<p>Log levels: INFO for lifecycle and failures that the operator must see; WARN for degraded readiness, rate-limit surges, and version mismatch; ERROR for unexpected failures; DEBUG only locally and never with bodies. Do not enable framework request logging in a shared environment. A validation exception must not log the rejected DTO.</p>
+
+<p>Log retention is part of the privacy policy. Keep application logs long enough to debug a demo (for example 7–14 days) and no longer than necessary. Hosted logs inherit the provider’s retention; record it. Logs are content-free, so retention is less sensitive, but request IDs and timestamps are still operational data.</p>
+
+<h2>10.3 Security checklist</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:44mm;">Area</th><th>Check</th></tr></thead>
+  <tbody>
+    <tr><td>Input</td><td>Validate shape, size, count, encoding, and nesting. Reject unknown fields at the contract boundary. Never build a query or a shell command from input.</td></tr>
+    <tr><td>Output</td><td>Safe error messages. Escape any admin-rendered text. No stack traces. No score accepted from the client.</td></tr>
+    <tr><td>Secrets</td><td>No secret in the repository, history, image, or log. Token from environment. Rotate on exposure. Scan the history before making the repo public.</td></tr>
+    <tr><td>Transport</td><td>Loopback locally; HTTPS hosted; HSTS after verification; no mixed content.</td></tr>
+    <tr><td>Origins</td><td>CORS allowlist only. Pin the packed extension ID for shared environments. No wildcard in production.</td></tr>
+    <tr><td>Abuse</td><td>Request size, rate limit, per-user quota, login rate limit, timeouts. One attempt, no retry storm.</td></tr>
+    <tr><td>Auth</td><td>Argon2id/BCrypt, short access token, rotating refresh token, revocation, role checks at the route and service layers.</td></tr>
+    <tr><td>Data</td><td>Transient review text; metadata-only history; retention purge; account deletion; no text column in the database.</td></tr>
+    <tr><td>Admin</td><td>Default 404, dev-admin loopback and boot guard, hosted admin requires ADMIN, audit actions content-free.</td></tr>
+    <tr><td>Dependencies</td><td>Dependabot, CodeQL, lockfiles, no critical vulnerability without a documented exception.</td></tr>
+    <tr><td>Deployment</td><td>Non-root containers, private scoring network, pinned images, backups, rollback, monitoring.</td></tr>
+  </tbody>
+</table>
+
+<h2>10.4 Performance budgets</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:48mm;">Budget</th><th>Target</th><th>Measured at</th></tr></thead>
+  <tbody>
+    <tr><td>Scoring warm p95, 10 reviews</td><td>≤ 1.5 s</td><td>Service endpoint on the reference environment.</td></tr>
+    <tr><td>Backend end-to-end p95</td><td>≤ 4 s ceiling; target well below</td><td>Public analyze endpoint.</td></tr>
+    <tr><td>Extension ceiling</td><td>6 s</td><td>Service-worker fetch abort.</td></tr>
+    <tr><td>Cold start</td><td>Health not ready until warm</td><td>Service readiness poll.</td></tr>
+    <tr><td>Request size</td><td>131,072 bytes</td><td>Edge and backend.</td></tr>
+    <tr><td>Review count</td><td>10 per batch</td><td>Extension and backend.</td></tr>
+    <tr><td>Rate</td><td>60 requests/minute local</td><td>Application limit per IP.</td></tr>
+    <tr><td>Scan debounce</td><td>750 ms</td><td>Extension mutation observer.</td></tr>
+    <tr><td>Minimum rescan</td><td>2,000 ms</td><td>Extension scheduler.</td></tr>
+  </tbody>
+</table>
+
+<p>Optimize in this order: batch vectorization, feature caps, model size, then infrastructure. Do not buy a bigger machine to hide an inefficient feature pipeline, and do not raise a timeout to make a failing p95 disappear. A performance change that changes the model output is a model version change.</p>
+
+<h2>10.5 Accessibility standard</h2>
+
+<p>Target WCAG 2.2 AA for the extension UI and any admin page. The critical commitments:</p>
+<ul>
+  <li>Every interactive element is keyboard operable, with a visible focus indicator that is not obscured.</li>
+  <li>The badge is a button with an accessible name containing score, band, evidence, and engine.</li>
+  <li>The panel has a name, manages focus, closes on Escape, and returns focus to its trigger.</li>
+  <li>Status changes use a polite live region; do not announce every card repeatedly.</li>
+  <li>Verdicts do not rely on colour; text and shape carry the meaning.</li>
+  <li>Text contrasts at 4.5:1; large text and essential graphics at 3:1.</li>
+  <li>200% zoom and 320 CSS px reflow without horizontal scrolling for the panel.</li>
+  <li>French content is marked with <span class="mono">lang="fr"</span>.</li>
+  <li>Motion respects <span class="mono">prefers-reduced-motion</span>; no essential animation.</li>
+  <li>Targets are at least 24×24 CSS px, preferably 44×44 for touch.</li>
+</ul>
+
+<h2>10.6 Testing strategy</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:34mm;">Layer</th><th>What it proves</th><th>What not to do</th></tr></thead>
+  <tbody>
+    <tr><td>Unit</td><td>Score mapping, band boundaries, evidence thresholds, validation, normalization, dedup keys, state formatting.</td><td>Do not mock the function under test or assert on implementation details.</td></tr>
+    <tr><td>Contract</td><td>Every fixture validates; every component parses the same enums; invalid combinations fail.</td><td>Do not copy fixtures into each component.</td></tr>
+    <tr><td>Component integration</td><td>Backend pipeline with a stub scoring server; extension scanner with fixture DOM; service endpoints with a tiny artifact.</td><td>Do not require live network, live Amazon, or a full model in unit CI.</td></tr>
+    <tr><td>End to end</td><td>Real extension → real backend → real service → rendered result.</td><td>Do not use it as the only test; it is slow and brittle.</td></tr>
+    <tr><td>Model evaluation</td><td>Gate metrics, calibration, stability, determinism, latency.</td><td>Do not tune on the test split or hide a failing language in an average.</td></tr>
+    <tr><td>Accessibility</td><td>Keyboard, focus, zoom, contrast, screen reader, non-colour cues.</td><td>Do not rely on an automated scan alone.</td></tr>
+    <tr><td>Privacy</td><td>Sentinel text absent from logs/storage; no external calls; no forbidden DB columns.</td><td>Do not grep only the application logger; capture the root logger.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Test data.</strong> Use synthetic review text and sanitized fixtures. Never commit live review text or reviewer identifiers. A sentinel phrase is useful precisely because it is unique and easy to search for in logs and storage.</p>
+
+<p><strong>CI expectations.</strong> Every pull request runs the component tests and the contract tests. A model gate is a manual or scheduled workflow with the published artifact; it is not retrained on every PR. A failing test blocks merge; a skipped test is not a pass.</p>
+
+<h2>10.7 Code review checklist</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:32mm;">Dimension</th><th>Questions</th></tr></thead>
+  <tbody>
+    <tr><td>Correctness</td><td>Does the change do what the issue says? Is the edge case tested? Is the score/status combination valid?</td></tr>
+    <tr><td>Contract</td><td>Does it change a field, enum, constant, or reason code? Are all consumers updated and the version bumped?</td></tr>
+    <tr><td>Privacy</td><td>Does it log, store, or transmit review text, a key, a URL, or a fingerprint? Is history still metadata-only?</td></tr>
+    <tr><td>Security</td><td>Is input validated? Is output escaped? Is authorization checked server-side? Is a secret exposed?</td></tr>
+    <tr><td>Accessibility</td><td>Keyboard, focus, name, role, contrast, zoom, non-colour cue, live region.</td></tr>
+    <tr><td>Performance</td><td>Does it add a per-review loop, an N+1 query, an unbounded response, or a blocking call on the request path?</td></tr>
+    <tr><td>Tests</td><td>Is the new behaviour covered at the right layer? Does the test fail without the fix?</td></tr>
+    <tr><td>Scope</td><td>Does it add unrelated refactoring, a speculative abstraction, or a feature not in the phase?</td></tr>
+    <tr><td>Docs</td><td>Does the README, decision register, model card, or evidence need an update?</td></tr>
+  </tbody>
+</table>
+
+<h2>10.8 Definition of Done</h2>
+
+<ul class="checklist">
+  <li>The behaviour matches the issue’s acceptance checks, not just the happy path.</li>
+  <li>A test fails without the change and passes with it.</li>
+  <li>Contract impact assessed; version bumped and fixtures updated if needed.</li>
+  <li>Privacy impact assessed: no new text, key, URL, or fingerprint in logs or storage.</li>
+  <li>Security impact assessed: validation, authorization, secrets, error exposure.</li>
+  <li>Accessibility checked for any UI change.</li>
+  <li>CI green, including the contract workflow.</li>
+  <li>Reviewed by the code owner; conversations resolved.</li>
+  <li>Docs/evidence updated; no leftover TODO that hides a broken path.</li>
+  <li>No secret, dataset, or build output added to Git.</li>
+</ul>
+
+<h2>10.9 The five-minute self-review</h2>
+
+<p>Do this before you request review. It is cheaper than a review cycle and it catches the failures reviewers should not have to find.</p>
+
+<ol>
+  <li>Re-read the issue’s acceptance checks and map each one to a test or a manual step.</li>
+  <li>Run the new test without the fix, then with it. If the result does not change, the test proves nothing.</li>
+  <li>Read your own diff in the GitHub “Files changed” view, not in the editor. Editors hide omissions.</li>
+  <li>Check the contract, privacy, and security boxes honestly; write one sentence for each where the answer is not obvious.</li>
+  <li>Write the PR paragraph: what changed, why, what you verified, and what you did not.</li>
+</ol>
+
+<div class="two-col">
+  <div class="box">
+    <h4>Blocks the merge</h4>
+    <ul>
+      <li>A failing test or a gate that was not run.</li>
+      <li>Contract drift without a contract change.</li>
+      <li>Review text, URL, or key in a log, store, or fixture.</li>
+      <li>A new input path with no validation or size limit.</li>
+      <li>A user-facing claim stronger than the evidence.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h4>Waits for another pull request</h4>
+    <ul>
+      <li>Formatting and import order a tool can decide.</li>
+      <li>A refactor that is not required by the issue.</li>
+      <li>Naming taste with no ambiguity for a reader.</li>
+      <li>An extra adapter or language that needs its own gate.</li>
+      <li>A dashboard or metric with no decision attached.</li>
+    </ul>
+  </div>
+</div>
+
+<p class="small">The right-hand list is not forbidden work; it is work that should not hold a tested change hostage. Write it as an issue and let the phase decide.</p>
+
+<!-- ================= 11 DEMO ================= -->
+<h1><span class="num">CHAPTER 11</span>Demo and defense runbook</h1>
+
+<p class="chapter-intro">A demo is an evidence claim, not a performance. Show the honest states, the provenance, and one failure. A reviewer trusts a system that says “no estimate” more than one that never does.</p>
+
+<h2>11.1 Five-minute demo</h2>
+
+<p><strong>Preflight.</strong> Scoring health 200; backend health 200; <span class="mono">/api/v1/version</span> shows the expected model version; extension loaded; supported fixture or page open; history cleared; no terminal showing secrets; network tab closed or filtered.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:18mm;">Time</th><th>Action</th><th>What to say</th></tr></thead>
+  <tbody>
+    <tr><td>0:00</td><td>Show the review page with no badges.</td><td>“TrustLoop estimates whether review text looks organic or manipulated, using text patterns only. It does not verify purchases, identify people, or prove fraud.”</td></tr>
+    <tr><td>0:30</td><td>Scan; badges appear.</td><td>“It found the eligible review cards, deduplicated them for this page session, and sent them in batches of at most ten.”</td></tr>
+    <tr><td>1:00</td><td>Open a scored panel.</td><td>“Score, band, evidence quality, engine, model version, and the signals that contributed. The summary never quotes the review.”</td></tr>
+    <tr><td>1:45</td><td>Open a low-evidence result.</td><td>“The score stays visible but is qualified as indicative because the review is short. Evidence quality is input sufficiency, not confidence.”</td></tr>
+    <tr><td>2:15</td><td>Show an unknown state.</td><td>“No score. The reason is visible. Unknown is never 0 or 50.”</td></tr>
+    <tr><td>2:45</td><td>Stop the scoring service; scan again.</td><td>“The system does not invent a fallback. Every result is unavailable, with a manual retry.”</td></tr>
+    <tr><td>3:20</td><td>Restart; retry; result returns.</td><td>“One request ID traces the scan from the extension to the backend to the scoring service.”</td></tr>
+    <tr><td>3:45</td><td>Enable history; scan; open history; clear.</td><td>“History is opt-in, metadata-only, capped, and clearable. No review text, URL, or key is stored.”</td></tr>
+    <tr><td>4:20</td><td>Close on the limits.</td><td>“Calibration is to the evaluation distribution, not Amazon prevalence. French support is conditional on its own gate. The model is text-only.”</td></tr>
+    <tr><td>4:45</td><td>Stop.</td><td>Questions.</td></tr>
+  </tbody>
+</table>
+
+<h2>11.2 Twelve-minute defense</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:18mm;">Time</th><th>Section</th><th>Key point</th></tr></thead>
+  <tbody>
+    <tr><td>0:00</td><td>Problem and claim</td><td>Review text is noisy; the product estimates text patterns with explicit limits; no truth or identity claim.</td></tr>
+    <tr><td>1:00</td><td>Architecture</td><td>Three processes, two boundaries, one frozen contract; scoring is internal-only; no database in the analysis path.</td></tr>
+    <tr><td>3:00</td><td>Contract and failure semantics</td><td>Status/engine matrix; unknown reason codes; atomic scoring failure; no silent fallback.</td></tr>
+    <tr><td>4:30</td><td>Model and data</td><td>Label definition, group split, dedup, baseline, calibration, per-language gate.</td></tr>
+    <tr><td>7:00</td><td>Evaluation and explainability</td><td>Held-out metrics with CIs, reliability, transfer, stability, signal taxonomy, no raw text.</td></tr>
+    <tr><td>8:30</td><td>Demo</td><td>The five-minute path, compressed: scored, low, unknown, failure, retry.</td></tr>
+    <tr><td>10:30</td><td>Privacy, security, accessibility</td><td>No body logs, metadata-only history, CORS/rate/size/token, admin isolation, keyboard/screen-reader/zoom.</td></tr>
+    <tr><td>11:30</td><td>Limitations and next</td><td>Domain shift, short text, adversarial/LLM text, French conditional, transformer only after a gate.</td></tr>
+  </tbody>
+</table>
+
+<h2>11.3 Failure injection for the demo</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:46mm;">Failure</th><th>How</th><th>Expected</th></tr></thead>
+  <tbody>
+    <tr><td>Scoring down</td><td>Stop the scoring process or <span class="mono">docker compose stop scoring</span>.</td><td>Unavailable batch; retry action.</td></tr>
+    <tr><td>Timeout</td><td>Use a stub or add a temporary delay above 3 s in a test profile.</td><td>Timeout reason; no partial score.</td></tr>
+    <tr><td>Version mismatch</td><td>Set the backend expected model version to a different value in a test profile.</td><td>Batch unknown / unavailable.</td></tr>
+    <tr><td>Unsupported page</td><td>Open a non-review page on the same host.</td><td>Unsupported state; no request.</td></tr>
+    <tr><td>Short review</td><td>Use a fixture with fewer than 20 words.</td><td>Insufficient text; no score.</td></tr>
+    <tr><td>Unsupported language</td><td>Use a French fixture if D23 failed.</td><td>Language unknown; no score.</td></tr>
+    <tr><td>Rate limit</td><td>Burst requests from a script above 60/minute.</td><td>429 with retry interval.</td></tr>
+    <tr><td>Oversized body</td><td>Send a test request above 131,072 bytes.</td><td>413; safe message.</td></tr>
+  </tbody>
+</table>
+
+<h2>11.4 Likely questions and answers</h2>
+
+<p><strong>“Why not use a transformer?”</strong> The baseline meets the gate, runs on CPU, is deterministic, and gives stable linear attributions. A transformer is allowed only after it beats the baseline on the held-out sample, passes calibration and explanation stability, and ships as a new model version. Complexity is not evidence.</p>
+
+<p><strong>“Does 73 mean a 73% chance the review is fake?”</strong> No. It is 73% organic likelihood on the evaluation distribution, mapped to a score. The calibration is not Amazon prevalence, and the UI says it is an estimate from text patterns.</p>
+
+<p><strong>“Why postpone authentication?”</strong> The core value is the analysis path. Accounts are an access and persistence feature; building them first would delay the part the professor asked to see and add a database before its retention rules existed. Security is not postponed: validation, limits, CORS, secrets, and content-free logs exist from Phase 1.</p>
+
+<p><strong>“How do you know the adapter works?”</strong> A Phase 0 spike on three pre-chosen variants: at least five eligible reviews per page, at least 90% precision against a manual count, stable selectors across two loads. Fixtures lock the behaviour, and a selector miss produces an explicit unsupported state.</p>
+
+<p><strong>“What happens when Amazon changes the DOM?”</strong> The adapter stops matching and the extension reports unsupported. It does not scrape the page generically. The adapter is versioned, and a new selector set ships with new fixtures.</p>
+
+<p><strong>“How do you prevent overclaiming?”</strong> A normative bilingual copy deck, a forbidden-claim string test, signal summaries that describe influence rather than proof, and a model card that states limitations. The UI never says “fake,” “fraud,” “bot account,” or “verified.”</p>
+
+<p><strong>“What about privacy?”</strong> Review text is processed transiently, never logged or stored. Local history is opt-in metadata only. There is no external AI provider. The scoring service is internal and token-protected. Tests use a sentinel phrase to prove the text is absent from logs and storage.</p>
+
+<p><strong>“Is French supported?”</strong> Only if the French manual evaluation passes its own gate. The UI is translated regardless; UI translation does not imply model coverage. If the gate fails, French returns unknown.</p>
+
+<p><strong>“Why PostgreSQL in Phase 4?”</strong> Accounts and owned history need durable state. The analysis path still does not require a database. The schema stores metadata only, with retention, deletion, and no text column.</p>
+
+<p><strong>“How do you know the score and band agree?”</strong> One mapping function is used by training, evaluation, and serving; boundary tests cover every band edge and half-up rounding; the backend re-validates the band before returning it.</p>
+
+<p><strong>“What about LLM-generated or adversarial reviews?”</strong> It is a documented limitation. The model is trained on older public corpora and is not claimed to detect novel generated text. A new capability needs new data, a new gate, and a new model version.</p>
+
+<p><strong>“What would you do with more time?”</strong> More in-domain labels, a larger French sample, a transformer evaluated against the same gate, more adapters with fixtures, and hosted quotas. None of those is worth weakening the honest unknown state.</p>
+
+<h2>11.5 Preflight checklist</h2>
+
+<ul class="checklist">
+  <li>Scoring health 200 and the expected artifact hash.</li>
+  <li>Backend health 200 and <span class="mono">/api/v1/version</span> matches.</li>
+  <li>Extension loaded from the intended build; CORS origin matches.</li>
+  <li>Supported fixture/page open; three review types available: scored, low, unknown.</li>
+  <li>History cleared and off at the start, so opt-in is visible.</li>
+  <li>No secret, token, or personal data on screen; terminal font readable.</li>
+  <li>Failure injection rehearsed, including restart and retry.</li>
+  <li>Backup recording or screenshots in case the live demo fails.</li>
+  <li>One person drives, one person narrates, one person watches the logs.</li>
+</ul>
+
+<!-- ================= 12 RISK MAP ================= -->
+<h1><span class="num">CHAPTER 12</span>Risk-to-task map</h1>
+
+<p class="chapter-intro">The register already names the risks. This table turns each one into the task that reduces it and the signal that says it is happening. Review it at every gate; a risk with no task is a wish.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:14mm;">ID</th><th>Risk</th><th>Build task</th><th>Early trigger</th></tr></thead>
+  <tbody>
+    <tr><td>R-01</td><td>Amazon DOM or terms change break extraction</td><td>Phase 0 spike; selectors file; fixtures; unsupported state; saved-page fallback.</td><td>Spike fails or a selector breaks on a chosen page.</td></tr>
+    <tr><td>R-02</td><td>Dataset or license unavailable</td><td>Step 0.11 manifest; approved alternatives; never scrape unlicensed data.</td><td>No licensed corpus by Phase 0 exit.</td></tr>
+    <tr><td>R-03</td><td>Domain shift or label noise</td><td>Group split; in-domain manual sample; kappa; gate; model card limitations.</td><td>EN gate fails or kappa &lt; 0.60.</td></tr>
+    <tr><td>R-04</td><td>French data gap</td><td>French sample and annotators; separate gate; UNKNOWN fallback.</td><td>FR gate fails or sample too small.</td></tr>
+    <tr><td>R-05</td><td>Calibration misread as prevalence</td><td>Calibration scope in model card and UI; ECE gate; copy review.</td><td>Report or UI implies a real-world probability.</td></tr>
+    <tr><td>R-06</td><td>Explanation instability or overclaim</td><td>Linear baseline; stability gate; qualitative fallback; forbidden-claim test.</td><td>Jaccard &lt; 0.80 or copy says “proof.”</td></tr>
+    <tr><td>R-07</td><td>Admin surface exposed</td><td>dev-admin only; loopback; boot guard; default 404; no tunnel; auth in Phase 4.</td><td>Non-loopback bind or admin route in default profile.</td></tr>
+    <tr><td>R-08</td><td>Privacy leak in logs, history, or telemetry</td><td>No-body logging; metadata-only history; sentinel test; storage inspection; network capture.</td><td>Any text, URL, or key in logs or storage.</td></tr>
+    <tr><td>R-09</td><td>Scope and time overrun</td><td>Phase gates; cut order; one adapter; no auth before core; WIP limits.</td><td>A gate slips; cut breadth, not tests.</td></tr>
+    <tr><td>R-10</td><td>Cold start or latency</td><td>Warm at boot; batch vectorization; feature caps; timeout hierarchy; perf test.</td><td>p95 above 1.5 s or a timeout in the demo.</td></tr>
+    <tr><td>R-11</td><td>Public API abuse if hosted</td><td>Auth, quotas, edge limits, HTTPS, monitoring; local default.</td><td>Any unauthenticated public exposure.</td></tr>
+    <tr><td>R-12</td><td>Contract drift</td><td>contracts/v1 fixtures; contract CI; versioned changes; enum equality tests.</td><td>One component accepts a field or code the others reject.</td></tr>
+    <tr><td>R-13</td><td>Accessibility found too late</td><td>Phase 1 keyboard/focus baseline; Phase 3 full audit; non-colour cues.</td><td>Keyboard, focus, or zoom failure at Phase 1 exit.</td></tr>
+    <tr><td>R-14</td><td>Copy drift between languages or overclaim</td><td>Normative deck; key-parity test; forbidden-claim test; native review.</td><td>One language claims truth, identity, or fraud.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="tag">How to use this table</span>
+  <p>At each gate, mark each risk as reduced, unchanged, or realized. A realized risk gets an issue and a decision, not a paragraph in the report. A risk that is “unchanged” for two phases needs a reason, not silence.</p>
+</div>

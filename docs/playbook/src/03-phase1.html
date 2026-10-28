@@ -1,0 +1,990 @@
+<!-- ================= 05 PHASE 1 ================= -->
+<h1><span class="num">CHAPTER 05 · PHASE 1</span>The analysis core</h1>
+
+<p class="chapter-intro">This is the phase that makes the project real: one supported page, one honest score, one explanation, and explicit states when the system cannot answer. No accounts. No database. The integration contract is already frozen, so the three teams can work in parallel against fixtures.</p>
+
+<div class="callout ok">
+  <span class="tag">Phase exit condition</span>
+  <p>A supported page or fixture can be scanned end to end. Score, band, evidence quality, engine, model version, and explanation match the API result. Each supported language passes its gate or visibly uses <span class="mono">SIGNALS_ONLY</span>/<span class="mono">UNKNOWN</span>. Failure states are honest. Local history stores no content. Tests are green and warm p95 is within 1.5 seconds.</p>
+</div>
+
+<h2>5.1 Order of work</h2>
+<p>Three tracks run in parallel after the contract is frozen. The model track is the longest and the riskiest, so it starts first. The backend can integrate against a stub that returns fixed contract fixtures before the real model exists. The extension can render fixtures before the backend exists.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:38mm;">Track</th><th>Sequence</th><th style="width:26mm;">Depends on</th></tr></thead>
+  <tbody>
+    <tr><td>Model and data</td><td>5.6 data pipeline → 5.7 baseline and calibration → 5.8 gate → 5.9 explainer → 5.10 artifact and service</td><td>D22 resolved; licensed data</td></tr>
+    <tr><td>Backend</td><td>5.2 DTOs → 5.3 request pipeline → 5.4 scoring client against a stub → 5.5 endpoint tests → integrate real service</td><td>Contract v1</td></tr>
+    <tr><td>Extension</td><td>5.11 adapter and scanner → 5.12 badge and panel with fixtures → connect real API → 5.13 history</td><td>Contract v1; adapter spike</td></tr>
+    <tr><td>Integration</td><td>5.14 observability → 5.15 end-to-end and performance → 5.16 gate</td><td>All three tracks</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="tag">Build against fixtures, not hope</span>
+  <p>The backend's first integration test loads <span class="mono">contracts/v1/fixtures/batch.scored.adequate.json</span> from a stub HTTP server. The extension's first UI test renders the same fixture. When the real scoring service arrives, only the stub is replaced. The UI and API tests do not change.</p>
+</div>
+
+<h2>5.2 Implement the contract in all three components</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.1</span><h3>Create the DTOs and enums once per language</h3></div>
+  <div class="meta"><b>Owner</b> All leads &nbsp;|&nbsp; <b>Time</b> 1 day &nbsp;|&nbsp; <b>Depends</b> Contract v1</div>
+
+  <p><strong>Goal.</strong> Each component can parse every contract fixture and reject every invalid one, using types that mirror the schema exactly.</p>
+
+  <p class="label">Java</p>
+  <ul>
+    <li>Use records under <span class="mono">model/</span> for <span class="mono">AnalyzeRequest</span>, <span class="mono">ReviewInput</span>, <span class="mono">AnalyzeResponse</span>, <span class="mono">ReviewResult</span>, <span class="mono">Signal</span>, <span class="mono">ApiError</span>.</li>
+    <li>Use enums for <span class="mono">Status</span>, <span class="mono">Engine</span>, <span class="mono">EvidenceQuality</span>, <span class="mono">Verdict</span>, and <span class="mono">ReasonCode</span>. Reject unknown values at deserialization; do not map them to a default.</li>
+    <li>Annotate the response with <span class="mono">@JsonInclude(NON_NULL)</span> so an unknown never serializes <span class="mono">"trustScore": null</span>. The schema forbids the field, and the serializer must agree.</li>
+    <li>Keep request and response DTOs free of persistence annotations. There are no entities in Phase 1.</li>
+  </ul>
+
+  <p class="label">Python</p>
+  <ul>
+    <li>Use Pydantic models with <span class="mono">extra="forbid"</span>. Unknown fields are a contract error, not a harmless extension.</li>
+    <li>Use <span class="mono">Literal</span> or enums for status, engine, evidence, verdict, and reason codes.</li>
+    <li>Validate conditional fields with a model validator or a discriminated union keyed by status. A <span class="mono">SCORED</span> result without a score must fail construction, not reach the response.</li>
+  </ul>
+
+  <p class="label">JavaScript</p>
+  <ul>
+    <li>Keep one <span class="mono">contracts.js</span> module with frozen enum arrays and constants imported by every UI and network module.</li>
+    <li>Do not redefine band boundaries in the badge, the panel, and the history separately. One function maps a score to a band; the other modules consume it.</li>
+    <li>Validate a response shape at the service-worker boundary before passing it to the UI. A malformed response becomes <span class="mono">SCORING_UNAVAILABLE</span>, not a partially rendered panel.</li>
+  </ul>
+
+  <p class="label">Contract test bootstrap</p>
+  <p>Each component reads <span class="mono">TRUSTLOOP_CONTRACT_DIR</span>; local fallback is <span class="mono">../contracts/v1</span> from the component directory. One loader, used by every test, so a path change is a one-line change.</p>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Every valid fixture parses in Java, Python, and JavaScript.</li>
+      <li>Every invalid fixture is rejected in all three, with no default fallback.</li>
+      <li>The enum sets are asserted equal across the three components in the contract workflow.</li>
+      <li>Serializing an unknown result produces no score, verdict, or null-valued score field.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.3 Build the backend request pipeline</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.2</span><h3>Request identity, size, rate, and CORS</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 1.1</div>
+
+  <p><strong>Goal.</strong> Every request is identifiable, bounded, attributable to a client, and acceptable only from the extension origin.</p>
+
+  <p class="label">Filter order</p>
+  <table class="grid">
+    <thead><tr><th style="width:16mm;">Order</th><th>Filter</th><th>Responsibility</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>CORS</td><td>Reject disallowed browser origins before other work. Preflight returns the allowed methods and headers.</td></tr>
+      <tr><td>2</td><td>Request ID</td><td>Validate or generate <span class="mono">X-Request-Id</span>, put it in MDC, echo it on the response.</td></tr>
+      <tr><td>3</td><td>Payload size</td><td>Reject bodies over 131,072 bytes with <span class="mono">413</span> and <span class="mono">PAYLOAD_TOO_LARGE</span>.</td></tr>
+      <tr><td>4</td><td>Rate limit</td><td>Enforce 60 requests per minute per client IP; return <span class="mono">429</span> with <span class="mono">Retry-After</span>.</td></tr>
+      <tr><td>5</td><td>Controller</td><td>Validate the DTO, call the service, return the response.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Request ID rules</p>
+  <p>Accept 1–64 characters matching <span class="mono">[A-Za-z0-9-]</span>. If absent or malformed, generate a UUIDv4. Set the response header even on errors. Put the ID in the logging context and remove it in a <span class="mono">finally</span> block so a reused thread never leaks another request’s ID.</p>
+
+  <div class="cmd">
+    <div class="cmd-label">Java · request ID filter, essential lines</div>
+<pre>String id = request.getHeader("X-Request-Id");
+if (id == null || !id.matches("[A-Za-z0-9-]{1,64}")) {
+    id = UUID.randomUUID().toString();
+}
+MDC.put("requestId", id);
+response.setHeader("X-Request-Id", id);
+try {
+    chain.doFilter(request, response);
+} finally {
+    MDC.remove("requestId");
+}</pre>
+  </div>
+
+  <p class="label">Size rules</p>
+  <ul>
+    <li>Check <span class="mono">Content-Length</span> when present; reject immediately if it exceeds 131,072 bytes.</li>
+    <li>For chunked requests, wrap the input stream with a counting limiter and abort once the limit is crossed. A header check alone is not enough.</li>
+    <li>Also cap the JSON parser’s nesting depth and string length; a deeply nested body can exhaust memory even under the byte limit.</li>
+    <li>Return <span class="mono">413</span> with the error envelope, not a container-generated HTML error page.</li>
+  </ul>
+
+  <p class="label">Rate rules</p>
+  <ul>
+    <li>Use an in-memory token bucket per client IP. The local default is 60 requests per minute. Bucket4j is a reasonable choice; a small <span class="mono">ConcurrentHashMap</span> implementation is acceptable if tested.</li>
+    <li>Do not trust <span class="mono">X-Forwarded-For</span> unless the backend is behind a known proxy and configured to read it. Otherwise a client can spoof the key.</li>
+    <li>Exclude nothing from the limit in production; health checks are local and cheap. In the performance test, raise the test-profile limit explicitly rather than special-casing an endpoint.</li>
+    <li>Emit <span class="mono">Retry-After</span> in seconds and keep the message generic: <span class="mono">"Request rejected"</span>.</li>
+  </ul>
+
+  <p class="label">CORS rules</p>
+  <ul>
+    <li>Allow only the configured extension origin(s), <span class="mono">POST</span> and <span class="mono">GET</span>, and the headers <span class="mono">Content-Type</span> and <span class="mono">X-Request-Id</span>.</li>
+    <li>Expose <span class="mono">X-Request-Id</span> and <span class="mono">Retry-After</span> so the extension can show and retry correctly.</li>
+    <li>Do not enable credentials in the MVP; there are no cookies. When authentication arrives in Phase 4, revisit this decision explicitly.</li>
+    <li>Pin the packed extension ID for any shared environment. A wildcard <span class="mono">chrome-extension://*</span> pattern is a development-only convenience and must be impossible to enable in production.</li>
+  </ul>
+
+  <div class="cmd">
+    <div class="cmd-label">Java · CORS shape</div>
+<pre>CorsConfiguration c = new CorsConfiguration();
+c.setAllowedOrigins(properties.allowedOrigins());
+c.setAllowedMethods(List.of("POST", "GET", "OPTIONS"));
+c.setAllowedHeaders(List.of("Content-Type", "X-Request-Id"));
+c.setExposedHeaders(List.of("X-Request-Id", "Retry-After"));
+c.setAllowCredentials(false);
+c.setMaxAge(600L);
+UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+source.registerCorsConfiguration("/api/**", c);</pre>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A malformed request ID is replaced; a valid one is echoed unchanged.</li>
+      <li>A 131,073-byte body returns <span class="mono">413</span> and the error envelope.</li>
+      <li>The 61st request in a minute returns <span class="mono">429</span> with <span class="mono">Retry-After</span>.</li>
+      <li>A preflight from an unlisted origin fails; the configured extension origin succeeds.</li>
+      <li>No response includes a stack trace or internal class name.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.3</span><h3>Validate the request and shape the error envelope</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 1 day &nbsp;|&nbsp; <b>Depends</b> 1.2</div>
+
+  <p><strong>Goal.</strong> No invalid batch reaches the scoring service, and every rejection has the same safe envelope with the request ID.</p>
+
+  <p class="label">Validation rules</p>
+  <table class="grid">
+    <thead><tr><th style="width:38mm;">Field</th><th>Rule</th><th>Failure</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">adapterId</span></td><td>Required; matches the adapter ID pattern; one adapter per request.</td><td><span class="mono">400 INVALID_REQUEST</span></td></tr>
+      <tr><td><span class="mono">languageHint</span></td><td>Optional; <span class="mono">en</span> or <span class="mono">fr</span> at the public boundary; advisory only.</td><td><span class="mono">400 INVALID_REQUEST</span></td></tr>
+      <tr><td><span class="mono">reviews</span></td><td>Required; 1–10 items; no null elements.</td><td><span class="mono">400 INVALID_REQUEST</span></td></tr>
+      <tr><td><span class="mono">reviewKey</span></td><td>Required; 1–64 characters; opaque; unique within the batch.</td><td><span class="mono">400 INVALID_REQUEST</span></td></tr>
+      <tr><td><span class="mono">text</span></td><td>Required; non-blank; at most 2,000 Unicode code points after normalization; no control characters except newline and tab.</td><td><span class="mono">400 INVALID_REQUEST</span></td></tr>
+      <tr><td>Body</td><td>JSON object; content type <span class="mono">application/json</span>; no unknown fields at the contract level.</td><td><span class="mono">400 INVALID_REQUEST</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="tag">Backend does not judge the model</span>
+    <p>The backend enforces structure and size. It does not decide whether the text is long enough or in a supported language; those are model-domain decisions owned by the scoring service, using the same constants. Duplicating them in Java creates two sources of truth for evidence quality.</p>
+  </div>
+
+  <p class="label">Error mapping</p>
+  <table class="grid">
+    <thead><tr><th style="width:56mm;">Exception or condition</th><th>HTTP</th><th>Code</th></tr></thead>
+    <tbody>
+      <tr><td>Malformed JSON, unknown field, empty batch, 11 reviews, invalid field</td><td><span class="mono">400</span></td><td><span class="mono">INVALID_REQUEST</span></td></tr>
+      <tr><td>Body over 131,072 bytes</td><td><span class="mono">413</span></td><td><span class="mono">PAYLOAD_TOO_LARGE</span></td></tr>
+      <tr><td>Client over 60 requests/minute</td><td><span class="mono">429</span></td><td><span class="mono">RATE_LIMITED</span></td></tr>
+      <tr><td>Unexpected backend failure</td><td><span class="mono">500</span></td><td><span class="mono">INTERNAL_ERROR</span></td></tr>
+      <tr><td>Scoring timeout, unavailable, malformed, or version mismatch</td><td><span class="mono">200</span></td><td>Per result <span class="mono">UNKNOWN</span> with <span class="mono">SCORING_TIMEOUT</span> or <span class="mono">SCORING_UNAVAILABLE</span></td></tr>
+    </tbody>
+  </table>
+
+  <p>The public error body is always <span class="mono">{ requestId, error:{ code, message } }</span>. The message is a fixed safe string. The internal cause is logged content-free (<span class="mono">event</span>, <span class="mono">requestId</span>, <span class="mono">status</span>, <span class="mono">reasonCode</span>, <span class="mono">latencyMs</span>) and never returned.</p>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Each row in the error table has a MockMvc test.</li>
+      <li>The error body contains the request ID and no stack trace, exception class, or SQL fragment.</li>
+      <li>An unknown JSON field is rejected, not silently ignored.</li>
+      <li>A review with 2,001 code points is rejected; 2,000 is accepted.</li>
+      <li>Duplicate <span class="mono">reviewKey</span> values in one batch are rejected.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.4 Call the scoring service safely</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.4</span><h3>Scoring client, timeout, and atomic failure</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 1.3; scoring stub</div>
+
+  <p><strong>Goal.</strong> One attempt, one token, one request ID, a three-second ceiling, and an all-or-nothing batch when the service fails.</p>
+
+  <p class="label">Client configuration</p>
+  <ul>
+    <li>Base URL from <span class="mono">TRUSTLOOP_SCORING_URL</span>; token from <span class="mono">TRUSTLOOP_SCORING_TOKEN</span>; expected model version from configuration.</li>
+    <li>Connect timeout 500 ms; read timeout 3,000 ms. Do not use an infinite or default timeout.</li>
+    <li>Send <span class="mono">X-Internal-Token</span> and the incoming <span class="mono">X-Request-Id</span>. Never send the browser origin or any client identifier.</li>
+    <li>One attempt. No automatic retry, no circuit-breaker fallback that returns a score. The extension offers a manual retry.</li>
+    <li>Use <span class="mono">RestClient</span> on Spring Boot 3.2+, or <span class="mono">WebClient</span>/<span class="mono">RestTemplate</span> with equivalent timeouts on an older approved line.</li>
+  </ul>
+
+  <div class="cmd">
+    <div class="cmd-label">Java · client timeout shape</div>
+<pre>HttpClient http = HttpClient.newBuilder()
+    .connectTimeout(Duration.ofMillis(500))
+    .build();
+JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(http);
+factory.setReadTimeout(Duration.ofMillis(3000));
+RestClient client = RestClient.builder()
+    .baseUrl(properties.scoringUrl())
+    .requestFactory(factory)
+    .build();</pre>
+  </div>
+
+  <p class="label">Derive the transient duplicate flag</p>
+  <p>Within the request only, normalize each review (NFKC, collapse whitespace, lowercase for comparison), hash it, and group equal hashes. Mark <span class="mono">batchDuplicate = true</span> when another review in the same batch shares the normalized hash. Never store the hash, the text, or the flag. The flag is a <em>within-batch</em> observation, not a claim about the page or the world.</p>
+
+  <p class="label">Validate the service response</p>
+  <table class="grid">
+    <thead><tr><th style="width:52mm;">Check</th><th>Reject when</th></tr></thead>
+    <tbody>
+      <tr><td>Batch identity</td><td>Result count differs; a <span class="mono">reviewKey</span> is missing, duplicated, or not in the request.</td></tr>
+      <tr><td>Request ID</td><td>The service echoes a different request ID.</td></tr>
+      <tr><td>Status/engine pair</td><td>Any combination outside the contract matrix.</td></tr>
+      <tr><td>Scored fields</td><td>Score outside 0–100; non-integer; band inconsistent with the score; evidence not LOW/ADEQUATE; model version absent or not the expected value.</td></tr>
+      <tr><td>Signals</td><td>More than five; empty/oversized summaries; contribution outside the allowed range; raw text detection is a manual review item, not an automated check.</td></tr>
+      <tr><td>Unknown fields</td><td>Score or verdict present; service-produced reason not allowed; engine invalid.</td></tr>
+      <tr><td>Signals-only fields</td><td>Score, verdict, model version, or numeric contribution present.</td></tr>
+      <tr><td>Batch consistency</td><td>More than one engine or model version across results.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Any validation failure invalidates the entire batch: every result becomes <span class="mono">UNKNOWN</span> with <span class="mono">SCORING_UNAVAILABLE</span>. Do not salvage the valid half. A partially trusted batch is harder to explain and easier to misread.</p>
+
+  <table class="grid">
+    <thead><tr><th style="width:44mm;">Failure</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Connection refused or DNS failure</td><td>All results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span>; no evidence or model version.</td></tr>
+      <tr><td>Read timeout at 3,000 ms</td><td>All results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_TIMEOUT</span>.</td></tr>
+      <tr><td>Non-2xx service response</td><td>All results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span>.</td></tr>
+      <tr><td>Malformed JSON or schema failure</td><td>All results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span>.</td></tr>
+      <tr><td>Model version mismatch</td><td>All results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span>.</td></tr>
+      <tr><td>Per-review input unknown from the service</td><td>Preserve that result’s <span class="mono">UNKNOWN</span> and its input-level reason; other results may be scored.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A stub that delays 3.5 seconds produces <span class="mono">SCORING_TIMEOUT</span> for every result within the backend’s 4-second budget.</li>
+      <li>The client makes exactly one HTTP call; the test asserts the call count.</li>
+      <li>A response with a wrong band, wrong version, six signals, or a null score invalidates the batch.</li>
+      <li>A mixed batch preserves per-review <span class="mono">INSUFFICIENT_TEXT</span> while scoring the valid reviews.</li>
+      <li>The internal token never appears in logs or in the public response.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.5</span><h3>Implement the public endpoints and their tests</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 1.4</div>
+
+  <p><strong>Goal.</strong> Three endpoints with documented behaviour, full MockMvc coverage, and a contract-fixture round trip.</p>
+
+  <table class="grid">
+    <thead><tr><th style="width:50mm;">Endpoint</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">POST /api/v1/analyze</span></td><td>Validate, derive duplicates, call scoring once, validate, return one result per review with the echoed request ID.</td></tr>
+      <tr><td><span class="mono">GET /api/v1/health</span></td><td><span class="mono">200</span> only when the scoring service is ready and the expected model version is loaded; otherwise <span class="mono">503</span>. Short internal timeout; never blocks for three seconds.</td></tr>
+      <tr><td><span class="mono">GET /api/v1/version</span></td><td>Backend version, contract <span class="mono">v1</span>, expected model version, supported engines, and build commit. No secrets, no internal URL.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Test matrix</p>
+  <table class="grid">
+    <thead><tr><th style="width:52mm;">Case</th><th>Assertion</th></tr></thead>
+    <tbody>
+      <tr><td>Valid batch, stub success</td><td><span class="mono">200</span>; result order and keys match; score/band/evidence/model version intact.</td></tr>
+      <tr><td>Mixed scored + insufficient</td><td>Two statuses in one batch; unknown has no score/verdict.</td></tr>
+      <tr><td>Invalid request variants</td><td>Each returns <span class="mono">400</span> + <span class="mono">INVALID_REQUEST</span> + request ID.</td></tr>
+      <tr><td>Oversized body</td><td><span class="mono">413</span> + <span class="mono">PAYLOAD_TOO_LARGE</span>.</td></tr>
+      <tr><td>Rate limit</td><td><span class="mono">429</span> + <span class="mono">Retry-After</span>.</td></tr>
+      <tr><td>Missing / malformed request ID</td><td>A UUIDv4 is generated and echoed; the response header always exists.</td></tr>
+      <tr><td>Scoring timeout</td><td><span class="mono">200</span>; all results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_TIMEOUT</span>.</td></tr>
+      <tr><td>Scoring malformed response</td><td><span class="mono">200</span>; all results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span>.</td></tr>
+      <tr><td>Health with scoring down</td><td><span class="mono">503</span>; body says not ready; no internal exception text.</td></tr>
+      <tr><td>Version endpoint</td><td>Expected model version matches configuration; no token or URL.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Every fixture in <span class="mono">contracts/v1/fixtures</span> is exercised by at least one backend test.</li>
+      <li>The response for an unknown result contains no <span class="mono">trustScore</span> key at all (assert on the raw JSON, not only the object).</li>
+      <li>The health endpoint never claims ready when the model version is missing or mismatched.</li>
+      <li>Tests do not require the real scoring service or network access.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.5 Build the data pipeline</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.6</span><h3>Acquire, normalize, deduplicate, and split</h3></div>
+  <div class="meta"><b>Owner</b> ML lead &nbsp;|&nbsp; <b>Time</b> 4–6 days &nbsp;|&nbsp; <b>Depends</b> D22; licensed data</div>
+
+  <p><strong>Goal.</strong> A reproducible, leakage-free dataset with a manifest, stable splits, and no live review text.</p>
+
+  <p class="label">Pipeline stages</p>
+  <ol>
+    <li><strong>Acquire.</strong> Download each licensed source into <span class="mono">data/raw/&lt;source&gt;/</span> using a script, never by hand. Record the URL, access date, license, and SHA-256 in the manifest.</li>
+    <li><strong>Normalize.</strong> Apply Unicode NFKC; strip HTML tags; remove zero-width and control characters except newline/tab; collapse whitespace; keep punctuation and case for the feature pipeline. Compute the word count after normalization, using the same definition as the service.</li>
+    <li><strong>Map labels.</strong> Convert each source’s label to organic/manipulated using an explicit table. Mark uncertain or unlabelable items and exclude them from training and from the primary metric. Never merge a reviewer-level flag into a review-level label without documentation.</li>
+    <li><strong>Filter.</strong> Drop training items below 20 words to match deployment; record how many were dropped. Do not silently keep them and then evaluate only on long reviews.</li>
+    <li><strong>Deduplicate.</strong> Use MinHash with five-word shingles at a 0.80 similarity threshold, or cosine similarity on normalized text for a smaller corpus. Remove near-duplicates across the entire corpus before splitting.</li>
+    <li><strong>Split by group.</strong> Group by product or source item, never by individual review. Assign groups to train/dev/calibration/test so no group appears in two splits. Verify the split with an assertion, not a visual scan.</li>
+    <li><strong>Balance report.</strong> Record class counts per split, per source, and per language. Do not resample unless the method and its effect are documented.</li>
+    <li><strong>Freeze.</strong> Write <span class="mono">split-manifest.json</span> with group IDs, item counts, seeds, and hashes. Training reads the manifest; it does not re-split on every run.</li>
+  </ol>
+
+  <div class="cmd">
+    <div class="cmd-label">PowerShell · from scoring-service/ — pipeline command shape</div>
+<pre>.\.venv\Scripts\Activate.ps1
+python scripts/fetch_data.py --manifest manifests/dataset-manifest.json
+python training/prepare.py --config configs/baseline.yaml
+python training/train.py --config configs/baseline.yaml --split manifests/split-manifest.json
+python training/evaluate.py --artifact artifacts/&lt;modelVersion&gt;</pre>
+  </div>
+
+  <p class="label">Manifest fields</p>
+  <table class="grid">
+    <thead><tr><th style="width:46mm;">Field</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">source</span>, <span class="mono">citation</span>, <span class="mono">url</span></td><td>Reproducibility and attribution.</td></tr>
+      <tr><td><span class="mono">license</span>, <span class="mono">allowedUse</span>, <span class="mono">redistributable</span></td><td>Prevents shipping data the project may not redistribute.</td></tr>
+      <tr><td><span class="mono">accessedAt</span>, <span class="mono">sha256</span></td><td>Pins the exact archive that produced the metrics.</td></tr>
+      <tr><td><span class="mono">language</span>, <span class="mono">labelBasis</span>, <span class="mono">labelMapping</span></td><td>Prevents silent label merging and domain-shift claims.</td></tr>
+      <tr><td><span class="mono">itemCount</span>, <span class="mono">excludedCount</span>, <span class="mono">dedupCount</span></td><td>Makes filtering visible in the report.</td></tr>
+      <tr><td><span class="mono">splitCounts</span>, <span class="mono">groupingKey</span></td><td>Proves the evaluation is group-disjoint.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Manual evaluation sample</p>
+  <ul>
+    <li>Draw 200–300 English and 150–200 French reviews across products, lengths, and label balance. Record the sampling frame, date, and seed.</li>
+    <li>Two annotators label blind to the model, using the codebook. Report Cohen’s kappa; below 0.60, revise the codebook and relabel before using the sample.</li>
+    <li>Adjudicate disagreements with a third pass. Keep the raw labels and the adjudicated label; the adjudicated one drives the gate.</li>
+    <li>If part of the sample is used for adaptation or threshold tuning, report the untouched held-out portion separately and compute the gate only on it.</li>
+    <li>Store only review IDs and labels in the repository. Do not commit reviewer names or identifiers.</li>
+  </ul>
+
+  <div class="callout rule">
+    <span class="tag">Leakage is the quiet failure</span>
+    <p>A random review split puts near-duplicate reviews on both sides of the evaluation and inflates every metric. A group split with cross-split deduplication is not optional because the numbers look better without it. Assert in code that no group ID appears in two splits, and that no MinHash cluster crosses a split boundary.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The pipeline runs from raw data to split manifest with one command per stage.</li>
+      <li>No group ID appears in more than one split; the test asserts it.</li>
+      <li>Class and language counts are reported per split; no split has an empty class.</li>
+      <li>The manifest contains a license and hash for every source.</li>
+      <li>No live TrustLoop text, reviewer name, or URL is in the corpus.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.6 Train the baseline and calibrate it</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.7</span><h3>Fit the pipeline and choose calibration on dev</h3></div>
+  <div class="meta"><b>Owner</b> ML lead &nbsp;|&nbsp; <b>Time</b> 3–5 days &nbsp;|&nbsp; <b>Depends</b> 1.6</div>
+
+  <p><strong>Goal.</strong> A deterministic, CPU-friendly model with calibration fitted on a split that was never used for tuning, and metrics that can be reproduced.</p>
+
+  <p class="label">Baseline</p>
+  <div class="cmd">
+    <div class="cmd-label">Python · baseline shape</div>
+<pre>word = TfidfVectorizer(ngram_range=(1, 2), min_df=2,
+                       max_features=200_000, sublinear_tf=True)
+char = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5),
+                       min_df=3, max_features=200_000)
+features = FeatureUnion([("word", word), ("char", char)])
+clf = LogisticRegression(C=1.0, class_weight="balanced",
+                         max_iter=2000, random_state=42)</pre>
+  </div>
+
+  <p class="label">Training protocol</p>
+  <ol>
+    <li>Tune only on dev: <span class="mono">C</span>, <span class="mono">min_df</span>, and feature caps. Keep the grid small; a large grid on a small corpus overfits the dev split and wastes the schedule.</li>
+    <li>Use class weights rather than duplicating the minority class. If resampling is used, document it and apply it to training only.</li>
+    <li>Fit calibration on the dedicated calibration split: Platt scaling for small samples, isotonic only when the split is large enough to support it. Choose the method by dev reliability, then report on test.</li>
+    <li>Set random seeds and single-threaded BLAS for deterministic outputs (<span class="mono">OMP_NUM_THREADS=1</span>, <span class="mono">OPENBLAS_NUM_THREADS=1</span>). Record the environment.</li>
+    <li>Touch the test split once per candidate. Report the result even when it is disappointing; do not keep tuning until it passes.</li>
+  </ol>
+
+  <p class="label">Score mapping, implemented once</p>
+  <p>Put the score and band functions in one module used by training, evaluation, and serving. Unit-test every boundary and a half-up case such as <span class="mono">p_organic = 0.705</span> → 71.</p>
+
+  <table class="grid">
+    <thead><tr><th style="width:26mm;">Score</th><th>Band code</th></tr></thead>
+    <tbody>
+      <tr><td>0–19</td><td><span class="mono">STRONG_MANIPULATION_SIGNALS</span></td></tr>
+      <tr><td>20–39</td><td><span class="mono">LIKELY_MANIPULATED</span></td></tr>
+      <tr><td>40–54</td><td><span class="mono">INCONCLUSIVE</span></td></tr>
+      <tr><td>55–69</td><td><span class="mono">MIXED_SIGNALS</span></td></tr>
+      <tr><td>70–84</td><td><span class="mono">LIKELY_ORGANIC</span></td></tr>
+      <tr><td>85–100</td><td><span class="mono">STRONG_ORGANIC_SIGNALS</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <span class="tag">Calibration is not prevalence</span>
+    <p>Public corpora are often class-balanced by construction. A score of 73 means the model estimates 73% organic likelihood <em>on the evaluation distribution</em>; it does not mean 73% of Amazon reviews are organic, and it does not mean 27% are fake. Put this in the model card, the report, and the panel copy.</p>
+  </div>
+
+  <p class="label">Metrics to compute</p>
+  <ul>
+    <li>AUROC and AUPRC for the manipulated class, with 95% bootstrap confidence intervals.</li>
+    <li>F1 for manipulated at <span class="mono">p_organic = 0.50</span>, reported as an operating point, not a deployed threshold.</li>
+    <li>ECE with 10–15 bins, Brier score, and a reliability curve stored with the metrics.</li>
+    <li>Per-language results and overall results, plus public-dataset transfer results separately.</li>
+    <li>Class balance, sample size, and CI method beside every number.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Two runs with the same seed and environment produce identical metrics and identical predictions on a fixed sample.</li>
+      <li>Calibration was fitted only on the calibration split.</li>
+      <li>The test split was used once for the reported candidate.</li>
+      <li>Every metric has a confidence interval and a sample size.</li>
+      <li>The score/band boundary tests cover 19/20, 39/40, 54/55, 69/70, 84/85, 0, and 100.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.8</span><h3>Run the gate and decide each language</h3></div>
+  <div class="meta"><b>Owner</b> ML lead + project lead &nbsp;|&nbsp; <b>Time</b> 1 day &nbsp;|&nbsp; <b>Depends</b> 1.7</div>
+
+  <p><strong>Goal.</strong> A machine-checked go/no-go per language, recorded before any UI claim is made.</p>
+
+  <table class="grid">
+    <thead><tr><th>Metric</th><th>EN</th><th>FR</th></tr></thead>
+    <tbody>
+      <tr><td>AUROC</td><td>≥ 0.75</td><td>≥ 0.70</td></tr>
+      <tr><td>AUPRC</td><td>≥ 0.70</td><td>≥ 0.65</td></tr>
+      <tr><td>F1 manipulated at 0.50</td><td>≥ 0.70</td><td>≥ 0.65</td></tr>
+      <tr><td>ECE</td><td>≤ 0.10</td><td>≤ 0.15</td></tr>
+      <tr><td>Brier</td><td>≤ 0.20</td><td>≤ 0.25</td></tr>
+      <tr><td>Top-5 signal Jaccard</td><td>≥ 0.80</td><td>≥ 0.80</td></tr>
+      <tr><td>Determinism</td><td>Identical output</td><td>Identical output</td></tr>
+      <tr><td>Latency p95, 10 reviews</td><td>≤ 1.5 s warm</td><td>≤ 1.5 s warm</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Decision ladder</p>
+  <ol>
+    <li><strong>Pass both EN and FR:</strong> serve <span class="mono">MODEL</span> for both, with per-language model versions if D24 chose separate models.</li>
+    <li><strong>Pass EN, fail FR:</strong> serve <span class="mono">MODEL</span> for English; French returns <span class="mono">UNKNOWN</span> / <span class="mono">UNSUPPORTED_LANGUAGE</span>, or <span class="mono">SIGNALS_ONLY</span> only if the descriptive signals are independently validated. Record D23 as “no French model.”</li>
+    <li><strong>Fail both:</strong> do not ship a score. Use <span class="mono">SIGNALS_ONLY</span> for validated observable patterns, otherwise <span class="mono">UNKNOWN</span>.</li>
+    <li><strong>Do not</strong> lower a threshold to make a language pass. Change the model, the data, or the label definition, then re-evaluate; or ship the honest fallback.</li>
+  </ol>
+
+  <p class="label">Gate report</p>
+  <p>Write <span class="mono">docs/evidence/model-gate.md</span> with the candidate description, data manifest hash, metrics and CIs, reliability curve, per-language decision, and the exact command used. Link the model card draft. Update D23 and, if relevant, D24.</p>
+
+  <div class="callout rule">
+    <span class="tag">No silent rescue</span>
+    <p>If the gate fails, the correct output is a visible <span class="mono">SIGNALS_ONLY</span> or <span class="mono">UNKNOWN</span> — not a threshold tweak, not a “temporary” heuristic, and not a more confident sentence in the panel. The report explains the failure; it does not hide it.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The gate is a script that exits non-zero on failure; the result is in CI or a recorded local run.</li>
+      <li>Each language has an explicit decision and a model version or a fallback reason.</li>
+      <li>The decision is recorded in the decision register before the UI claims support.</li>
+      <li>The report states that calibration is to the evaluation distribution, not real-world prevalence.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.7 Build the explanation</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.9</span><h3>Attribute the linear model and aggregate signals</h3></div>
+  <div class="meta"><b>Owner</b> ML lead &nbsp;|&nbsp; <b>Time</b> 2–3 days &nbsp;|&nbsp; <b>Depends</b> 1.7</div>
+
+  <p><strong>Goal.</strong> At most five stable, human-readable signals with direction, optional validated contribution, and no quoted review text.</p>
+
+  <p class="label">Method</p>
+  <ul>
+    <li>For the linear baseline, a feature’s contribution is its coefficient for the predicted class multiplied by its normalized value. Negative values push toward manipulated; positive values push toward organic, depending on the class encoding. Document the sign convention once.</li>
+    <li>Aggregate token features into the named signal groups in Appendix E. Some groups are model features; others are rule-based observations (for example, within-batch duplication) and may be qualitative.</li>
+    <li>Normalize signed contributions across the <em>full</em> feature set so the total absolute contribution is 1. Return the top five with their original normalized values. Do not renormalize the returned subset; that would make a weak signal look strong.</li>
+    <li>If a signal cannot be attributed stably, omit its numeric contribution and return the qualitative summary. The contract allows this; the UI must handle it.</li>
+    <li>Never quote the review text, a name, a URL, or a personal detail in a signal summary. Summaries are fixed templates from the copy deck.</li>
+  </ul>
+
+  <div class="cmd">
+    <div class="cmd-label">Python · attribution shape</div>
+<pre># x: sparse feature vector for one review; coef: linear coefficients
+raw = x.multiply(coef).tocsr()          # signed per-feature contribution
+total = abs(raw).sum()
+normalized = raw / total if total else raw
+# aggregate by taxonomy group, keep the signed sum per group,
+# sort by absolute value, return at most five</pre>
+  </div>
+
+  <p class="label">Signal rules</p>
+  <table class="grid">
+    <thead><tr><th style="width:44mm;">Signal</th><th>Direction</th><th>Numeric contribution?</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">REPEATED_PHRASING</span></td><td>Manipulative</td><td>Only if represented in the model and stable.</td></tr>
+      <tr><td><span class="mono">CROSS_REVIEW_DUPLICATE</span></td><td>Manipulative</td><td>Rule-based observation; qualitative unless a validated model feature exists.</td></tr>
+      <tr><td><span class="mono">GENERIC_WORDING</span></td><td>Manipulative</td><td>If represented in the model and stable.</td></tr>
+      <tr><td><span class="mono">PROMOTIONAL_TONE</span></td><td>Manipulative</td><td>If represented in the model and stable.</td></tr>
+      <tr><td><span class="mono">EXTREME_CLAIMS</span></td><td>Manipulative</td><td>If represented in the model and stable.</td></tr>
+      <tr><td><span class="mono">CONCRETE_DETAIL</span></td><td>Organic</td><td>If represented in the model and stable.</td></tr>
+      <tr><td><span class="mono">LEXICAL_VARIETY</span></td><td>Organic</td><td>Only with a validated model; unstable on short texts.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Stability gate</p>
+  <p>For a fixed set of inputs, compare the top-five signal sets across three bootstrap-trained models or three seed variations. The mean Jaccard must be at least 0.80. Run the same input twice with the same artifact and compare the full result hash; it must be identical. If stability fails, return qualitative signals or keep the linear model and omit the numeric contribution.</p>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Top-five stability is ≥ 0.80; the test stores the per-input Jaccard values.</li>
+      <li>Two identical requests produce byte-identical result JSON (excluding the request ID).</li>
+      <li>No signal summary contains a substring of the input text; a test uses a sentinel phrase.</li>
+      <li>Contributions, when present, sum to at most 1 in absolute value and are not renormalized after top-five selection.</li>
+      <li>The panel can render a signal with no contribution without showing a zero or an empty bar.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.8 Package the artifact and serve it</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.10</span><h3>Artifact bundle, warm-up, and scoring endpoints</h3></div>
+  <div class="meta"><b>Owner</b> ML lead &nbsp;|&nbsp; <b>Time</b> 3 days &nbsp;|&nbsp; <b>Depends</b> 1.8–1.9</div>
+
+  <p><strong>Goal.</strong> A versioned, hash-verified bundle that loads at startup, refuses to serve before warm-up, and returns the internal contract with per-review evidence and signals.</p>
+
+  <p class="label">Bundle contents</p>
+  <div class="cmd">
+    <div class="cmd-label">Text · scoring-service/artifacts/&lt;modelVersion&gt;/</div>
+<pre>model.joblib              trained pipeline (vectorizers + classifier)
+calibration.json          method, parameters, calibration split hash
+metrics.json              evaluation results, CIs, gate decision
+model-card.md             filled model card
+dataset-manifest.json     sources, licenses, hashes, split counts
+requirements.lock         pinned runtime dependencies
+artifact.sha256           hash over the bundle contents</pre>
+  </div>
+
+  <p class="label">Startup sequence</p>
+  <ol>
+    <li>Read the configured artifact path and expected model version.</li>
+    <li>Verify the bundle hash before loading. A mismatch is a startup failure, not a warning.</li>
+    <li>Load the pipeline, calibration, language detector, taxonomy, and signal configuration.</li>
+    <li>Warm with a small fixed set of representative texts, including a short review and a non-English review.</li>
+    <li>Set <span class="mono">ready = true</span> only after warm-up. <span class="mono">/health</span> returns <span class="mono">503</span> before that; the backend must present this as “not ready,” not as a model failure.</li>
+  </ol>
+
+  <p class="label">Request flow</p>
+  <table class="grid">
+    <thead><tr><th style="width:14mm;">Order</th><th>Step</th><th>Failure</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Verify internal token with constant-time comparison.</td><td><span class="mono">401</span>; no body echo.</td></tr>
+      <tr><td>2</td><td>Validate batch shape, size, and text length.</td><td><span class="mono">400</span> / <span class="mono">413</span>; internal envelope.</td></tr>
+      <tr><td>3</td><td>Detect language; require supported language and confidence ≥ 0.80.</td><td>Per review <span class="mono">UNKNOWN</span> / <span class="mono">UNSUPPORTED_LANGUAGE</span>.</td></tr>
+      <tr><td>4</td><td>Count normalized words; below 20 is insufficient.</td><td>Per review <span class="mono">UNKNOWN</span> / <span class="mono">INSUFFICIENT_TEXT</span>.</td></tr>
+      <tr><td>5</td><td>Set evidence: 20–49 LOW, ≥50 ADEQUATE.</td><td>Never a percentage; never a confidence proxy.</td></tr>
+      <tr><td>6</td><td>Predict, calibrate, map score and band, compute signals.</td><td>Internal error → <span class="mono">500</span>; backend maps to unavailable.</td></tr>
+      <tr><td>7</td><td>Return per-review results in request order with the echoed request ID and model version.</td><td>No request body is logged.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="tag">Service output is not the public contract</span>
+    <p>The scoring service returns <span class="mono">p_organic</span> for the backend’s validation and logging, but the public response does not expose raw probability unless the contract says so. Keep the internal schema separate; a future internal field must not leak to the browser by accident.</p>
+  </div>
+
+  <p class="label">Operational rules</p>
+  <ul>
+    <li>Disable body logging. Uvicorn access logs record method, path, status, and timing; ensure query strings and headers are not logged with content.</li>
+    <li>Do not return stack traces to the backend. Log a content-free internal error with the request ID.</li>
+    <li>Use one worker in local development. Multiple workers each load the model; size memory accordingly when hosted.</li>
+    <li>Keep the service on loopback locally and on a private network when hosted. It must never be reachable from the browser.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A corrupted artifact hash prevents startup; the service does not serve a partial model.</li>
+      <li><span class="mono">/health</span> is <span class="mono">503</span> before warm-up and <span class="mono">200</span> after.</li>
+      <li>Missing or wrong token is rejected; the correct token succeeds.</li>
+      <li>Ten reviews, each 2,000 characters, return within the 3-second client ceiling; warm p95 is ≤ 1.5 s.</li>
+      <li>Output is deterministic for the same artifact and input.</li>
+      <li>No review text appears in service logs.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.9 Build the extension adapter and scanner</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.11</span><h3>Adapter interface, eligibility, and session deduplication</h3></div>
+  <div class="meta"><b>Owner</b> Extension lead &nbsp;|&nbsp; <b>Time</b> 4 days &nbsp;|&nbsp; <b>Depends</b> Contract v1; spike</div>
+
+  <p><strong>Goal.</strong> The extension extracts only eligible review text from the supported adapter, once per review per page session, in batches of at most ten.</p>
+
+  <p class="label">Adapter interface</p>
+  <div class="cmd">
+    <div class="cmd-label">JavaScript · adapter shape</div>
+<pre>export const amazonReviewsV1 = {
+  id: "amazon.reviews.v1",
+  matches(location) {
+    // Host and path checks only; no fetch, no page-wide scrape.
+    return /(^|\.)amazon\.(com|ca|co\.uk)$/.test(location.hostname);
+  },
+  findCards(root) {
+    return [...root.querySelectorAll("[data-hook='review']")];
+  },
+  extract(card) {
+    const text = card.querySelector("[data-hook='review-body']")?.innerText ?? "";
+    const stableId = card.getAttribute("data-review-id") ?? null;
+    return { text, stableId };
+  }
+};</pre>
+  </div>
+
+  <p>The selectors above are placeholders. The real ones come from the Phase 0 spike and live in <span class="mono">adapters/amazon.reviews.v1/selectors.json</span>, versioned with the adapter. A selector change is an adapter version change if it changes which cards are considered reviews.</p>
+
+  <p class="label">Eligibility</p>
+  <div class="cmd">
+    <div class="cmd-label">JavaScript · eligibility check, essential lines</div>
+<pre>export function isEligible(card) {
+  const style = getComputedStyle(card);
+  if (style.display === "none" || style.visibility === "hidden") return false;
+  if (card.closest("[aria-hidden='true']")) return false;
+  const rect = card.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return false;
+  return normalizeText(extractText(card)).length > 0;
+}</pre>
+  </div>
+
+  <p>Viewport intersection only schedules work; it does not decide eligibility. Two users scanning the same DOM state must see the same review set regardless of scroll position. This prevents the score set from depending on how far someone happened to scroll.</p>
+
+  <p class="label">Deduplication</p>
+  <ul>
+    <li>Use the adapter-provided stable card ID when present. Map it to a random, opaque <span class="mono">reviewKey</span> held in memory for the page session.</li>
+    <li>When no stable ID exists, hash the normalized text with a per-session random salt. The hash and the salt never leave memory.</li>
+    <li>Use the DOM ordinal only as a tie-breaker, never as the primary key; virtualized lists reuse nodes and reorder them.</li>
+    <li>Discard the map on navigation. Never write a key, a hash, or a salt to local history, storage, or a server.</li>
+    <li>Track submitted keys in a set so scrolling and mutation do not resubmit the same review. A manual retry for an unavailable batch may resubmit, but an automatic loop may not.</li>
+  </ul>
+
+  <p class="label">Scanning loop</p>
+  <ul>
+    <li>Debounce DOM mutations by 750 ms. Enforce a minimum interval of 2,000 ms between scans to avoid a mutation storm.</li>
+    <li>Observe the adapter’s container, not the whole document. Disconnect the observer on navigation and reinitialize on the new page.</li>
+    <li>Use an IntersectionObserver to prioritize visible cards, but build the eligible set from the DOM, not from the viewport.</li>
+    <li>Batch up to 10 unscored eligible reviews. Send batches sequentially; do not fire ten parallel requests.</li>
+    <li>Abort an in-flight request on navigation. The service worker enforces a 6-second ceiling with <span class="mono">AbortController</span>; the backend ceiling is 4 seconds.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A hidden review is excluded; a visible review is included; a zero-size card is excluded.</li>
+      <li>Scrolling does not resubmit a review; a DOM mutation does not resubmit an already-submitted key.</li>
+      <li>A batch never exceeds 10, even when 25 reviews are eligible.</li>
+      <li>The dedup map is empty after navigation, and no key or hash exists in storage.</li>
+      <li>An unsupported layout yields <span class="mono">UNSUPPORTED_PAGE</span>, never a generic scrape.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.12</span><h3>Service worker network layer and message protocol</h3></div>
+  <div class="meta"><b>Owner</b> Extension lead &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 1.11; backend endpoint</div>
+
+  <p><strong>Goal.</strong> One place performs network calls, generates the request ID, enforces the timeout, and maps transport failures to explicit UI states.</p>
+
+  <p class="label">Protocol</p>
+  <table class="grid">
+    <thead><tr><th style="width:38mm;">Message</th><th>Direction</th><th>Payload</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">ANALYZE_BATCH</span></td><td>Content → worker</td><td><span class="mono">{ adapterId, languageHint?, reviews:[{reviewKey,text}] }</span></td></tr>
+      <tr><td><span class="mono">ANALYZE_RESULT</span></td><td>Worker → content</td><td><span class="mono">{ ok:true, data }</span> or <span class="mono">{ ok:false, reasonCode }</span></td></tr>
+      <tr><td><span class="mono">HISTORY_*</span></td><td>Popup/content → worker</td><td>Metadata-only reads, clear action, opt-in toggle.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Network rules</p>
+  <ul>
+    <li>Generate a UUIDv4 <span class="mono">X-Request-Id</span> per batch. Do not reuse it across retries; a retry is a new request.</li>
+    <li>POST to the backend base URL from configuration, with <span class="mono">Content-Type: application/json</span> and the six-second abort timeout.</li>
+    <li>Validate the response shape before sending it to the content script. A malformed response becomes <span class="mono">SCORING_UNAVAILABLE</span>.</li>
+    <li>Do not retry automatically. The panel offers a manual retry; the user decides.</li>
+    <li>Never log review text, keys, or the full request body. Log only batch size, status, latency, and request ID.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="tag">Why the service worker calls the API</span>
+    <p>The content script lives in the page’s origin and can inherit page CSP restrictions; the service worker has the extension origin and a single network policy. Keeping the tokenless public call in one place also makes timeout, request ID, and response validation testable without a DOM.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A 3.5-second service delay surfaces as <span class="mono">SCORING_TIMEOUT</span> in the UI, not a spinner forever.</li>
+      <li>A 500 response surfaces as <span class="mono">SCORING_UNAVAILABLE</span> with a retry action.</li>
+      <li>The request ID sent to the backend equals the ID in the response and in the logs.</li>
+      <li>No automatic retry occurs after a failure; a test asserts one call.</li>
+      <li>The worker rejects a response with a score but no model version.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.10 Render the badge, panel, and states</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.13</span><h3>Badge, explanation panel, and honest states</h3></div>
+  <div class="meta"><b>Owner</b> Extension lead &nbsp;|&nbsp; <b>Time</b> 4 days &nbsp;|&nbsp; <b>Depends</b> 1.12; design assets</div>
+
+  <p><strong>Goal.</strong> Every result is readable without colour, operable by keyboard, understandable at 200% zoom, and explicit about what the model did and did not do.</p>
+
+  <p class="label">Badge</p>
+  <ul>
+    <li>A real <span class="mono">&lt;button&gt;</span>, not a clickable <span class="mono">div</span>. Its accessible name includes the score, band, evidence quality, and engine.</li>
+    <li>Show the numeric score and the band text. Add a shape or icon cue so the verdict survives without colour; do not rely on red/green alone.</li>
+    <li>A low-evidence badge includes “Indicative — limited text” in the label or an adjacent visible marker.</li>
+    <li>An unknown badge shows “No estimate,” never 0, 50, or a dash that could be read as a score.</li>
+    <li>Attach the badge to the review card with a stable wrapper; do not mutate the site’s layout in a way that hides content or breaks the page.</li>
+  </ul>
+
+  <p class="label">Panel</p>
+  <ul>
+    <li>Open on click or <span class="mono">Enter</span>/<span class="mono">Space</span>; close on <span class="mono">Esc</span>; return focus to the badge.</li>
+    <li>Use a dialog or disclosure pattern with a visible heading, focus trap when modal, and an <span class="mono">aria-live="polite"</span> status for asynchronous results.</li>
+    <li>Show: score, band, evidence quality (or explicit unknown), up to five signals, the estimate disclaimer, engine, model version when present, and a details action.</li>
+    <li>Signal text says “contributed to the estimate,” never “proves,” “detects a bot,” or “fraud.” Numeric contribution, when present, is a relative influence bar, not a probability.</li>
+    <li>Unknown states show the reason in plain language and a retry action only for timeout/unavailable.</li>
+    <li>Do not show a page or product aggregate anywhere.</li>
+  </ul>
+
+  <p class="label">State table</p>
+  <table class="grid">
+    <thead><tr><th style="width:48mm;">State</th><th>What the user sees</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Unsupported page</td><td>“This page is not supported yet.” No badges.</td><td>None.</td></tr>
+      <tr><td>No reviews found</td><td>“No reviews found to analyze.”</td><td>None.</td></tr>
+      <tr><td>Analyzing</td><td>Subtle progress indicator on affected cards; no fake score.</td><td>None.</td></tr>
+      <tr><td>Scored, adequate</td><td>Score + band + evidence + details.</td><td>Open panel.</td></tr>
+      <tr><td>Scored, low</td><td>Score + band + “Indicative — limited text.”</td><td>Open panel.</td></tr>
+      <tr><td>Signals only</td><td>“Descriptive signals only — no score.” Sign list.</td><td>Open panel.</td></tr>
+      <tr><td>Insufficient text</td><td>“Not enough text to estimate.”</td><td>None.</td></tr>
+      <tr><td>Unsupported language</td><td>“This language is not supported yet.”</td><td>None.</td></tr>
+      <tr><td>Timeout</td><td>“Analysis timed out. Try again.”</td><td>Retry.</td></tr>
+      <tr><td>Unavailable</td><td>“Analysis is unavailable right now. Try again.”</td><td>Retry.</td></tr>
+      <tr><td>Rate limited</td><td>“Too many analyses. Wait a moment and try again.”</td><td>Retry after the shown interval.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Accessibility baseline (Phase 1)</p>
+  <ul>
+    <li>Keyboard-only path from page load to opening and closing the panel.</li>
+    <li>Visible focus that is not clipped by the review card’s overflow.</li>
+    <li>Contrast at least 4.5:1 for text and 3:1 for large text and essential graphics.</li>
+    <li>200% zoom without horizontal scrolling for the panel; text reflows.</li>
+    <li>Screen-reader labels include score, band, evidence, and engine; unknown states announce no estimate.</li>
+    <li>No motion that cannot be reduced; respect <span class="mono">prefers-reduced-motion</span>.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Every state in the table has a UI test with the correct copy key.</li>
+      <li>The badge is keyboard reachable, has a visible focus ring, and opens the panel with Enter/Space.</li>
+      <li>The panel traps focus when modal, closes on Esc, and returns focus.</li>
+      <li>A low-evidence result keeps its score and shows the qualifier.</li>
+      <li>An unknown result contains no numeric score in the DOM, including hidden attributes.</li>
+      <li>Both English and French strings render; no untranslated key appears.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.11 Add local history</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.14</span><h3>Opt-in, metadata-only history</h3></div>
+  <div class="meta"><b>Owner</b> Extension lead &nbsp;|&nbsp; <b>Time</b> 1 day &nbsp;|&nbsp; <b>Depends</b> 1.13</div>
+
+  <p><strong>Goal.</strong> A useful recent-history view that cannot become a store of review content.</p>
+
+  <p class="label">Policy</p>
+  <ul>
+    <li>Off by default. The popup explains what is stored before the user enables it.</li>
+    <li>Store one entry per analyzed result: timestamp, hostname (not URL), adapter ID, status, score/verdict when scored, evidence quality when present, engine, model version when present, reason code when unknown.</li>
+    <li>Never store review text, review keys, reviewer identifiers, full URLs, page titles, or a persistent text fingerprint.</li>
+    <li>Cap at 100 entries or 30 days, whichever is reached first. Prune on write and on open.</li>
+    <li>Keep it in <span class="mono">chrome.storage.local</span>; never sync it. Provide a clear-history action with confirmation.</li>
+    <li>Disabling history stops writes and offers to clear existing entries; do not silently retain them.</li>
+  </ul>
+
+  <div class="cmd">
+    <div class="cmd-label">JSON · local history entry shape</div>
+<pre>{
+  "version": 1,
+  "entries": [{
+    "at": "2026-10-27T09:14:00Z",
+    "hostname": "www.amazon.com",
+    "adapterId": "amazon.reviews.v1",
+    "status": "SCORED",
+    "score": 73,
+    "verdict": "LIKELY_ORGANIC",
+    "evidenceQuality": "ADEQUATE",
+    "engine": "MODEL",
+    "modelVersion": "tl-text-1.0.0"
+  }]
+}</pre>
+  </div>
+
+  <p>An unknown entry has no score, verdict, or model version when transport failed; it carries the reason code. A signals-only entry has no score, verdict, or model version. The history renderer uses the same state formatting as the badge, so it cannot invent a number.</p>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>History is empty and disabled on first install.</li>
+      <li>After a scan, storage contains no text, key, URL, or hash; inspect the raw storage dump in a test.</li>
+      <li>Entry 101 pushes out the oldest entry; an entry older than 30 days is pruned.</li>
+      <li>Clear history removes all entries and reports success.</li>
+      <li>Disabling history stops new writes.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.12 Prove observability and privacy</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.15</span><h3>Request ID tracing and content-free logs</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead + QA &nbsp;|&nbsp; <b>Time</b> 1–2 days &nbsp;|&nbsp; <b>Depends</b> 1.5, 1.10, 1.12</div>
+
+  <p><strong>Goal.</strong> One scan can be followed from extension to backend to scoring service by request ID, and a sentinel review text cannot be found anywhere in logs or storage.</p>
+
+  <p class="label">Log events</p>
+  <table class="grid">
+    <thead><tr><th style="width:48mm;">Event</th><th>When</th><th>Allowed fields</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">api.request.received</span></td><td>After validation.</td><td>requestId, adapterId, reviewCount, httpStatus</td></tr>
+      <tr><td><span class="mono">api.scoring.completed</span></td><td>Service response validated.</td><td>requestId, reviewCount, status, engine, modelVersion, latencyMs</td></tr>
+      <tr><td><span class="mono">api.scoring.failed</span></td><td>Timeout, connection, malformed, version mismatch.</td><td>requestId, reasonCode, latencyMs</td></tr>
+      <tr><td><span class="mono">api.response.sent</span></td><td>Response written.</td><td>requestId, httpStatus, resultStatuses, latencyMs</td></tr>
+    </tbody>
+  </table>
+
+  <p>Forbidden everywhere: review text, review key, URL, hostname, reviewer name, request or response body, raw exception stack trace in public logs, internal token, and model coefficients that could reconstruct text. Use a log pattern with the request ID in MDC; never concatenate the body into a message.</p>
+
+  <p class="label">The sentinel test</p>
+  <ol>
+    <li>Send a review containing a unique marker, for example <span class="mono">SENTINEL_REVIEW_TEXT_9F3A</span>.</li>
+    <li>Capture backend logs with an in-memory appender; capture service logs with <span class="mono">caplog</span>.</li>
+    <li>Assert the marker is absent from every log line.</li>
+    <li>Run the extension scan, dump <span class="mono">chrome.storage.local</span>, and assert the marker and the review key are absent.</li>
+    <li>Capture network requests in DevTools; assert the only destination is the configured backend, with no external AI or analytics host.</li>
+  </ol>
+
+  <div class="callout warn">
+    <span class="tag">Framework logs leak by default</span>
+    <p>Spring can log request details at DEBUG, and a validation error can include the rejected value. Keep production at INFO, disable request logging, and ensure the exception handler never logs the DTO. A privacy test that only greps the application logger will miss a framework logger; capture the root logger.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The same request ID appears in the extension console, backend log, and scoring-service log for one scan.</li>
+      <li>The sentinel marker is absent from both services’ logs.</li>
+      <li>Storage contains no text, key, URL, or hash.</li>
+      <li>No outbound request goes anywhere except the backend.</li>
+      <li>Error logs contain a reason code, not an exception message with request content.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5.13 End-to-end demo and performance</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 1.16</span><h3>Run the real path and measure it</h3></div>
+  <div class="meta"><b>Owner</b> All &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 1.10–1.15</div>
+
+  <p><strong>Goal.</strong> One command sequence starts the system; one supported page produces honest results; the warm latency budget is measured, not assumed.</p>
+
+  <p class="label">Run order</p>
+  <ol>
+    <li>Start the scoring service on <span class="mono">127.0.0.1:8000</span> with the artifact and token set. Wait for <span class="mono">/health</span> to return <span class="mono">200</span>.</li>
+    <li>Start the backend on <span class="mono">127.0.0.1:8080</span> with the same token and the expected model version. Confirm <span class="mono">/api/v1/health</span> is <span class="mono">200</span> and <span class="mono">/api/v1/version</span> matches.</li>
+    <li>Build the extension and load <span class="mono">dist/</span> unpacked. Confirm the backend CORS allowlist contains its origin.</li>
+    <li>Open the supported fixture or page. Scan. Confirm badges appear beside the correct reviews, not shifted by one card.</li>
+    <li>Open one scored panel, one low-evidence panel, and one unknown state. Confirm the text and provenance.</li>
+    <li>Stop the scoring service. Scan again. Confirm every result is unavailable with a retry action, not a score.</li>
+    <li>Restart scoring, retry, and confirm recovery.</li>
+  </ol>
+
+  <p class="label">Performance method</p>
+  <ul>
+    <li>Use the reference environment: 4 vCPU, 8 GB RAM, CPU only. If your laptop is faster, report the difference; do not claim the gate on better hardware.</li>
+    <li>Generate 10 reviews of 2,000 characters, mixed English. Warm with at least 20 batches. Measure 100 batches; report p50, p95, and p99.</li>
+    <li>Measure the scoring service alone and the backend end to end. The service gate is p95 ≤ 1.5 s; the backend must finish within its 4 s ceiling, including validation.</li>
+    <li>Raise the rate limit only in the test profile; do not disable it in the default profile.</li>
+    <li>Record the artifact hash, model version, machine specification, and command in the evidence file.</li>
+  </ul>
+
+  <p class="label">If latency fails</p>
+  <ol>
+    <li>Profile vectorization versus prediction; character n-grams often dominate.</li>
+    <li>Batch vectorize the ten reviews instead of looping per review.</li>
+    <li>Reduce feature caps or character n-gram range, then re-run the gate; a performance change that alters the model is a MINOR version.</li>
+    <li>Do not raise the timeout to make the number pass; the timeout hierarchy is part of the contract.</li>
+  </ol>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The demo runs from a clean start using only the README/runbook.</li>
+      <li>Badges attach to the matching review after a DOM mutation and a scroll.</li>
+      <li>A stopped service produces unknown states and a working manual retry.</li>
+      <li>Warm p95 for 10 reviews is ≤ 1.5 s on the reference environment.</li>
+      <li>The timeout hierarchy is observable: service 3 s, backend 4 s, extension 6 s.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="gate-block">
+<h2>5.14 Phase 1 gate</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:12mm;">#</th><th>Gate check</th><th style="width:42mm;">Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Contract fixtures pass in all three components.</td><td>CI contract workflow.</td></tr>
+    <tr><td>2</td><td>Backend validation, timeout, unavailable, rate-limit, and CORS tests are green.</td><td>Surefire report.</td></tr>
+    <tr><td>3</td><td>Model gate result per language, with metrics and CIs.</td><td><span class="mono">model-gate.md</span> + <span class="mono">metrics.json</span>.</td></tr>
+    <tr><td>4</td><td>Explanation stability and determinism pass.</td><td>Test output + hash comparison.</td></tr>
+    <tr><td>5</td><td>End-to-end scan works on a supported page or fixture.</td><td>Recording or screenshot set.</td></tr>
+    <tr><td>6</td><td>Low evidence, signals-only, and every unknown state render correctly.</td><td>UI state tests + visual check.</td></tr>
+    <tr><td>7</td><td>Local history is opt-in, capped, clearable, and content-free.</td><td>Storage inspection test.</td></tr>
+    <tr><td>8</td><td>Sentinel text is absent from logs and storage.</td><td>Log-capture and storage tests.</td></tr>
+    <tr><td>9</td><td>Warm p95 ≤ 1.5 s; timeout hierarchy verified.</td><td>Performance report.</td></tr>
+    <tr><td>10</td><td>Keyboard, focus, zoom, and screen-reader baseline pass.</td><td>Checklist + manual notes.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout ok">
+  <span class="tag">Close the phase</span>
+  <p>Tag <span class="mono">v0.1.0</span> or the agreed demo version and <span class="mono">phase-1-complete</span>. Record the model version, supported languages, and fallback decisions in the README. Phase 2 may add adapters and local admin, but it must not change the score meaning.</p>
+</div>
+</div>

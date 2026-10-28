@@ -1,0 +1,174 @@
+/*
+  TrustLoop design tokens · v1.0 · 2026-10-27
+  Authoritative values for the extension, options page, and documents.
+  The graphic charter explains usage; this file is the value source.
+  Do not sample colours from the PDF.
+*/
+
+:root {
+  /* ---------- colour · base ---------- */
+  --tl-paper: #F7F3EA;
+  --tl-panel: #FCFAF5;
+  --tl-panel-2: #F3EFE5;
+  --tl-ink: #1A1D1B;
+  --tl-ink-2: #3E4440;
+  --tl-muted: #686D66;
+  --tl-faint: #8B8F86;
+  --tl-rule: #DAD3C5;
+  --tl-rule-strong: #BDB4A4;
+  --tl-control: #858A81;
+  --tl-petrol: #14524B;
+  --tl-petrol-deep: #0E3B36;
+  --tl-petrol-soft: #E4ECE8;
+  --tl-rust: #A24A2C;
+  --tl-rust-soft: #F1E3DC;
+  --tl-brass: #8A6A32;
+  --tl-warn: #6B4E16;
+  --tl-warn-soft: #F3EBD9;
+
+  /* ---------- colour · trust stops ---------- */
+  --tl-stop-1: #7C3223;
+  --tl-stop-2: #A05634;
+  --tl-stop-3: #746C5E;
+  --tl-stop-4: #6F6C3A;
+  --tl-stop-5: #47664E;
+  --tl-stop-6: #174F45;
+
+  /* ---------- colour · semantic ---------- */
+  --tl-surface: var(--tl-paper);
+  --tl-surface-panel: var(--tl-panel);
+  --tl-surface-inset: var(--tl-panel-2);
+  --tl-text: var(--tl-ink);
+  --tl-text-secondary: var(--tl-ink-2);
+  --tl-text-muted: var(--tl-muted);
+  --tl-text-nonessential: var(--tl-faint); /* non-text only in the product */
+  --tl-border: var(--tl-rule);
+  --tl-border-strong: var(--tl-rule-strong);
+  --tl-border-control: var(--tl-control);
+  --tl-action: var(--tl-petrol);
+  --tl-action-pressed: var(--tl-petrol-deep);
+  --tl-on-action: var(--tl-paper);
+  --tl-focus: var(--tl-petrol);
+  --tl-manipulation: var(--tl-rust);
+  --tl-organic: var(--tl-petrol);
+  --tl-evidence-low: var(--tl-brass);
+  --tl-warning: var(--tl-warn);
+
+  /* ---------- type ---------- */
+  --tl-font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --tl-font-sans: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --tl-font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+
+  --tl-weight-regular: 400;
+  --tl-weight-medium: 500;
+  --tl-weight-semibold: 600;
+
+  --tl-doc-cover-size: 58px;
+  --tl-doc-cover-line: 57px;
+  --tl-doc-h1-size: 31px;
+  --tl-doc-h1-line: 35px;
+  --tl-doc-h2-size: 15px;
+  --tl-doc-h2-line: 18px;
+  --tl-doc-h3-size: 11.2px;
+  --tl-doc-h3-line: 15px;
+  --tl-doc-body-size: 9.6px;
+  --tl-doc-body-line: 14.6px;
+  --tl-doc-lede-size: 13.2px;
+  --tl-doc-lede-line: 18.7px;
+  --tl-doc-small-size: 8.2px;
+  --tl-doc-small-line: 11.9px;
+  --tl-doc-micro-size: 7.2px;
+  --tl-doc-micro-line: 10px;
+
+  --tl-panel-score-size: 28px;
+  --tl-panel-score-line: 28px;
+  --tl-panel-score-row-size: 23px;
+  --tl-panel-score-row-line: 23px;
+  --tl-panel-band-size: 15px;
+  --tl-panel-band-line: 18px;
+  --tl-panel-body-size: 13px;
+  --tl-panel-body-line: 18.9px;
+  --tl-panel-meta-size: 10px;
+  --tl-panel-meta-line: 14px;
+  --tl-panel-micro-size: 9px;
+  --tl-panel-micro-line: 12.6px;
+  --tl-panel-tiny-size: 7.5px;
+  --tl-panel-tiny-line: 10px;
+
+  /* ---------- space ---------- */
+  --tl-space-1: 4px;
+  --tl-space-2: 8px;
+  --tl-space-3: 12px;
+  --tl-space-4: 16px;
+  --tl-space-6: 24px;
+  --tl-space-8: 32px;
+  --tl-space-12: 48px;
+
+  /* ---------- shape ---------- */
+  --tl-radius: 2px;
+  --tl-panel-radius: 3px;
+  --tl-border-width: 1px;
+  --tl-shadow-offset: 3px;
+  --tl-shadow: 3px 3px 0 var(--tl-surface-inset);
+
+  /* ---------- layout ---------- */
+  --tl-panel-width: 360px;
+  --tl-panel-min: 320px;
+  --tl-panel-max: 420px;
+  --tl-panel-gutter: var(--tl-space-4);
+  --tl-header-min-height: 44px;
+  --tl-footer-min-height: 40px;
+  --tl-target-min: 44px;
+  --tl-chip-height: 26px;
+  --tl-chip-height-small: 22px;
+  --tl-track-height: 7px;
+  --tl-track-gap: 1px;
+  --tl-marker-width: 2px;
+  --tl-marker-height: 15px;
+  --tl-options-max-width: 680px;
+
+  /* ---------- motion ---------- */
+  --tl-duration-state: 90ms;
+  --tl-duration-fade: 120ms;
+  --tl-duration-expand: 180ms;
+  --tl-duration-skeleton: 1400ms;
+  --tl-ease-expand: cubic-bezier(.2, 0, 0, 1);
+}
+
+/* Night ledger. Applied to the panel/options root, never inferred from the host page. */
+[data-tl-theme="night"] {
+  --tl-paper: #121615;
+  --tl-panel: #1A1F1D;
+  --tl-panel-2: #222824;
+  --tl-ink: #EDE7D9;
+  --tl-ink-2: #CDD2C8;
+  --tl-muted: #A7ACA2;
+  --tl-faint: #7F857B;
+  --tl-rule: #333A36;
+  --tl-rule-strong: #48514B;
+  --tl-control: #7F857B;
+  --tl-petrol: #79B3A4;
+  --tl-petrol-deep: #8FC3B5;
+  --tl-petrol-soft: #223029;
+  --tl-rust: #D08A6B;
+  --tl-rust-soft: #33241E;
+  --tl-brass: #D2B273;
+  --tl-warn: #D2B273;
+  --tl-warn-soft: #2E2A1E;
+
+  --tl-stop-1: #C97A5E;
+  --tl-stop-2: #D79A78;
+  --tl-stop-3: #B0A794;
+  --tl-stop-4: #BDB97A;
+  --tl-stop-5: #8FB39A;
+  --tl-stop-6: #6FB3A2;
+
+  --tl-action: var(--tl-petrol);
+  --tl-action-pressed: var(--tl-petrol-deep);
+  --tl-on-action: #0E1B18;
+  --tl-focus: var(--tl-petrol);
+  --tl-manipulation: var(--tl-rust);
+  --tl-organic: var(--tl-petrol);
+  --tl-evidence-low: var(--tl-brass);
+  --tl-shadow: 3px 3px 0 #0A0D0C;
+}

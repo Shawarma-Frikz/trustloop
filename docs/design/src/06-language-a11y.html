@@ -1,0 +1,383 @@
+<!-- ================= 09 LANGUAGE ================= -->
+<h1><span class="num">SECTION 09</span>Language and content</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">The interface speaks about text patterns with the caution of a lab note and the brevity of a label. It never borrows the vocabulary of verification, and it never says in one language more than it says in the other.</p>
+
+<h2>9.1 Voice</h2>
+
+<div class="grid3">
+  <div class="box"><h4>Plain</h4><p class="small">Short sentences. Concrete nouns. No metaphors of detection, hunting, or exposure. If a sentence needs a second sentence to walk back its claim, rewrite the first.</p></div>
+  <div class="box"><h4>Procedural</h4><p class="small">Describe what the model did: read text, weighted signals, produced an estimate. The product is a method, not an oracle.</p></div>
+  <div class="box"><h4>Bounded</h4><p class="small">Every claim carries its limit in the same breath: text only, review level, estimate. The limit is not a footnote; it is part of the sentence.</p></div>
+</div>
+
+<table class="spec">
+  <thead><tr><th style="width:80mm;">Say</th><th>Do not say</th></tr></thead>
+  <tbody>
+    <tr><td>“The text repeats the same phrasing.”</td><td>“This reviewer is a bot.”</td></tr>
+    <tr><td>“The estimate is based on text patterns.”</td><td>“We verified this review.”</td></tr>
+    <tr><td>“Not enough text to estimate.”</td><td>“No data.” / “Insufficient confidence.”</td></tr>
+    <tr><td>“A signal toward manipulation influenced the estimate.”</td><td>“This is a fake review.”</td></tr>
+    <tr><td>“Indicative — limited text.”</td><td>“Low confidence.” / “67% sure.”</td></tr>
+    <tr><td>“No estimate.”</td><td>“0 / 100.”</td></tr>
+    <tr><td>“3 reviews found.”</td><td>“Page score: 42.”</td></tr>
+    <tr><td>“This language is not supported yet.”</td><td>“French is fully supported.”</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Person, not pattern.</b> A band may describe a review's text; it may never describe the person who wrote it. The pronoun for a reviewer is “they”, never “he” or “she”, and the interface does not guess identity from a name.</p>
+
+<h2>9.2 Six claims the interface never makes</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:38mm;">Claim</th><th style="width:62mm;">Why it is out of scope</th><th>Visual consequence</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Identity</strong></td><td>TrustLoop does not know who wrote a review and does not use identity as an input.</td><td>No avatars, names, profiles, or “reviewer risk”.</td></tr>
+    <tr><td><strong>Purchase</strong></td><td>Verified-purchase flags are not model inputs, and the extension does not check them.</td><td>No “verified buyer” badge, no receipt or lock icon.</td></tr>
+    <tr><td><strong>Truth</strong></td><td>The model estimates text patterns, not whether a claim is true.</td><td>No true/false, no check or cross, no “proven”.</td></tr>
+    <tr><td><strong>Bot or spam</strong></td><td>The product does not infer an account type from a score or a band.</td><td>No robot, no spam can, no “bot” label.</td></tr>
+    <tr><td><strong>Product quality</strong></td><td>A review estimate is not a judgment of the product.</td><td>No stars, no “buy”, no recommendation.</td></tr>
+    <tr><td><strong>Page aggregate</strong></td><td>There is no page score, average, distribution, or ranking.</td><td>No page number in the page bar, no sort by score, no chart of all reviews.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout rust">
+  <span class="tag">The substitution test</span>
+  <p>Replace “organic” with “reads like a spontaneous review” and replace “manipulated” with “shows patterns associated with manipulation”. If the sentence still claims a fact about a person or a product, delete it.</p>
+</div>
+
+<h2>9.3 Bilingual behaviour</h2>
+
+<div class="grid2">
+  <div>
+    <p>The interface is English and French. The model is not necessarily both: French model support is conditional on its own evaluation gate (D23). Translating the interface does not translate the model, and the panel must never imply that it does.</p>
+    <p>The language control changes interface copy only. Review text is sent with an optional language hint; if the language is unsupported, the result is <span class="mono">UNKNOWN</span> with <span class="mono">UNSUPPORTED_LANGUAGE</span>, shown in the interface language. Live review text is never machine-translated.</p>
+    <p>The active interface language is stored locally with the other preferences. The panel sets <span class="mono">lang</span> on its root when the interface is French, so screen readers switch pronunciation. French strings are never set in all caps.</p>
+  </div>
+  <div class="box">
+    <h4>Never infer coverage</h4>
+    <p class="small">Do not write “English and French reviews” in the unsupported-language string. Do not show a French flag or an “FR supported” badge. The only honest statement is the one the copy deck already makes: “This language is not supported yet.”</p>
+  </div>
+</div>
+
+<table class="spec compact">
+  <thead><tr><th style="width:24mm;">Key</th><th style="width:64mm;">English</th><th>French</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">band 1</td><td>Strong manipulation signals</td><td>Signaux forts de manipulation</td></tr>
+    <tr><td class="mono">band 2</td><td>Likely manipulated</td><td>Probablement manipulé</td></tr>
+    <tr><td class="mono">band 3</td><td>Inconclusive</td><td>Non concluant</td></tr>
+    <tr><td class="mono">band 4</td><td>Mixed signals</td><td>Signaux mitigés</td></tr>
+    <tr><td class="mono">band 5</td><td>Likely organic</td><td>Probablement authentique</td></tr>
+    <tr><td class="mono">band 6</td><td>Strong organic signals</td><td>Signaux forts d'authenticité</td></tr>
+    <tr><td class="mono">low evidence</td><td>Indicative — limited text</td><td>Indicatif — texte limité</td></tr>
+    <tr><td class="mono">unknown</td><td>No estimate</td><td>Aucune estimation</td></tr>
+    <tr><td class="mono">signals only</td><td>Descriptive signals only — no score</td><td>Signaux descriptifs seulement — aucun score</td></tr>
+    <tr><td class="mono">disclaimer</td><td>Estimated from text patterns. Does not verify purchase, identity, or truth.</td><td>Estimation fondée sur des motifs textuels. Ne vérifie ni l'achat, ni l'identité, ni la véracité.</td></tr>
+    <tr><td class="mono">retry</td><td>Retry</td><td>Réessayer</td></tr>
+    <tr><td class="mono">clear history</td><td>Clear history</td><td>Effacer l'historique</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <span class="tag">Copy-deck boundary</span>
+  <p>Only the copy deck is normative. This charter adds a small number of interface strings that the deck does not yet contain — “Adequate evidence”, “Band N of 6”, “Rescan”, compact chip labels, and transport-failure sentences. They are listed in Appendix A as <strong>proposed</strong> and must be added to the deck, in both languages, before implementation. Nothing in this charter authorises an untranslated string.</p>
+</div>
+
+<h2>9.4 Signal summaries</h2>
+
+<p>Signal rows use the fixed summary templates from the model plan. They are generic by design: they describe a pattern, never a sentence from the review. The English summary is normative; the French column is a proposed translation and must be reviewed with the copy deck.</p>
+
+<table class="spec">
+  <thead><tr><th style="width:38mm;">Code</th><th style="width:56mm;">English summary</th><th>French (proposed)</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">REPEATED_PHRASING</td><td>Repeats the same phrasing</td><td>Répète les mêmes formulations</td></tr>
+    <tr><td class="mono">CROSS_REVIEW_DUPLICATE</td><td>Shares wording with other visible reviews</td><td>Partage des formulations avec d'autres avis visibles</td></tr>
+    <tr><td class="mono">GENERIC_WORDING</td><td>Uses generic wording with few concrete details</td><td>Utilise des formulations génériques avec peu de détails concrets</td></tr>
+    <tr><td class="mono">PROMOTIONAL_TONE</td><td>Reads like promotional copy</td><td>Ressemble à un texte promotionnel</td></tr>
+    <tr><td class="mono">EXTREME_CLAIMS</td><td>Makes extreme or unverifiable claims</td><td>Formule des affirmations extrêmes ou invérifiables</td></tr>
+    <tr><td class="mono">CONCRETE_DETAIL</td><td>Includes a concrete usage detail</td><td>Inclut un détail concret d'utilisation</td></tr>
+    <tr><td class="mono">LEXICAL_VARIETY</td><td>Shows varied, natural wording</td><td>Montre une formulation variée et naturelle</td></tr>
+  </tbody>
+</table>
+
+<ul class="two-col-list">
+  <li><strong>Never quote.</strong> No fragment, name, product, URL, or personal detail from the review appears in a summary.</li>
+  <li><strong>Never assert intent.</strong> “Reads like promotional copy” describes a pattern; “is an advertisement” describes a motive.</li>
+  <li><strong>Never claim proof.</strong> A signal contributed to the estimate; it does not prove deception or causation.</li>
+  <li><strong>Keep the caveat in reach.</strong> The limits of each signal live in the explanation, not in the row. The row stays short.</li>
+</ul>
+
+<h2>9.5 Numbers, time, and locale</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:34mm;">Value</th><th style="width:54mm;">Format</th><th>Rule</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Score</strong></td><td class="mono">73</td><td>Integer 0–100, tabular. No percent sign, no decimal, no “/100”.</td></tr>
+    <tr><td><strong>Contribution</strong></td><td class="mono">31% · 31 %</td><td>Percent, locale spacing. English “31%”, French “31 %” with a no-break space. Only when validated.</td></tr>
+    <tr><td><strong>Review index</strong></td><td class="mono">01 · 02</td><td>Page order, two digits. Not an identifier, not a rank, never a score.</td></tr>
+    <tr><td><strong>Time</strong></td><td class="mono">27 Oct · 14:32</td><td>Absolute local time via the locale formatter. No “2 h ago”; relative time ages badly.</td></tr>
+    <tr><td><strong>Version</strong></td><td class="mono">tl-text-1.1.0</td><td>Monospace, lowercase, dot-separated. Never shortened to “v1”.</td></tr>
+  </tbody>
+</table>
+
+<p>French uses a narrow no-break space before <span class="mono">:</span>, <span class="mono">;</span>, <span class="mono">!</span>, and <span class="mono">?</span>, and non-breaking spaces inside « guillemets ». English uses curly quotation marks. French decimal commas and English decimal points never appear in a score, because the score has no decimals.</p>
+
+<h2>9.6 Layout of copy</h2>
+
+<ul class="two-col-list">
+  <li><strong>Wrap, never truncate.</strong> A band name, reason, or button label is never cut with an ellipsis. If it does not fit, the container grows or the sentence is rewritten.</li>
+  <li><strong>No hyphenation</strong> in band names, buttons, reason sentences, or signal summaries. Body copy may hyphenate inside a correctly tagged French block.</li>
+  <li><strong>Two sentences maximum</strong> for an empty or error block. One is better. The action is a separate element.</li>
+  <li><strong>Buttons are one or two words.</strong> “Retry”, not “Try the analysis again”.</li>
+  <li><strong>Design at French length.</strong> The disclaimer and the LOW qualifier are the longest persistent strings; both are tested at 320 px.</li>
+  <li><strong>No slang, no exclamation, no emoji, no “Oops”.</strong> The product is calm even when it fails.</li>
+</ul>
+
+<div class="figure">
+  <div class="figlabel">French at 320 px · the long strings</div>
+  <div style="display:flex;justify-content:center;">
+    <div class="tl-panel" style="width:320px;box-shadow:none;" lang="fr">
+      <div class="tl-head">
+        <div class="tl-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+          TrustLoop
+        </div>
+        <div class="tl-lang"><span>EN</span><span>/</span><b>FR</b></div>
+      </div>
+      <div class="tl-rev">
+        <div class="tl-row" style="grid-template-columns:20px 36px 1fr 10px;gap:7px;">
+          <span class="tl-idx">03</span>
+          <span class="tl-score">64</span>
+          <div>
+            <div class="tl-band">Signaux mitigés</div>
+            <div class="tl-ev"><span class="tl-low"><span class="tl-i">i</span> Indicatif — texte limité</span></div>
+          </div>
+          <span class="tl-chev">⌄</span>
+        </div>
+        <div class="tl-top">Inclut un détail concret d'utilisation</div>
+      </div>
+      <div class="tl-foot">
+        <div>Estimation fondée sur des motifs textuels. Ne vérifie ni l'achat, ni l'identité, ni la véracité.</div>
+      </div>
+    </div>
+  </div>
+  <p class="caption" style="margin-top:2mm;">The footer wraps to three lines at 320 px. That is the intended behaviour: the claim is never shortened to fit. The LOW qualifier keeps its exact French string and does not become “confiance faible”.</p>
+</div>
+
+<!-- ================= 10 ACCESSIBILITY ================= -->
+<h1><span class="num">SECTION 10</span>Accessibility</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">Accessibility is a constraint on the honesty of the design: if the band position is only visible as a colour, or the evidence only as a hover, the interface is not saying the same thing to everyone.</p>
+
+<h2>10.1 Standard and scope</h2>
+
+<p>The extension panel, the on-page chips, the toolbar badge label, and the options page target <strong>WCAG 2.2 AA</strong>. The PDF you are reading is a design document, not the product; its own accessibility is limited by print export and is not the conformance target.</p>
+
+<div class="grid3">
+  <div class="box"><h4>Perceivable</h4><p class="small">Contrast, non-colour cues, text alternatives, 200% zoom and reflow at 320 px.</p></div>
+  <div class="box"><h4>Operable</h4><p class="small">Keyboard path for every action, visible focus, 44 px targets, no timing traps, reduced motion.</p></div>
+  <div class="box"><h4>Understandable</h4><p class="small">One meaning per state, plain language, consistent placement, errors that say what happened.</p></div>
+</div>
+
+<h2>10.2 Contrast</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:48mm;">Pair</th><th style="width:18mm;">Ratio</th><th style="width:42mm;">Use</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>Ink on paper</td><td class="mono">15.35</td><td>Body, titles, score</td><td>Pass AAA</td></tr>
+    <tr><td>Ink-2 on paper</td><td class="mono">9.01</td><td>Secondary body</td><td>Pass AAA</td></tr>
+    <tr><td>Muted on paper / panel</td><td class="mono">4.78 / 5.07</td><td>Metadata, qualifiers</td><td>Pass AA (minimum)</td></tr>
+    <tr><td>Petrol on panel</td><td class="mono">8.61</td><td>Actions, links</td><td>Pass AAA</td></tr>
+    <tr><td>Rust on panel</td><td class="mono">5.34</td><td>Manipulative direction</td><td>Pass AA</td></tr>
+    <tr><td>Brass on panel</td><td class="mono">4.81</td><td>LOW qualifier</td><td>Pass AA (tight)</td></tr>
+    <tr><td>Paper on bands 1–6</td><td class="mono">4.68–8.46</td><td>Band names on stops</td><td>Pass AA</td></tr>
+    <tr><td>Ink on band 2</td><td class="mono">3.14</td><td>Any text on a stop</td><td><strong>Fail — forbidden</strong></td></tr>
+    <tr><td>Control on paper</td><td class="mono">3.19</td><td>Borders, switch track</td><td>Pass non-text</td></tr>
+    <tr><td>Faint on panel</td><td class="mono">3.16</td><td>Ticks, dashed rule</td><td>Non-text only; never text</td></tr>
+    <tr><td>Night ink on night panel</td><td class="mono">13.54</td><td>Night body</td><td>Pass AAA</td></tr>
+    <tr><td>Night petrol / rust / brass</td><td class="mono">6.99 / 5.99 / 8.23</td><td>Night accents</td><td>Pass AA</td></tr>
+  </tbody>
+</table>
+
+<div class="callout rust">
+  <span class="tag">Two tight values</span>
+  <p>Brass at 4.81 and paper on band 3 at 4.68 are the closest passing pairs. Never lighten brass, never use ink on a stop, and never place body text on a band fill. The band name sits next to the colour, not inside it.</p>
+</div>
+
+<h2>10.3 Non-colour cues</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:42mm;">Cue</th><th style="width:44mm;">Where</th><th>What it encodes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Six-tick ladder</strong></td><td>Chip</td><td>Band position; the current tick is taller and in ink.</td></tr>
+    <tr><td><strong>Band name + “Band N of 6”</strong></td><td>Row, measure</td><td>The band in words and its ordinal position.</td></tr>
+    <tr><td><strong>Em dash + “No estimate”</strong></td><td>Row, measure</td><td>Absence, never zero.</td></tr>
+    <tr><td><strong>Info glyph + “Indicative — limited text”</strong></td><td>Row, measure</td><td>LOW evidence; the glyph repeats the text.</td></tr>
+    <tr><td><strong>Arrow + axis legend</strong></td><td>Signal row</td><td>Direction toward manipulation or organic.</td></tr>
+    <tr><td><strong>Text mode label</strong></td><td>Signals-only state</td><td>No score, no verdict.</td></tr>
+    <tr><td><strong>Underline + <span class="mono">aria-pressed</span></strong></td><td>Language control</td><td>Active language, not colour alone.</td></tr>
+    <tr><td><strong>2 px focus ring</strong></td><td>Every control</td><td>Keyboard position; shape as well as colour.</td></tr>
+    <tr><td><strong>Dashed scale</strong></td><td>Unknown measure</td><td>A scale with no value, not a zero.</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Colour is never the only channel.</b> Every band, every direction, every evidence state, and every error has a word, a shape, or a position that carries the same information. The colour makes it faster to read; it does not make it readable.</p>
+
+<h2>10.4 Keyboard and focus</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:34mm;">Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">Tab / Shift+Tab</td><td>Language, settings, rescan, each review row, the evidence button, then the footer links if any. Rows are ordinary tab stops; no roving tabindex in v1.</td></tr>
+    <tr><td class="mono">Enter / Space</td><td>Expand or collapse a review; activate a button; change language.</td></tr>
+    <tr><td class="mono">Esc</td><td>Close the evidence popover and return focus to its button. A second Esc collapses the expanded row.</td></tr>
+    <tr><td class="mono">Home / End</td><td>First or last review row when the list has focus.</td></tr>
+    <tr><td class="mono">—</td><td>No keyboard trap. The popover traps focus only while open, then restores it.</td></tr>
+  </tbody>
+</table>
+
+<p>When the panel opens, focus moves to the panel region and the screen reader announces “TrustLoop, 3 reviews found”. It does not jump to a row, which would hide the count. When a chip opens the panel, focus lands on the matching row instead. The focus ring is 2 px petrol with a 2 px offset; on full-width rows it is drawn inside so the list does not shift.</p>
+
+<h2>10.5 Screen reader</h2>
+
+<div class="grid2">
+  <div>
+    <h3 style="margin-top:0;">Announcements</h3>
+    <ul>
+      <li><strong>Row.</strong> “Review 2, score 34, Likely manipulated, band 2 of 6, adequate evidence, reads like promotional copy. Collapsed, button.”</li>
+      <li><strong>Low evidence.</strong> “Score 64, Mixed signals, band 4 of 6, indicative, limited text.”</li>
+      <li><strong>Unknown.</strong> “No estimate. Not enough text to estimate.”</li>
+      <li><strong>Signals only.</strong> “Descriptive signals only — no score.”</li>
+      <li><strong>Chip.</strong> “Review 2, score 34, Likely manipulated, band 2 of 6. Open in TrustLoop.”</li>
+      <li><strong>Rescan.</strong> “Results updated. 3 reviews found.” Politeness is set on the page bar; focus does not move.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h4>What is hidden</h4>
+    <p class="small">The six-stop track, the marker, the axis tick, the chevron, and the tick ladder are decorative once the text carries the value. They are <span class="mono">aria-hidden</span> or CSS-only. The score, band, evidence, and direction are always in the accessible name.</p>
+    <h4 style="margin-top:4mm;">What is not</h4>
+    <p class="small">The contribution percentage is announced as “31 percent contribution”, never as “31 percent confident”. The evidence popover is a labelled dialog with a close button and a heading.</p>
+  </div>
+</div>
+
+<h2>10.6 Zoom, reflow, and text spacing</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:38mm;">Condition</th><th>Requirement</th></tr></thead>
+  <tbody>
+    <tr><td><strong>200% zoom</strong></td><td>Panel remains 360 CSS px and fits the viewport; no content is clipped; the six stops and chip ladder remain legible.</td></tr>
+    <tr><td><strong>400% reflow</strong></td><td>At 320 CSS px the panel takes the full width; rows reflow; the chip moves after the review body when there is no safe corner; no horizontal scrolling.</td></tr>
+    <tr><td><strong>Text spacing</strong></td><td>Line-height 1.5, letter-spacing .12 em, word-spacing .16 em, paragraph spacing 2 em: no clipping in the header, footer, rows, chips, or buttons. Text containers use min-height, not fixed height.</td></tr>
+    <tr><td><strong>Narrow host</strong></td><td>At 320 px the chip stacks with the review header or moves below the body; it never covers text or rating.</td></tr>
+    <tr><td><strong>Orientation</strong></td><td>No lock. The panel works in a narrow side panel and in a full tab.</td></tr>
+  </tbody>
+</table>
+
+<h2>10.7 QA checklist</h2>
+
+<table class="spec compact qa">
+  <thead><tr><th style="width:12mm;">#</th><th style="width:64mm;">Test</th><th>Pass condition</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">01</td><td>Keyboard only</td><td>Reachable by keyboard; focus visible; Esc closes and restores focus.</td></tr>
+    <tr><td class="mono">02</td><td>Screen reader, scored</td><td>Score, band, position, evidence, top signal — announced once, in order.</td></tr>
+    <tr><td class="mono">03</td><td>Screen reader, unknown</td><td>“No estimate” and the reason; no “zero”, no empty control.</td></tr>
+    <tr><td class="mono">04</td><td>Colour removed</td><td>Band, direction, LOW, unknown, and selected language still distinguishable.</td></tr>
+    <tr><td class="mono">05</td><td>200% zoom</td><td>No clipped text, no overlapping chip, no horizontal scroll.</td></tr>
+    <tr><td class="mono">06</td><td>320 px</td><td>French disclaimer wraps in three lines; chip moves below the body.</td></tr>
+    <tr><td class="mono">07</td><td>Text spacing override</td><td>No clipped header, footer, button, or chip.</td></tr>
+    <tr><td class="mono">08</td><td>Reduced motion</td><td>Expansion instant; no opacity pulse; no crossfade longer than 0 ms.</td></tr>
+    <tr><td class="mono">09</td><td>Contrast pairs</td><td>Every text pair at least 4.5:1; every control boundary at least 3:1.</td></tr>
+    <tr><td class="mono">10</td><td>Target size</td><td>Chip, rows, buttons, switch rows, and close controls at least 44 × 44 px.</td></tr>
+    <tr><td class="mono">11</td><td>Language switch</td><td><span class="mono">lang</span> updates; French strings are pronounced in French; no untranslated key.</td></tr>
+    <tr><td class="mono">12</td><td>No motion on load</td><td>The score and marker do not count up, sweep, or bounce.</td></tr>
+  </tbody>
+</table>
+
+<!-- ================= 11 MOTION ================= -->
+<h1><span class="num">SECTION 11</span>Motion</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">Motion explains a change of state. It never performs confidence, never fills a measure, and never makes a number arrive like a result.</p>
+
+<h2>11.1 Three durations</h2>
+
+<div class="figure">
+  <div class="figlabel">Motion budget · nothing longer than 180 ms</div>
+  <div style="margin:2mm 0 1mm;">
+    <div style="display:flex;align-items:center;gap:3mm;margin-bottom:4mm;">
+      <span class="micro" style="width:26mm;">90 ms</span>
+      <div style="height:6mm;width:90px;background:var(--petrol);"></div>
+      <span class="small">Hover and press colour</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:3mm;margin-bottom:4mm;">
+      <span class="micro" style="width:26mm;">120 ms</span>
+      <div style="height:6mm;width:120px;background:var(--petrol);"></div>
+      <span class="small">Crossfade after rescan</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:3mm;">
+      <span class="micro" style="width:26mm;">180 ms</span>
+      <div style="height:6mm;width:180px;background:var(--petrol);"></div>
+      <span class="small">Expand / collapse</span>
+    </div>
+  </div>
+  <p class="caption" style="margin-bottom:0;">Opacity uses linear timing. Expansion uses <span class="mono">cubic-bezier(.2,0,0,1)</span>. No spring, no bounce, no overshoot.</p>
+</div>
+
+<h2>11.2 What may move</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:38mm;">Element</th><th style="width:62mm;">May move</th><th>Must not</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Marker</strong></td><td>Left position between two scored values, 120 ms.</td><td>Sweep from 0; pulse; grow; overshoot.</td></tr>
+    <tr><td><strong>Score</strong></td><td>Crossfade with the measure block, 120 ms.</td><td>Count up; roll digits; flip.</td></tr>
+    <tr><td><strong>Review row</strong></td><td>Height 180 ms; chevron rotation 180 ms.</td><td>Slide content sideways; bounce; scale.</td></tr>
+    <tr><td><strong>Skeleton</strong></td><td>Opacity pulse 1.4 s between 100% and 72%.</td><td>Shimmer sweep; spinner; progress bar.</td></tr>
+    <tr><td><strong>Chip</strong></td><td>Nothing. It appears with the result.</td><td>Pop, bounce, slide, or follow the cursor.</td></tr>
+    <tr><td><strong>Badge</strong></td><td>Nothing.</td><td>Animate in browser chrome.</td></tr>
+    <tr><td><strong>Panel / page</strong></td><td>Nothing.</td><td>Parallax, page transitions, background motion.</td></tr>
+  </tbody>
+</table>
+
+<h2>11.3 Reduced motion</h2>
+
+<p>Under <span class="mono">prefers-reduced-motion: reduce</span>, every duration collapses to 0 ms: expansion is instant, the crossfade is a swap, and the skeleton pulse stops. Nothing is lost: the content was never carried by the motion. The same rule applies to forced-colors mode, where the browser replaces the palette and the interface must remain legible through system colours.</p>
+
+<div class="grid3">
+  <div class="box"><h4>No performance</h4><p class="small">The score does not animate because the model is not “thinking” at the user. The estimate arrives; the interface shows it.</p></div>
+  <div class="box"><h4>No suspense</h4><p class="small">No delayed reveal, no staged signals, no “analysing…” sequence of fake steps. A loading line and a skeleton are enough.</p></div>
+  <div class="box"><h4>No attention loop</h4><p class="small">Nothing pulses after load. The only repeating motion is the skeleton pulse while a request is genuinely pending.</p></div>
+</div>
+
+<h2>11.4 Implementation notes</h2>
+
+<ul class="two-col-list">
+  <li><strong>Animate opacity and transform only</strong>, except the row height needed for expansion. No animated box-shadow, filter, or background-position.</li>
+  <li><strong>Respect the reduced-motion query in both CSS and script</strong>; do not rely on the media query alone if a script drives the expansion.</li>
+  <li><strong>Keep the list scroll position</strong> when a row expands, and never animate the scroll itself.</li>
+  <li><strong>Pause the skeleton pulse</strong> when the panel is not visible; a hidden tab should not animate.</li>
+</ul>
+
+<h2>11.5 Storyboard</h2>
+
+<p>Three moments carry the whole system. Each is drawn at the start, inside the 180 ms budget, and after it — because a transition that is still moving at 181 ms is an effect, not feedback.</p>
+
+<table class="spec">
+  <thead><tr><th style="width:40mm;">Moment</th><th>0 ms</th><th>90 ms</th><th>180 ms</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Expand a row</strong></td><td>Row at 58 px; chevron points down; focus on the row.</td><td>Height eases toward 96 px; detail is clipped at the moving edge.</td><td>Row at 96 px; summary and signals in place; focus has not moved.</td></tr>
+    <tr><td><strong>New score after rescan</strong></td><td>Old score and old marker position; page bar reads “Rescanning…”.</td><td>Score crossfades over 120 ms; the marker travels to its new stop.</td><td>New score, band, and qualifier; one live announcement; no count-up.</td></tr>
+    <tr><td><strong>Reduced motion</strong></td><td>Old value on screen.</td><td>No intermediate frame: the value is already replaced.</td><td>New value, same layout; the skeleton pulse is off entirely.</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>The middle column is the entire budget.</b> Nothing starts after 90 ms and nothing is still moving at 180 ms. The frame in the middle is the only one a renderer needs; if it cannot be drawn, the change becomes an instant swap.</p>
+
+<div class="callout">
+  <span class="tag">The test</span>
+  <p>Motion never carries the result. If the score only reads correctly while it moves, the design is using animation to make the claim — and that is the one thing it may not do.</p>
+</div>

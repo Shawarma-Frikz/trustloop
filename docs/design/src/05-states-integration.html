@@ -1,0 +1,309 @@
+<!-- ================= 08 STATES ================= -->
+<h1><span class="num">SECTION 08</span>States and integration</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">The honest cases are the design. A missing estimate, a short review, an unreachable service, and a page with no reviews are not edge cases to be hidden; they are the moments when the product either keeps its promise or breaks it.</p>
+
+<h2>8.1 A failure is a sentence</h2>
+
+<div class="grid2">
+  <div>
+    <p>Every failed or absent estimate resolves to one of three shapes: a sentence, a reason, and — only where it can help — one action. No infinite spinner, no red panel, no alarm icon, no “Oops”, no mascot, no apology paragraph.</p>
+    <p>The tone is procedural. The page is not broken; the estimate is absent. Say which, say why, and stop. A failure never borrows the visual language of a verdict: no band colour, no measure, no score cell.</p>
+  </div>
+  <div class="box rust">
+    <h4>Never</h4>
+    <ul style="margin-bottom:0;">
+      <li>Show 0 for an unknown value.</li>
+      <li>Show a spinner after the request has failed.</li>
+      <li>Show a raw reason code in the interface.</li>
+      <li>Offer “Retry” for a page that will never be supported.</li>
+      <li>Keep a chip that no longer matches the page.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>8.2 The state matrix</h2>
+
+<table class="spec" style="font-size:7.5pt;">
+  <thead>
+    <tr>
+      <th style="width:25mm;">State</th>
+      <th style="width:44mm;">Panel measure area</th>
+      <th style="width:38mm;">Review row</th>
+      <th style="width:34mm;">Inline chip</th>
+      <th style="width:22mm;">Badge</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Scored · adequate</strong></td>
+      <td>Full measure; evidence qualifier muted.</td>
+      <td>Score, band, “Adequate evidence · Band N of 6”.</td>
+      <td>Score + band ladder.</td>
+      <td class="mono">73</td>
+      <td>Expand, rescan.</td>
+    </tr>
+    <tr>
+      <td><strong>Scored · LOW</strong></td>
+      <td>Full measure; “Indicative — limited text” in brass with info.</td>
+      <td>Score stays ink; qualifier brass.</td>
+      <td>Info + score + ladder.</td>
+      <td class="mono">64</td>
+      <td>Open explanation.</td>
+    </tr>
+    <tr>
+      <td><strong>Signals only</strong></td>
+      <td>No score, no track. “Descriptive signals only — no score” and the signal list.</td>
+      <td>Mode label replaces the score; top signal remains.</td>
+      <td>“Signals only”, petrol rule.</td>
+      <td>none</td>
+      <td>Expand signals.</td>
+    </tr>
+    <tr>
+      <td><strong>Unknown</strong></td>
+      <td>Em dash, “No estimate”, the reason.</td>
+      <td>Em dash, “No estimate”, reason replaces evidence.</td>
+      <td>“No estimate”, muted.</td>
+      <td class="mono">–</td>
+      <td>Explained in place.</td>
+    </tr>
+    <tr>
+      <td><strong>No reviews</strong></td>
+      <td>Page-level empty block; no rows.</td>
+      <td>none</td>
+      <td>none</td>
+      <td>none</td>
+      <td>Rescan.</td>
+    </tr>
+    <tr>
+      <td><strong>Unsupported page</strong></td>
+      <td>Page-level empty block; no rows.</td>
+      <td>none</td>
+      <td>none</td>
+      <td>none</td>
+      <td>See supported pages.</td>
+    </tr>
+    <tr>
+      <td><strong>Loading · first scan</strong></td>
+      <td>Skeleton rows; “Reading reviews…” in the page bar.</td>
+      <td>Skeleton, final height.</td>
+      <td>none until a result exists.</td>
+      <td>none</td>
+      <td>none.</td>
+    </tr>
+    <tr>
+      <td><strong>Loading · rescan</strong></td>
+      <td>Existing rows stay; “Rescanning…” and a 1 px rule.</td>
+      <td>Last result remains.</td>
+      <td>Last chip remains.</td>
+      <td>Last score.</td>
+      <td>none.</td>
+    </tr>
+    <tr>
+      <td><strong>Error · first scan</strong></td>
+      <td>Error block with one sentence and one action.</td>
+      <td>none</td>
+      <td>none</td>
+      <td class="mono">–</td>
+      <td>Retry if useful.</td>
+    </tr>
+    <tr>
+      <td><strong>Error · rescan</strong></td>
+      <td>Last result stays; inline notice above the list.</td>
+      <td>Last result remains, labelled “last result”.</td>
+      <td>Last chip remains.</td>
+      <td>Last score.</td>
+      <td>Retry.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>One source of truth.</b> The panel is authoritative. A chip may be stale for the duration of an explicit rescan; a change of page clears every chip immediately. The badge follows the panel, never the host page's own state.</p>
+
+<h2>8.3 Loading without theatre</h2>
+
+<div class="figure">
+  <div class="figlabel">First scan · skeleton at final geometry</div>
+  <div style="display:flex;justify-content:center;">
+    <div class="tl-panel" style="box-shadow:none;">
+      <div class="tl-head">
+        <div class="tl-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+          TrustLoop
+        </div>
+        <div class="tl-lang"><b>EN</b><span>/</span><span>FR</span></div>
+      </div>
+      <div class="tl-pagebar">
+        <div><div class="tl-site">Example-shop.com</div><div class="tl-count" style="color:var(--muted);">Reading reviews…</div></div>
+      </div>
+      <div class="tl-list">
+        <div class="tl-skelrow">
+          <div style="display:flex;gap:8px;align-items:center;"><span class="tl-skel" style="width:14px;height:6px;"></span><span class="tl-skel" style="width:34px;height:18px;"></span><span class="tl-skel soft" style="width:112px;height:8px;"></span></div>
+          <div class="tl-skel soft" style="width:72%;height:6px;margin-top:9px;"></div>
+        </div>
+        <div class="tl-skelrow">
+          <div style="display:flex;gap:8px;align-items:center;"><span class="tl-skel" style="width:14px;height:6px;"></span><span class="tl-skel" style="width:34px;height:18px;"></span><span class="tl-skel soft" style="width:96px;height:8px;"></span></div>
+          <div class="tl-skel soft" style="width:60%;height:6px;margin-top:9px;"></div>
+        </div>
+        <div class="tl-skelrow" style="border-bottom:0;">
+          <div style="display:flex;gap:8px;align-items:center;"><span class="tl-skel" style="width:14px;height:6px;"></span><span class="tl-skel" style="width:34px;height:18px;"></span><span class="tl-skel soft" style="width:104px;height:8px;"></span></div>
+          <div class="tl-skel soft" style="width:66%;height:6px;margin-top:9px;"></div>
+        </div>
+      </div>
+      <div class="tl-foot">
+        <div>Estimated from text patterns. Does not verify purchase, identity, or truth.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid3">
+  <div class="box"><h4>Geometry</h4><p class="small">Skeletons use the final row heights and column positions. Nothing moves when the result arrives except the content itself.</p></div>
+  <div class="box"><h4>Motion</h4><p class="small">A 1.4 s opacity pulse between 100% and 72%, on skeleton bars only. Disabled under <span class="mono">prefers-reduced-motion</span>. No shimmer sweep.</p></div>
+  <div class="box"><h4>Announcement</h4><p class="small">The page bar is a polite live region: “Reading reviews…”, then “3 reviews found”. Focus never moves on completion.</p></div>
+</div>
+
+<p><strong>Rescan is not a first scan.</strong> The list stays readable, the chips stay visible, and the page bar says “Rescanning…”. On success the rows crossfade for 120 ms. On failure the rows stay and a single inline notice appears above them: <em>“Couldn't refresh. Showing the last result.”</em> with a “Retry” action. Navigating to another page clears the list and every chip at once; stale results are never carried across pages.</p>
+
+<h2>8.4 Empty and error blocks</h2>
+
+<div class="figure">
+  <div class="figlabel">Empty · no visible reviews</div>
+  <div style="width:360px;border:1px solid var(--rule);background:var(--panel);">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--rule);">
+      <div class="tl-site">Example-shop.com</div>
+      <div class="tl-count">0 reviews found</div>
+    </div>
+    <div class="tl-empty">
+      <h5>No reviews found to analyze.</h5>
+      <p>There is nothing on this page to estimate. TrustLoop does not estimate a product from its description or its rating.</p>
+      <div class="actions"><span class="ui-btn secondary small">How this works</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="figure">
+  <div class="figlabel">Error · service unavailable</div>
+  <div style="width:360px;border:1px solid var(--rule);background:var(--panel);">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--rule);">
+      <div class="tl-site">Example-shop.com</div>
+      <div class="tl-count">3 reviews found</div>
+    </div>
+    <div class="tl-empty">
+      <h5>Analysis is unavailable right now. Try again.</h5>
+      <p>The page is fine. TrustLoop could not produce an estimate, so it is showing none. No review text was kept.</p>
+      <div class="actions"><span class="ui-btn primary">Retry</span><span class="ui-btn quiet">What is sent?</span></div>
+    </div>
+  </div>
+</div>
+
+<p>An empty block is left-aligned, uses the interface sans for the body, and puts the serif on the title only. It has no illustration and no icon. The error block uses the same shape; only the copy and the action change. A reason is always a full sentence, and the action is always a verb.</p>
+
+<h2>8.5 Reason codes and copy</h2>
+
+<table class="spec" style="font-size:7.4pt;">
+  <thead><tr><th style="width:30mm;">Code</th><th style="width:30mm;">When</th><th style="width:56mm;">Sentence</th><th style="width:34mm;">Action</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">UNSUPPORTED_PAGE</td><td>Not a supported product review page.</td><td>“This page is not supported yet.”</td><td>See supported pages</td></tr>
+    <tr><td class="mono">NO_REVIEWS_FOUND</td><td>No visible reviews.</td><td>“No reviews found to analyze.”</td><td>Rescan</td></tr>
+    <tr><td class="mono">INSUFFICIENT_TEXT</td><td>Under 20 analysable words.</td><td>“Not enough text to estimate.”</td><td>—</td></tr>
+    <tr><td class="mono">UNSUPPORTED_LANGUAGE</td><td>Language confidence below 0.80.</td><td>“This language is not supported yet.”</td><td>—</td></tr>
+    <tr><td class="mono">SCORING_TIMEOUT</td><td>The service did not answer in time.</td><td>“Analysis timed out. Try again.”</td><td>Retry</td></tr>
+    <tr><td class="mono">SCORING_UNAVAILABLE</td><td>The service is down or unreachable.</td><td>“Analysis is unavailable right now. Try again.”</td><td>Retry</td></tr>
+    <tr><td class="mono">INVALID_REQUEST</td><td>400. The request could not be read.</td><td>“The request could not be read.” <span class="micro">proposed</span></td><td>Reload</td></tr>
+    <tr><td class="mono">PAYLOAD_TOO_LARGE</td><td>413. The review text exceeds the limit.</td><td>“This page's review text is too large to analyze.” <span class="micro">proposed</span></td><td>Reload</td></tr>
+    <tr><td class="mono">RATE_LIMITED</td><td>429. Too many requests.</td><td>“Too many requests. Try again in a moment.” <span class="micro">proposed</span></td><td>Retry</td></tr>
+    <tr><td class="mono">INTERNAL_ERROR</td><td>500. Unexpected failure.</td><td>“Something went wrong. Try again.” <span class="micro">proposed</span></td><td>Retry</td></tr>
+    <tr><td class="mono">UNAUTHORIZED · Phase 4</td><td>401. Installation not recognised.</td><td>“This installation isn't authorised. Reinstall TrustLoop or contact the project team.”</td><td>—</td></tr>
+    <tr><td class="mono">FORBIDDEN · Phase 4</td><td>403. Build not permitted.</td><td>“Access is not allowed for this build.”</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<p class="caption">Strings without a “proposed” mark are normative copy-deck strings. Do not add a language list to <span class="mono">UNSUPPORTED_LANGUAGE</span>: the interface is bilingual, but model coverage is a per-language gate (D12, D23), and UI translation does not imply that a language was analysed.</p>
+
+<div class="callout warn">
+  <span class="tag">Codes are not copy</span>
+  <p>Reason codes belong in the API, logs, and support documentation. If a code is ever needed in the interface, it goes behind a collapsed “Details” row in options, never in the panel headline, and never next to a score. No code, review text, URL, or review key appears in logs or history.</p>
+</div>
+
+<h2>8.6 Chips on the host page</h2>
+
+<div class="figure" style="background:#EFEBE2;">
+  <div class="figlabel">Host page · 510 px simulation</div>
+  <div class="host">
+    <div class="host-title">Example product page</div>
+    <div class="host-sub">The host page is never restyled. The chip is an annotation at the top-right of each review.</div>
+
+    <div class="host-review">
+      <div class="host-head"><span class="host-label">Review 1 · Rating 5 / 5</span></div>
+      <div class="host-text">Example review text supplied by the host page. TrustLoop reads it; it never rewrites it, quotes it, or stores it.</div>
+      <span class="host-chip"><span class="chip c5">81<span class="tl-ticks"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></span></span></span>
+    </div>
+
+    <div class="host-review">
+      <div class="host-head"><span class="host-label">Review 2 · Rating 3 / 5</span></div>
+      <div class="host-text" style="padding-right:104px;">A second example review, short enough to be indicative. The chip carries the same six-tick band ladder as the panel.</div>
+      <span class="host-chip"><span class="chip c4"><span class="ci">i</span>64<span class="tl-ticks"><i></i><i></i><i></i><i class="on"></i><i></i><i></i></span></span></span>
+    </div>
+
+    <div class="host-review" style="padding-bottom:4px;">
+      <div class="host-head"><span class="host-label">Review 3 · Rating 1 / 5</span></div>
+      <div class="host-text">No estimate is a valid result. The chip says so in words, not as a zero.</div>
+      <span class="host-chip"><span class="chip unknown">No estimate</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="figure">
+  <div class="figlabel">Chip anatomy · 26 px visual · 44 px target</div>
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;justify-content:center;height:44px;min-width:96px;border:1px dashed var(--rule-strong);">
+      <span class="chip c5">81<span class="tl-ticks"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></span></span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;height:44px;min-width:110px;border:1px dashed var(--rule-strong);">
+      <span class="chip c4"><span class="ci">i</span>64<span class="tl-ticks"><i></i><i></i><i></i><i class="on"></i><i></i><i></i></span></span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;height:44px;min-width:104px;border:1px dashed var(--rule-strong);">
+      <span class="chip unknown">No estimate</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;height:44px;min-width:104px;border:1px dashed var(--rule-strong);">
+      <span class="chip signals">Signals only</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;height:44px;min-width:100px;border:1px dashed var(--rule-strong);">
+      <span class="chip error">Unavailable</span>
+    </div>
+  </div>
+  <p class="caption" style="margin-bottom:0;"><b>Dashed boxes</b> show the 44 × 44 px minimum hit area, not a visible border. The chip itself has a 3 px band rule on the left, a 1 px outline, and the paper surface. “Signals only” and “Unavailable” are proposed compact labels; the accessible name always uses the full copy-deck string (“Descriptive signals only — no score”; “Analysis is unavailable right now. Try again.”).</p>
+</div>
+
+<h2>8.7 Chip rules</h2>
+
+<ul class="two-col-list">
+  <li><strong>One chip per review.</strong> No page-level chip, no product-level chip, no aggregate anywhere on the host page.</li>
+  <li><strong>Top-right, 8 px inside the card's padding box.</strong> It must not cover the rating, the reviewer's actions, or the first line of text.</li>
+  <li><strong>Collision fallback.</strong> If there is no safe corner, place the chip after the review body, aligned left, on its own line. It never overlaps.</li>
+  <li><strong>Click opens the panel at that review.</strong> The chip is a button with an accessible name; it is not a hover tooltip and not a link to a third party.</li>
+  <li><strong>The chip keeps its paper surface on dark host pages.</strong> It is an annotation, not a themed component. The 1 px outline keeps the edge visible.</li>
+  <li><strong>No chip before a result.</strong> On first scan there is no placeholder chip. During an explicit rescan the last chip stays; on navigation it is removed.</li>
+  <li><strong>Shadow DOM.</strong> Host CSS does not enter, extension CSS does not leak. No <span class="mono">!important</span> overrides of the host page.</li>
+  <li><strong>Zoom and reflow.</strong> At 200% the chip wraps with the review header; it never covers text. The 44 px target scales with the page.</li>
+</ul>
+
+<h2>8.8 Three surfaces, one story</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:26mm;">Surface</th><th style="width:62mm;">May show</th><th style="width:54mm;">Must never show</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Panel</strong></td><td>Score, band, measure, signals, evidence, reason, version.</td><td>Review quotes, reviewer identity, page average.</td><td>The source of truth and the only place with explanation.</td></tr>
+    <tr><td><strong>Chip</strong></td><td>Score, band ladder, evidence glyph, state words.</td><td>Signals, percentages, band names in full, page totals.</td><td>A pointer into the panel, at the place of reading.</td></tr>
+    <tr><td><strong>Badge</strong></td><td>Two digits, an en dash, or an exclamation mark.</td><td>Band colour alone, letters, a percentage.</td><td>A reminder that a result exists; never the only surface.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="tag">Screen reader order</span>
+  <p>The chip announces score, band, band position, and evidence before it announces “button”. Opening it moves focus to the matching review row and announces the band. A rescan announces the new count politely; it never steals focus from the host page.</p>
+</div>

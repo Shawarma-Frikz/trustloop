@@ -1,0 +1,594 @@
+<!-- ================= 06 MEASURE ================= -->
+<h1><span class="num">SECTION 06</span>The measure</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">A printed scale, not a gauge. The measure states a position on a bounded scale, names the band that position falls in, and shows the evidence that permits the claim. When there is no estimate, it shows no position at all.</p>
+
+<h2>6.1 Why a rule, not a dial</h2>
+
+<div class="grid2">
+  <div>
+    <p>A dial implies a target and a safe zone. A needle implies a live reading of a physical quantity. A ring implies completeness: at 100% the ring closes and the task is done. None of those metaphors belong to a text estimate that is bounded, fallible, and never a verdict.</p>
+    <p>The banded rule comes from printed reports: a bounded axis, divided into named intervals, with a mark at the measured value. It is precise without being mechanical. It can be read at a glance, read again with a screen reader, and understood without colour.</p>
+  </div>
+  <div class="box petrol">
+    <h4>One sentence</h4>
+    <p style="font-family:var(--serif);font-size:12.4pt;line-height:1.42;margin:1mm 0 2mm;">The measure never fills. A fill implies progress toward a goal. Trust is not a goal.</p>
+    <p class="small">The six stops are always present, always solid, and always in the same order. Only the marker moves.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <span class="tag">Refused</span>
+  <p>No speedometer arc, no needle, no percentage ring, no traffic light, no star rating, no single-colour progress bar, no animated sweep from zero. Each of them adds certainty the model does not have.</p>
+</div>
+
+<h2>6.2 Construction</h2>
+
+<div class="figure">
+  <div class="figlabel">The measure · scored state · actual size</div>
+  <div style="width:360px;border:1px solid var(--rule);background:var(--panel);padding:16px;">
+    <div class="tl-measure" style="margin:0;">
+      <div class="tl-mtop">
+        <span class="tl-mscore">73</span>
+        <span class="tl-mband">Likely organic</span>
+      </div>
+      <div class="tl-track">
+        <span class="tl-seg1" style="width:20%"></span>
+        <span class="tl-seg2" style="width:20%"></span>
+        <span class="tl-seg3" style="width:15%"></span>
+        <span class="tl-seg4" style="width:15%"></span>
+        <span class="tl-seg5" style="width:15%"></span>
+        <span class="tl-seg6" style="width:15%"></span>
+        <i class="tl-marker" style="left:calc(73% - 1px)"></i>
+      </div>
+      <div class="tl-mscale" style="display:grid;grid-template-columns:1fr 1fr 1fr;">
+        <span>0</span><span style="text-align:center;">50</span><span style="text-align:right;">100</span>
+      </div>
+      <div class="tl-qual" style="color:var(--muted);">
+        <span class="tl-i">i</span> Adequate evidence · Band 5 of 6
+      </div>
+    </div>
+  </div>
+</div>
+
+<table class="spec">
+  <thead><tr><th style="width:30mm;">Part</th><th style="width:38mm;">Value</th><th>Rule</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">01 score</td><td>28 / 28, Plex Mono 500</td><td>Integer 0–100, tabular, −4% tracking. Never a decimal, never a percent sign.</td></tr>
+    <tr><td class="mono">02 band</td><td>15 / 18, Newsreader 500</td><td>Exact band string from the copy deck. Shares a baseline with the score; never centred.</td></tr>
+    <tr><td class="mono">03 marker</td><td>2 × 15 px, offset −4 px</td><td>Ink, square ends. Position is <span class="mono">score / 100</span> of the track, not the band centre.</td></tr>
+    <tr><td class="mono">04 stops</td><td>7 px high, 1 px paper gaps</td><td>Six solid fills, widths 20 / 20 / 15 / 15 / 15 / 15. Order never changes.</td></tr>
+    <tr><td class="mono">05 scale</td><td>7.5 px mono</td><td>Only 0, 50, 100. The full boundaries live in the accessible name and the band position.</td></tr>
+    <tr><td class="mono">06 qualifier</td><td>10 px sans</td><td>Evidence level and band position. Brass only for LOW; muted for adequate.</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Block height.</b> About 56 px, fixed order. The score is always left of the band, the band is always above the track, and the qualifier is always below the scale. A component that reorders these parts is a different component.</p>
+
+<h2>6.3 The stops are not equal</h2>
+
+<div class="figure">
+  <div class="figlabel">Score intervals → stop widths</div>
+  <div style="display:flex;height:12mm;gap:1px;">
+    <span class="tl-seg1" style="width:20%"></span>
+    <span class="tl-seg2" style="width:20%"></span>
+    <span class="tl-seg3" style="width:15%"></span>
+    <span class="tl-seg4" style="width:15%"></span>
+    <span class="tl-seg5" style="width:15%"></span>
+    <span class="tl-seg6" style="width:15%"></span>
+  </div>
+  <div style="position:relative;height:5mm;margin-top:1.2mm;font-family:var(--mono);font-size:6.8pt;color:var(--muted);">
+    <span style="position:absolute;left:0;">0</span>
+    <span style="position:absolute;left:20%;transform:translateX(-50%);">20</span>
+    <span style="position:absolute;left:40%;transform:translateX(-50%);">40</span>
+    <span style="position:absolute;left:55%;transform:translateX(-50%);">55</span>
+    <span style="position:absolute;left:70%;transform:translateX(-50%);">70</span>
+    <span style="position:absolute;left:85%;transform:translateX(-50%);">85</span>
+    <span style="position:absolute;right:0;">100</span>
+  </div>
+</div>
+
+<p>The widths are the score intervals themselves: 20 points for the two outer manipulation bands, 15 for the middle bands, 15 for the top organic band. Equalising them would be tidier and false. A reader who learns the track should be able to see that band 1 is twice as wide as band 3.</p>
+
+<div class="callout">
+  <span class="tag">Copy rule</span>
+  <p>The six band names, their boundaries, and their order are fixed in <span class="mono">product-decisions.md</span>. The measure may never abbreviate a band name, merge two bands, or add a seventh “neutral” zone.</p>
+</div>
+
+<h2>6.4 Three states, three shapes</h2>
+
+<div class="figure">
+  <div class="figlabel">A · Scored · a position and its evidence</div>
+  <div style="width:360px;border:1px solid var(--rule);background:var(--panel);padding:16px;">
+    <div class="tl-measure" style="margin:0;">
+      <div class="tl-mtop"><span class="tl-mscore">73</span><span class="tl-mband">Likely organic</span></div>
+      <div class="tl-track">
+        <span class="tl-seg1" style="width:20%"></span><span class="tl-seg2" style="width:20%"></span><span class="tl-seg3" style="width:15%"></span><span class="tl-seg4" style="width:15%"></span><span class="tl-seg5" style="width:15%"></span><span class="tl-seg6" style="width:15%"></span>
+        <i class="tl-marker" style="left:calc(73% - 1px)"></i>
+      </div>
+      <div class="tl-mscale" style="display:grid;grid-template-columns:1fr 1fr 1fr;"><span>0</span><span style="text-align:center;">50</span><span style="text-align:right;">100</span></div>
+      <div class="tl-qual" style="color:var(--muted);"><span class="tl-i">i</span> Adequate evidence · Band 5 of 6</div>
+    </div>
+  </div>
+
+  <div class="figlabel" style="margin-top:6mm;">B · Signals only · no position</div>
+  <div class="tl-statebox" style="width:360px;margin-top:0;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="tl-statetitle">Descriptive signals only — no score</span>
+    </div>
+    <div class="tl-statebody">The model did not return a score or a verdict. The signals describe patterns in the text, not the reviewer.</div>
+    <div class="tl-sig" style="border-bottom:0;padding:6px 0 0;">
+      <div class="tl-sighead"><span class="tl-siglabel">Reads like promotional copy</span><span class="tl-dir manip">←</span></div>
+    </div>
+    <div class="tl-sig" style="border-bottom:0;padding:4px 0 0;">
+      <div class="tl-sighead"><span class="tl-siglabel">Repeats the same phrasing</span><span class="tl-dir manip">←</span></div>
+    </div>
+  </div>
+
+  <div class="figlabel" style="margin-top:6mm;">C · Unknown · the scale without a value</div>
+  <div class="tl-statebox" style="width:360px;margin-top:0;">
+    <div style="display:flex;align-items:baseline;gap:9px;">
+      <span class="tl-score none">—</span>
+      <span class="tl-statetitle">No estimate</span>
+    </div>
+    <div class="tl-statebody" style="margin-bottom:1px;">Not enough text to estimate. Each visible review is under 20 words.</div>
+    <div class="tl-unknownrule">
+      <i style="left:20%"></i><i style="left:40%"></i><i style="left:55%"></i><i style="left:70%"></i><i style="left:85%"></i>
+    </div>
+    <div class="tl-mscale" style="display:grid;grid-template-columns:1fr 1fr 1fr;"><span>0</span><span style="text-align:center;">50</span><span style="text-align:right;">100</span></div>
+  </div>
+</div>
+
+<table class="spec">
+  <thead><tr><th style="width:32mm;">State</th><th class="c" style="width:16mm;">Score</th><th class="c" style="width:16mm;">Stops</th><th class="c" style="width:16mm;">Marker</th><th class="c" style="width:18mm;">Signals</th><th>What the reader is told</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Scored</strong></td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>A position, a band, the evidence level, and the signals that moved the estimate.</td></tr>
+    <tr><td><strong>Signals only</strong></td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">✓</td><td>“Descriptive signals only — no score.” No position, no verdict, no numeric contribution.</td></tr>
+    <tr><td><strong>Unknown</strong></td><td class="c">—</td><td class="c">outline</td><td class="c">—</td><td class="c">—</td><td>The reason no estimate exists, in the copy deck's words.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout rust">
+  <span class="tag">The unknown rule</span>
+  <p>Unknown is never rendered as zero. The track is never filled, the marker is never placed at 0, and the score cell never shows “0”. A zero is a measurement; absence is not.</p>
+</div>
+
+<h2>6.5 Four sizes</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:24mm;">Size</th><th style="width:58mm;">Example</th><th style="width:34mm;">Where</th><th>Rule</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Full</strong></td>
+      <td><span style="font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:-.04em;vertical-align:-3px;">73</span> <span style="font-family:var(--serif);font-size:15px;">Likely organic</span></td>
+      <td>Expanded review</td>
+      <td>Complete measure, all six parts.</td>
+    </tr>
+    <tr>
+      <td><strong>Row</strong></td>
+      <td><span style="font-family:var(--mono);font-size:23px;font-weight:500;letter-spacing:-.04em;vertical-align:-2px;">73</span> <span style="font-size:12.5px;font-weight:600;">Likely organic</span></td>
+      <td>Collapsed review</td>
+      <td>Score and band only; the track appears when expanded.</td>
+    </tr>
+    <tr>
+      <td><strong>Chip</strong></td>
+      <td>
+        <span class="chip c5">73<span class="tl-ticks"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></span></span>
+        <span class="chip unknown" style="margin-left:4px;">No estimate</span>
+      </td>
+      <td>Host page</td>
+      <td>Score plus a six-tick band ladder. The ladder is the non-colour cue.</td>
+    </tr>
+    <tr>
+      <td><strong>Badge</strong></td>
+      <td>
+        <span class="ext-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg><span class="ext-badge">73</span></span>
+      </td>
+      <td>Browser toolbar</td>
+      <td>Two digits maximum. A convenience, never the only surface.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>The chip ladder.</b> Six 2 px ticks; the current band is taller and in ink. It reads as “position 5 of 6” without colour and without a tooltip. The chip's accessible name is “Score 73, Likely organic, band 5 of 6, adequate evidence”. For LOW evidence, both the chip and the badge label must include “Indicative — limited text”; the two-digit badge cannot carry the qualifier visually, so its accessible name and title do.</p>
+
+<h2>6.6 Motion and behaviour</h2>
+
+<ul class="two-col-list">
+  <li><strong>The marker appears at its value.</strong> It never sweeps in from zero, and the score never counts up. Counting up stages certainty as an event.</li>
+  <li><strong>Rescan crossfades.</strong> 120 ms opacity on the measure block; no slide, no rotation, no width animation.</li>
+  <li><strong>No fill animation.</strong> The stops are static. Only the marker's left position changes, and only between two scored values.</li>
+  <li><strong>Unknown replaces, not empties.</strong> The scored measure is removed and the unknown block takes its place. It does not linger at 40% opacity.</li>
+  <li><strong>No number formatting.</strong> No commas, no decimals, no “out of 100”. The scale labels already say 100.</li>
+  <li><strong>The accessible name carries the whole measure.</strong> Score, band, evidence, and direction of the marker are announced together; the six stops are not read as six separate items.</li>
+</ul>
+
+<!-- ================= 07 COMPONENTS ================= -->
+<h1><span class="num">SECTION 07</span>Components</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">Components are assembled from the tokens, not drawn from scratch. Each has one job, a fixed anatomy, and a state for the honest failure. Nothing decorative gets a component.</p>
+
+<h2>7.1 Inventory</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:34mm;">Component</th><th style="width:38mm;">Appears in</th><th style="width:44mm;">Required states</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Panel</strong></td><td>Side panel</td><td>default · empty · loading · unknown · error</td><td>360 px; header and footer fixed.</td></tr>
+    <tr><td><strong>Header</strong></td><td>Panel</td><td>default</td><td>Wordmark, language, settings. 44 px.</td></tr>
+    <tr><td><strong>Page bar</strong></td><td>Panel</td><td>found · none found · rescanning · error</td><td>Host and count. No page score.</td></tr>
+    <tr><td><strong>Review row</strong></td><td>Panel</td><td>collapsed · expanded · hover · focus · LOW · unknown · signals only</td><td>Whole row is the target.</td></tr>
+    <tr><td><strong>Measure</strong></td><td>Panel · documents</td><td>scored · signals only · unknown</td><td>Section 06.</td></tr>
+    <tr><td><strong>Signal row</strong></td><td>Expanded review</td><td>with contribution · without contribution</td><td>Maximum five per review.</td></tr>
+    <tr><td><strong>Evidence qualifier</strong></td><td>Row · measure</td><td>adequate · LOW · insufficient</td><td>A button, not a hover tooltip.</td></tr>
+    <tr><td><strong>Inline chip</strong></td><td>Host page</td><td>scored · unknown · signals only · error</td><td>26 px visual, 44 px target.</td></tr>
+    <tr><td><strong>Toolbar badge</strong></td><td>Browser toolbar</td><td>scored · unknown · error</td><td>Convenience only.</td></tr>
+    <tr><td><strong>History item</strong></td><td>Options</td><td>entry · empty</td><td>Host, time, result. Never review text.</td></tr>
+    <tr><td><strong>Option row</strong></td><td>Options</td><td>on · off · disabled</td><td>Label and hint, 44 px target.</td></tr>
+    <tr><td><strong>Button</strong></td><td>Everywhere</td><td>rest · hover · active · focus · disabled</td><td>One primary per view.</td></tr>
+    <tr><td><strong>Popover</strong></td><td>Panel</td><td>open · closed</td><td>Focus-trapped; Esc closes.</td></tr>
+    <tr><td><strong>State block</strong></td><td>Panel · options</td><td>empty · loading · error</td><td>Section 08.</td></tr>
+  </tbody>
+</table>
+
+<h2>7.2 Buttons</h2>
+
+<div class="figure">
+  <div class="figlabel">Button set · 1× CSS px</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;">
+    <div><span class="ui-btn primary">Retry</span><div class="micro" style="margin-top:2mm;">Primary</div></div>
+    <div><span class="ui-btn secondary">How this works</span><div class="micro" style="margin-top:2mm;">Secondary</div></div>
+    <div><span class="ui-btn quiet">Rescan</span><div class="micro" style="margin-top:2mm;">Quiet</div></div>
+    <div><span class="ui-btn danger">Clear history</span><div class="micro" style="margin-top:2mm;">Destructive</div></div>
+    <div><span class="ui-btn secondary off">Unavailable</span><div class="micro" style="margin-top:2mm;">Disabled</div></div>
+    <div><span class="ui-btn secondary ui-focus">Focused</span><div class="micro" style="margin-top:2mm;">Focus ring</div></div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div>
+    <h3 style="margin-top:0;">Rules</h3>
+    <ul>
+      <li><strong>Sentence case, verb first.</strong> “Retry”, not “Retry analysis” and never “SUBMIT”. Three words maximum. Action labels come from the copy deck.</li>
+      <li><strong>36 px high, 30 px small.</strong> 2 px radius. No pill, no shadow, no gradient, no icon-only buttons except settings and close, both with an accessible name.</li>
+      <li><strong>Hover darkens.</strong> Petrol to petrol-deep. No lift, no scale, no glow.</li>
+      <li><strong>One primary per view.</strong> The panel usually has none; the error state owns it.</li>
+      <li><strong>Disabled needs a reason.</strong> If the user cannot act, the hint next to the control says why. Prefer hiding an impossible action over greying it out.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h4>Focus ring</h4>
+    <p class="small">2 px petrol, 2 px offset, square corners. On review rows the ring is drawn inside the row (<span class="mono">inset 0 0 0 2px</span>) so the list does not jump. The ring is never removed for mouse users and never replaced by a colour change alone.</p>
+    <h4 style="margin-top:4mm;">Hit areas</h4>
+    <p class="small">44 × 44 px minimum for every interactive element. A 26 px chip gets an invisible 44 px target. Text links inside body copy are exempt from the 44 px rule but still need 3:1 contrast and a visible focus ring.</p>
+  </div>
+</div>
+
+<h2>7.3 Switches and selectors</h2>
+
+<div class="figure">
+  <div class="figlabel">Controls</div>
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+    <div><span class="ui-switch on"></span><div class="micro" style="margin-top:2mm;">On · petrol</div></div>
+    <div><span class="ui-switch"></span><div class="micro" style="margin-top:2mm;">Off · rule-strong</div></div>
+    <div><span class="ui-seg"><span class="on">EN</span><span>FR</span></span><div class="micro" style="margin-top:2mm;">Language · options</div></div>
+    <div><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--faint);">EN <b style="color:var(--ink);border-bottom:1px solid var(--ink);font-weight:500;">/</b> FR</span><div class="micro" style="margin-top:2mm;">Language · panel</div></div>
+  </div>
+</div>
+
+<p>The switch is 36 × 20 px with a 16 px thumb; the whole 44 px row is clickable, not just the track. The panel uses an underlined two-word language control to save height; the options page uses the segmented version because it has room and a clearer selected state. Neither uses a flag icon: flags are countries, not languages.</p>
+
+<h2>7.4 Panel chrome</h2>
+
+<div class="figure" style="background:var(--panel-2);">
+  <div class="figlabel">Panel · 360 px · actual size · one row expanded</div>
+  <div style="display:flex;justify-content:center;">
+    <div class="tl-panel" style="box-shadow:none;">
+      <div class="tl-head">
+        <div class="tl-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+          TrustLoop
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="tl-lang"><b>EN</b><span>/</span><span>FR</span></div>
+          <span class="tl-gear" aria-label="Settings">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true"><path d="M3 6h9M15 6h2M3 14h3M9 14h8"/><circle cx="13.5" cy="6" r="1.7"/><circle cx="7.5" cy="14" r="1.7"/></svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="tl-pagebar">
+        <div>
+          <div class="tl-site">Example-shop.com</div>
+          <div class="tl-count">3 reviews found</div>
+        </div>
+        <div class="tl-rescan">Rescan</div>
+      </div>
+
+      <div class="tl-list">
+        <div class="tl-rev">
+          <div class="tl-row">
+            <span class="tl-idx">01</span>
+            <span class="tl-score">81</span>
+            <div><div class="tl-band">Likely organic</div><div class="tl-ev">Adequate evidence · Band 5 of 6</div></div>
+            <span class="tl-chev">⌄</span>
+          </div>
+          <div class="tl-top">Includes a concrete usage detail</div>
+        </div>
+
+        <div class="tl-rev">
+          <div class="tl-row">
+            <span class="tl-idx">02</span>
+            <span class="tl-score">34</span>
+            <div><div class="tl-band">Likely manipulated</div><div class="tl-ev">Adequate evidence · Band 2 of 6</div></div>
+            <span class="tl-chev">⌃</span>
+          </div>
+          <div class="tl-top">Reads like promotional copy</div>
+
+          <div class="tl-detail">
+            <div class="tl-measure">
+              <div class="tl-mtop"><span class="tl-mscore">34</span><span class="tl-mband">Likely manipulated</span></div>
+              <div class="tl-track">
+                <span class="tl-seg1" style="width:20%"></span><span class="tl-seg2" style="width:20%"></span><span class="tl-seg3" style="width:15%"></span><span class="tl-seg4" style="width:15%"></span><span class="tl-seg5" style="width:15%"></span><span class="tl-seg6" style="width:15%"></span>
+                <i class="tl-marker" style="left:calc(34% - 1px)"></i>
+              </div>
+              <div class="tl-mscale" style="display:grid;grid-template-columns:1fr 1fr 1fr;"><span>0</span><span style="text-align:center;">50</span><span style="text-align:right;">100</span></div>
+              <div class="tl-qual" style="color:var(--muted);"><span class="tl-i">i</span> Adequate evidence · Band 2 of 6</div>
+            </div>
+
+            <div class="tl-sigscale"><span>← manipulative</span><span>organic →</span></div>
+
+            <div class="tl-sig">
+              <div class="tl-sighead"><span class="tl-siglabel">Reads like promotional copy</span><span class="tl-dir manip">←</span><span class="tl-pct">31%</span></div>
+              <div class="tl-axis"><span class="tl-bar" style="left:34.5%;width:15.5%;background:var(--rust);"></span></div>
+            </div>
+            <div class="tl-sig">
+              <div class="tl-sighead"><span class="tl-siglabel">Repeats the same phrasing</span><span class="tl-dir manip">←</span><span class="tl-pct">18%</span></div>
+              <div class="tl-axis"><span class="tl-bar" style="left:41%;width:9%;background:var(--rust);"></span></div>
+            </div>
+            <div class="tl-sig">
+              <div class="tl-sighead"><span class="tl-siglabel">Includes a concrete usage detail</span><span class="tl-dir org">→</span><span class="tl-pct">12%</span></div>
+              <div class="tl-axis"><span class="tl-bar" style="left:50%;width:6%;background:var(--petrol);"></span></div>
+            </div>
+            <div style="font-family:var(--mono);font-size:7.5px;line-height:1.35;color:var(--faint);margin-top:7px;">Contributions are normalized over all features; the top five do not add to 100%.</div>
+          </div>
+        </div>
+
+        <div class="tl-rev">
+          <div class="tl-row">
+            <span class="tl-idx">03</span>
+            <span class="tl-score">64</span>
+            <div><div class="tl-band">Mixed signals</div><div class="tl-ev"><span class="tl-low"><span class="tl-i">i</span> Indicative — limited text · Band 4 of 6</span></div></div>
+            <span class="tl-chev">⌄</span>
+          </div>
+          <div class="tl-top">Includes a concrete usage detail</div>
+        </div>
+      </div>
+
+      <div class="tl-foot">
+        <div>Estimated from text patterns. Does not verify purchase, identity, or truth.</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--faint);margin-top:2px;">tl-text-1.1.0 · contract v1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="caption"><b>Chrome.</b> Header 44 px, footer about 40 px, both fixed. The review list is the only scrolling region. The page bar reports a count, never a page score. Rows keep their page order; sorting by score is forbidden because it turns the list into a ranking.</p>
+
+<h2>7.5 Review rows</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:32mm;">State</th><th>What changes</th><th style="width:50mm;">What must not change</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Default</strong></td><td>Panel background. Index, score, band, evidence, one top signal.</td><td>Page order; band name; row height.</td></tr>
+    <tr><td><strong>Hover</strong></td><td>Background to <span class="mono">#FAF6EE</span>. Nothing moves.</td><td>Text colour; rule colour; layout.</td></tr>
+    <tr><td><strong>Focus</strong></td><td>2 px petrol ring inside the row. Visible for keyboard and mouse.</td><td>Row width; scroll position.</td></tr>
+    <tr><td><strong>Expanded</strong></td><td>Measure, signal rows, chevron turned. Detail sits below a dashed rule.</td><td>The collapsed row above it; the list scroll offset.</td></tr>
+    <tr><td><strong>LOW evidence</strong></td><td>Qualifier becomes “Indicative — limited text”, brass with the info glyph. Score stays ink.</td><td>The score's colour; the band name; the order.</td></tr>
+    <tr><td><strong>Unknown</strong></td><td>Score cell shows “—” at 19 px; band becomes “No estimate”; evidence becomes the reason.</td><td>No zero, no marker, no disabled look.</td></tr>
+    <tr><td><strong>Signals only</strong></td><td>No score; the state label; signals listed without a track.</td><td>No impression of a missing value.</td></tr>
+  </tbody>
+</table>
+
+<p>Collapsed rows are 58–64 px; expanded rows grow with the signal list, up to about 360 px with five signals. The whole row is the 44 px (minimum) target, not the chevron. The chevron is decorative and hidden from assistive technology; the row exposes <span class="mono">aria-expanded</span> and the band name as its accessible label.</p>
+
+<h2>7.6 Signal rows</h2>
+
+<div class="figure">
+  <div class="figlabel">Signal rows · maximum five · actual size</div>
+  <div style="width:360px;border:1px solid var(--rule);background:var(--panel);padding:12px 16px;">
+    <div class="tl-sigscale"><span>← manipulative</span><span>organic →</span></div>
+    <div class="tl-sig">
+      <div class="tl-sighead"><span class="tl-siglabel">Reads like promotional copy</span><span class="tl-dir manip">←</span><span class="tl-pct">31%</span></div>
+      <div class="tl-axis"><span class="tl-bar" style="left:34.5%;width:15.5%;background:var(--rust);"></span></div>
+    </div>
+    <div class="tl-sig">
+      <div class="tl-sighead"><span class="tl-siglabel">Repeats the same phrasing</span><span class="tl-dir manip">←</span><span class="tl-pct">18%</span></div>
+      <div class="tl-axis"><span class="tl-bar" style="left:41%;width:9%;background:var(--rust);"></span></div>
+    </div>
+    <div class="tl-sig">
+      <div class="tl-sighead"><span class="tl-siglabel">Includes a concrete usage detail</span><span class="tl-dir org">→</span><span class="tl-pct">12%</span></div>
+      <div class="tl-axis"><span class="tl-bar" style="left:50%;width:6%;background:var(--petrol);"></span></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:7.5px;line-height:1.35;color:var(--faint);margin-top:7px;">Contributions are normalized over all features; the top five do not add to 100%.</div>
+  </div>
+  <div class="grid4" style="margin-top:3mm;gap:3mm;">
+    <div><div class="micro" style="color:var(--rust);">01</div><p class="small"><strong>Label.</strong> Fixed taxonomy name, 11.5 px.</p></div>
+    <div><div class="micro" style="color:var(--rust);">02</div><p class="small"><strong>Direction.</strong> Arrow plus colour. Never colour alone.</p></div>
+    <div><div class="micro" style="color:var(--rust);">03</div><p class="small"><strong>Contribution.</strong> 9 px mono, optional.</p></div>
+    <div><div class="micro" style="color:var(--rust);">04</div><p class="small"><strong>Axis.</strong> 3 px, centre tick at 50.</p></div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div>
+    <h3 style="margin-top:0;">Rules</h3>
+    <ul>
+      <li><strong>Five maximum.</strong> Order by absolute contribution, then by the fixed taxonomy order. No scroll inside the list.</li>
+      <li><strong>Fixed labels.</strong> The seven taxonomy names are used verbatim. Helper summaries are reviewed strings, never generated at runtime.</li>
+      <li><strong>Never a quote.</strong> No review sentence, fragment, reviewer name, avatar, or star rating appears in a signal row.</li>
+      <li><strong>Both directions exist.</strong> A review can carry manipulation and organic signals at once. That is what “Mixed signals” means.</li>
+      <li><strong>Contribution is optional.</strong> Without a stable, validated value, show the label and direction only; no percentage, no bar.</li>
+      <li><strong>Never renormalise the visible subset.</strong> Contributions are normalized across all features; the five returned signals do not add to 100%. Never rescale them to look like a whole.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h4>Accessible name</h4>
+    <p class="small">“Reads like promotional copy, toward manipulation, 31 percent contribution.” The arrow is hidden from assistive technology; the words carry the direction. The axis is decorative and not announced.</p>
+    <h4 style="margin-top:4mm;">No moral colour</h4>
+    <p class="small">Rust and petrol are directions, not good and bad. Never add a green check to an organic signal or a red cross to a manipulation signal. The band name already carries the judgment, and it is a judgment about text patterns.</p>
+  </div>
+</div>
+
+<h2>7.7 Evidence qualifier and explanation</h2>
+
+<div style="display:grid;grid-template-columns:96mm 1fr;gap:7mm;align-items:start;">
+  <div>
+    <div class="figlabel">LOW evidence · row line</div>
+    <div style="width:360px;border:1px solid var(--rule);background:var(--panel);">
+      <div class="tl-rev" style="border-bottom:0;">
+        <div class="tl-row">
+          <span class="tl-idx">03</span>
+          <span class="tl-score">64</span>
+          <div><div class="tl-band">Mixed signals</div><div class="tl-ev"><span class="tl-low"><span class="tl-i">i</span> Indicative — limited text · Band 4 of 6</span></div></div>
+          <span class="tl-chev">⌄</span>
+        </div>
+        <div class="tl-top">Includes a concrete usage detail</div>
+      </div>
+    </div>
+    <p class="caption" style="margin-top:2mm;">The info glyph is part of the button, not an ornament next to it.</p>
+  </div>
+
+  <div>
+    <div class="figlabel">Explanation popover · 300 px</div>
+    <div class="ui-pop" style="position:relative;">
+      <span class="px">×</span>
+      <div class="pt">What the evidence allows</div>
+      <p>This review has 20–49 words of analysable text. The estimate is shown as indicative: the direction may be useful, the exact position is not.</p>
+      <p>At least 50 words are needed for adequate evidence. Under 20 words, TrustLoop shows no estimate at all.</p>
+      <p style="color:var(--muted);font-size:10px;margin-top:7px;">Evidence describes the text, not the reviewer.</p>
+    </div>
+  </div>
+</div>
+
+<p>The qualifier is a button with a 44 px target. It opens a popover, not a hover tooltip, because it carries the only explanation of the evidence gate. The popover traps focus, closes on Esc or the ×, and returns focus to the qualifier. It is positioned below the row and never covers the score.</p>
+
+<h2>7.8 History</h2>
+
+<div class="figure">
+  <div class="figlabel">Local history · options page</div>
+  <div class="hist-mock" style="width:360px;">
+    <div class="hist-row"><span class="hist-host">example-shop.com</span><span class="hist-time">27 Oct · 14:32</span><span class="hist-result">81</span></div>
+    <div class="hist-row"><span class="hist-host">books.example</span><span class="hist-time">26 Oct · 09:05</span><span class="hist-result none">No estimate</span></div>
+    <div class="hist-row"><span class="hist-host">home-goods.example</span><span class="hist-time">25 Oct · 18:47</span><span class="hist-result">34</span></div>
+  </div>
+  <p class="caption" style="margin-top:2mm;">Host name, local time, result. No review text, no URL, no signal labels.</p>
+</div>
+
+<div class="grid2">
+  <div class="box">
+    <h4>Stored</h4>
+    <p class="small">Time, host name, adapter ID, status, score and verdict when scored, evidence quality, engine, model version, and reason code when unknown. Local only; never synchronised.</p>
+  </div>
+  <div class="box rust">
+    <h4>Never stored</h4>
+    <p class="small">Review text, review keys, reviewer names, page titles, URL paths, persistent text fingerprints, or the number of reviews. History is a list of where and when, not what was said.</p>
+  </div>
+</div>
+
+<div class="grid2" style="margin-top:4mm;">
+  <div class="box">
+    <h4>Off by default</h4>
+    <p class="small">History is opt-in. The switch starts off. Turning it off stops new entries; existing entries remain until cleared.</p>
+  </div>
+  <div class="box">
+    <h4>Bounded</h4>
+    <p class="small">Capped at 100 entries or 30 days, whichever comes first. “Clear history” removes every local entry after a confirmation that names what will be lost.</p>
+  </div>
+</div>
+
+<p>The interface shows host, time, and the result; the record may also carry the adapter, engine, model version, and reason code for support. The empty state is “No scans yet.” followed by “Open a supported product page to start.” No illustration, no mascot, no suggestion to browse.</p>
+
+<h2>7.9 Options page</h2>
+
+<div class="figure">
+  <div class="figlabel">Options · 520 px shown · maximum 680 px</div>
+  <div style="display:flex;justify-content:center;">
+    <div class="opt-mock">
+      <div class="opt-head">
+        <div class="opt-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+          TrustLoop
+        </div>
+        <div class="micro">SETTINGS</div>
+      </div>
+      <div class="opt-body">
+        <div class="opt-sect">
+          <h4>Language</h4>
+          <div class="opt-row">
+            <div><div class="lbl">Interface language</div><div class="hint">The panel, the options, and the on-page chip use this language.</div></div>
+            <div class="ui-seg"><span class="on">EN</span><span>FR</span></div>
+          </div>
+        </div>
+        <div class="opt-sect">
+          <h4>On the page</h4>
+          <div class="opt-row">
+            <div><div class="lbl">Show a chip beside each review</div><div class="hint">The chip shows the score, the band position, and any evidence qualifier.</div></div>
+            <span class="ui-switch on"></span>
+          </div>
+        </div>
+        <div class="opt-sect">
+          <h4>History</h4>
+          <div class="opt-row">
+            <div><div class="lbl">Keep local scan history</div><div class="hint">Off by default. Stores host, time, and result — never review text.</div></div>
+            <span class="ui-switch"></span>
+          </div>
+          <div class="opt-row">
+            <div><div class="lbl">Clear history</div><div class="hint">Removes every local entry. This cannot be undone.</div></div>
+            <span class="ui-btn danger small">Clear history</span>
+          </div>
+        </div>
+        <div class="opt-sect">
+          <h4>Data</h4>
+          <div class="opt-row">
+            <div><div class="lbl">What is sent</div><div class="hint">Visible review text and the page language. No account, no browsing history, no reviewer identity.</div></div>
+          </div>
+        </div>
+        <div class="opt-sect">
+          <h4>About</h4>
+          <div class="opt-row">
+            <div><div class="lbl">TrustLoop 1.0</div><div class="hint">Model tl-text-1.1.0 · Contract v1 · <span style="color:var(--petrol);">How the estimate works</span></div></div>
+          </div>
+        </div>
+        <div class="opt-note">Changes save automatically.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="caption"><b>Options rules.</b> Maximum width 680 px, 20 px gutters, document type scale. No marketing hero, no feature grid, no “upgrade” panel. Destructive actions are confirmed with a dialog that names what will be lost. Nothing is pre-checked for data collection.</p>
+
+<h2>7.10 Icons</h2>
+
+<div class="icons tight">
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M5 8l5 5 5-5"/></svg><span>chevron</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M8 5h7v7"/><path d="M15 5L6 14"/></svg><span>external</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M16 8a6.5 6.5 0 1 0 .4 3.6"/><path d="M16 4v4h-4"/></svg><span>refresh</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="10" cy="10" r="7"/><path d="M10 9.2v5"/><path d="M10 6.4v.1"/></svg><span>info</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M5 5l10 10M15 5L5 15"/></svg><span>close</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg><span>history</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M3 6h9M15 6h2M3 14h3M9 14h8"/><circle cx="13.5" cy="6" r="1.7"/><circle cx="7.5" cy="14" r="1.7"/></svg><span>settings</span></div>
+  <div class="icon-cell"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="10" cy="10" r="7"/><path d="M3 10h14"/><ellipse cx="10" cy="10" rx="3" ry="7"/></svg><span>language</span></div>
+</div>
+
+<p class="caption">The mark is the only filled glyph. Everything else is a 20 px line icon and takes its colour from the parent.</p>
+
+<ul class="two-col-list small">
+  <li><strong>20 × 20 viewBox, 1.5 px stroke, square caps and joins.</strong> No rounded “friendly” icons.</li>
+  <li><strong>Current colour only.</strong> Icons never introduce a new hue; the parent component sets the colour.</li>
+  <li><strong>No verdict iconography.</strong> No shield, seal, checkmark, star, flame, sparkle, robot, brain, eye, or magnifying glass over a person.</li>
+  <li><strong>No emoji.</strong> Anywhere. Not in the panel, options, empty states, or the report.</li>
+</ul>

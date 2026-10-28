@@ -1,0 +1,309 @@
+<!-- ================= 12 TOKENS ================= -->
+<h1><span class="num">SECTION 12</span>Design tokens</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">Tokens are the contract between the charter and the code. A component uses a named value, never a hex code; a theme changes the values, never the component.</p>
+
+<h2>12.1 One source, three artefacts</h2>
+
+<div class="grid3">
+  <div class="box petrol"><h4>tokens.css</h4><p class="small">The runtime source for the extension and options page. Custom properties only. No component classes, no resets, no app code.</p></div>
+  <div class="box petrol"><h4>tokens.json</h4><p class="small">The tooling copy for Figma variables, documentation, and any future generator. Same values, same names.</p></div>
+  <div class="box petrol"><h4>Figma variables</h4><p class="small">Two modes, Light and Night. Names mirror the token paths. A designer never types a hex value into a layer.</p></div>
+</div>
+
+<p>In v1 the three artefacts are updated together by hand; there is no build step that generates one from another. That is a deliberate trade: fewer moving parts, but the release checklist includes a value diff between <span class="mono">tokens.css</span> and <span class="mono">tokens.json</span>. When the project has a build pipeline, the JSON becomes the source and the CSS is generated.</p>
+
+<h2>12.2 Colour tokens</h2>
+
+<table class="spec" style="font-size:7.8pt;">
+  <thead><tr><th style="width:42mm;">Token</th><th style="width:24mm;">Light</th><th style="width:24mm;">Night</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">--tl-surface</td><td class="mono">#F7F3EA</td><td class="mono">#121615</td><td>Page ground.</td></tr>
+    <tr><td class="mono">--tl-surface-panel</td><td class="mono">#FCFAF5</td><td class="mono">#1A1F1D</td><td>Panel, cards, chips.</td></tr>
+    <tr><td class="mono">--tl-surface-inset</td><td class="mono">#F3EFE5</td><td class="mono">#222824</td><td>Inset notes, skeletons.</td></tr>
+    <tr><td class="mono">--tl-text</td><td class="mono">#1A1D1B</td><td class="mono">#EDE7D9</td><td>Primary text, score.</td></tr>
+    <tr><td class="mono">--tl-text-secondary</td><td class="mono">#3E4440</td><td class="mono">#CDD2C8</td><td>Secondary body.</td></tr>
+    <tr><td class="mono">--tl-text-muted</td><td class="mono">#686D66</td><td class="mono">#A7ACA2</td><td>Metadata, qualifiers, scale labels.</td></tr>
+    <tr><td class="mono">--tl-text-nonessential</td><td class="mono">#8B8F86</td><td class="mono">#7F857B</td><td>Non-text only: ticks, dashed rule.</td></tr>
+    <tr><td class="mono">--tl-border</td><td class="mono">#DAD3C5</td><td class="mono">#333A36</td><td>Decorative hairlines.</td></tr>
+    <tr><td class="mono">--tl-border-strong</td><td class="mono">#BDB4A4</td><td class="mono">#48514B</td><td>Heavier dividers, not controls.</td></tr>
+    <tr><td class="mono">--tl-border-control</td><td class="mono">#858A81</td><td class="mono">#7F857B</td><td>Button, chip, switch, popover edges (3:1+).</td></tr>
+    <tr><td class="mono">--tl-action</td><td class="mono">#14524B</td><td class="mono">#79B3A4</td><td>Primary action, links.</td></tr>
+    <tr><td class="mono">--tl-action-pressed</td><td class="mono">#0E3B36</td><td class="mono">#8FC3B5</td><td>Pressed / hover.</td></tr>
+    <tr><td class="mono">--tl-on-action</td><td class="mono">#F7F3EA</td><td class="mono">#0E1B18</td><td>Text on a primary action.</td></tr>
+    <tr><td class="mono">--tl-focus</td><td class="mono">#14524B</td><td class="mono">#79B3A4</td><td>Focus ring.</td></tr>
+    <tr><td class="mono">--tl-manipulation</td><td class="mono">#A24A2C</td><td class="mono">#D08A6B</td><td>Signals toward manipulation.</td></tr>
+    <tr><td class="mono">--tl-organic</td><td class="mono">#14524B</td><td class="mono">#79B3A4</td><td>Signals toward organic.</td></tr>
+    <tr><td class="mono">--tl-evidence-low</td><td class="mono">#8A6A32</td><td class="mono">#D2B273</td><td>LOW qualifier, info glyph.</td></tr>
+    <tr><td class="mono">--tl-warning</td><td class="mono">#6B4E16</td><td class="mono">#D2B273</td><td>Caution copy on soft ground.</td></tr>
+    <tr><td class="mono">--tl-stop-1 … 6</td><td class="mono">see 3.2</td><td class="mono">see 3.3</td><td>The six trust stops, solid only.</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Aliases, not duplicates.</b> <span class="mono">--tl-action</span> is an alias of petrol. A theme switches the base values; components keep referring to the alias. Do not create a second “button-green”.</p>
+
+<h2>12.3 Type tokens</h2>
+
+<table class="spec" style="font-size:7.8pt;">
+  <thead><tr><th style="width:52mm;">Token</th><th style="width:30mm;">Value</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">--tl-font-serif</td><td>Newsreader</td><td>Cover, section titles, band names, document lede.</td></tr>
+    <tr><td class="mono">--tl-font-sans</td><td>IBM Plex Sans</td><td>Interface, body, buttons, labels.</td></tr>
+    <tr><td class="mono">--tl-font-mono</td><td>IBM Plex Mono</td><td>Score, contribution, index, version, reason code, scales.</td></tr>
+    <tr><td class="mono">--tl-doc-cover-size / line</td><td>58 / 57 px</td><td>Cover title.</td></tr>
+    <tr><td class="mono">--tl-doc-h1-size / line</td><td>31 / 35 px</td><td>Section titles.</td></tr>
+    <tr><td class="mono">--tl-doc-body-size / line</td><td>9.6 / 14.6 px</td><td>Document body.</td></tr>
+    <tr><td class="mono">--tl-panel-score-size / line</td><td>28 / 28 px</td><td>Expanded measure score.</td></tr>
+    <tr><td class="mono">--tl-panel-score-row-size / line</td><td>23 / 23 px</td><td>Collapsed row score.</td></tr>
+    <tr><td class="mono">--tl-panel-body-size / line</td><td>13 / 18.9 px</td><td>Panel body.</td></tr>
+    <tr><td class="mono">--tl-panel-meta-size / line</td><td>10 / 14 px</td><td>Evidence, helper, breadcrumbs.</td></tr>
+    <tr><td class="mono">--tl-panel-micro-size / line</td><td>9 / 12.6 px</td><td>Index, version, scale labels.</td></tr>
+  </tbody>
+</table>
+
+<p>Weights are 400, 500, and 600 only. Letter-spacing is −0.04 em on scores, −0.025 em on the cover, −0.015 em on section titles, and +0.06 to +0.16 em on mono labels. No other tracking values exist.</p>
+
+<h2>12.4 Space, shape, and layout</h2>
+
+<table class="spec" style="font-size:7.8pt;">
+  <thead><tr><th style="width:52mm;">Token</th><th style="width:24mm;">Value</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">--tl-space-1 … 12</td><td>4 · 8 · 12 · 16 · 24 · 32 · 48</td><td>The only spacing values.</td></tr>
+    <tr><td class="mono">--tl-radius</td><td>2 px</td><td>Buttons, chips, popovers.</td></tr>
+    <tr><td class="mono">--tl-panel-radius</td><td>3 px</td><td>Panel only.</td></tr>
+    <tr><td class="mono">--tl-shadow</td><td>3 px 3 px 0</td><td>Hard offset, no blur. Panel and popover only.</td></tr>
+    <tr><td class="mono">--tl-panel-width</td><td>360 px</td><td>Default; min 320, max 420.</td></tr>
+    <tr><td class="mono">--tl-panel-gutter</td><td>16 px</td><td>Header, rows, page bar, footer.</td></tr>
+    <tr><td class="mono">--tl-header-min-height</td><td>44 px</td><td>Header; grows with text spacing.</td></tr>
+    <tr><td class="mono">--tl-target-min</td><td>44 px</td><td>Every interactive target.</td></tr>
+    <tr><td class="mono">--tl-chip-height</td><td>26 px</td><td>Chip visual height; 22 px small.</td></tr>
+    <tr><td class="mono">--tl-track-height</td><td>7 px</td><td>Measure track; 1 px gap.</td></tr>
+    <tr><td class="mono">--tl-marker-width / height</td><td>2 / 15 px</td><td>Marker, offset −4 px.</td></tr>
+    <tr><td class="mono">--tl-options-max-width</td><td>680 px</td><td>Options page; 520 px shown in the mockups.</td></tr>
+  </tbody>
+</table>
+
+<h2>12.5 Motion tokens</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:48mm;">Token</th><th style="width:24mm;">Value</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">--tl-duration-state</td><td>90 ms</td><td>Hover and press colour.</td></tr>
+    <tr><td class="mono">--tl-duration-fade</td><td>120 ms</td><td>Crossfade after rescan.</td></tr>
+    <tr><td class="mono">--tl-duration-expand</td><td>180 ms</td><td>Row expansion, chevron.</td></tr>
+    <tr><td class="mono">--tl-duration-skeleton</td><td>1400 ms</td><td>Skeleton pulse period.</td></tr>
+    <tr><td class="mono">--tl-ease-expand</td><td>cubic-bezier(.2,0,0,1)</td><td>Expansion only.</td></tr>
+  </tbody>
+</table>
+
+<h2>12.6 Token rules</h2>
+
+<ul class="two-col-list">
+  <li><strong>No raw values in components.</strong> A hex code, px padding, or duration outside this file is a defect. The review greps for <span class="mono">#</span> and <span class="mono">px</span> in component styles.</li>
+  <li><strong>No gradients.</strong> There is no gradient token because no product surface uses one. A gradient in a mockup is a mistake, not a theme.</li>
+  <li><strong>No colour-only states.</strong> A token cannot add a cue that the markup does not carry. The band ladder, arrow, label, and em dash exist in the component, not in the palette.</li>
+  <li><strong>Night is explicit.</strong> The theme follows the extension setting or the OS preference, never the host page. It is applied with <span class="mono">data-tl-theme="night"</span>, not by inverting values.</li>
+  <li><strong>One new token needs a decision.</strong> Add the value to both files, update this section, and record it in D20. Do not sneak a one-off value into a component.</li>
+  <li><strong>Values are versioned.</strong> A colour change is a charter revision, not a tweak. The PDF, the CSS, the JSON, and the Figma variables carry the same version.</li>
+</ul>
+
+<div class="callout warn">
+  <span class="tag">The 4 px trap</span>
+  <p>Ten, fourteen, eighteen, and twenty-two are not spacing tokens. The 14 px mockup padding from an early draft was corrected to the 16 px gutter; the only off-scale offset is the 3 px hard shadow, which is a print device, not spacing.</p>
+</div>
+
+<!-- ================= 13 FIGMA ================= -->
+<h1><span class="num">SECTION 13</span>Figma build</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">The Figma file is a working drawing, not the source of truth. It is built from variables and components so that the charter, the tokens, and the frames cannot drift into three different products.</p>
+
+<h2>13.1 File pages</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:26mm;">Page</th><th style="width:68mm;">Contents</th><th>Rule</th></tr></thead>
+  <tbody>
+    <tr><td><strong>00 Cover</strong></td><td>Title, version, export date, owner, links to the charter and token files.</td><td>Read-only. No components.</td></tr>
+    <tr><td><strong>01 Foundations</strong></td><td>Colour variables, six stops, type specimens, 4 px grid, mark, icons, night mode.</td><td>Every swatch is a variable, not a painted rectangle.</td></tr>
+    <tr><td><strong>02 Components</strong></td><td>Measure, row, panel, chip, signal row, buttons, switch, popover, states.</td><td>Components and variants only; no one-off frames.</td></tr>
+    <tr><td><strong>03 Patterns</strong></td><td>Loading, empty, error, unknown, signals-only, history, options, host-page placement.</td><td>Instances only; text from the copy deck.</td></tr>
+    <tr><td><strong>04 Documents</strong></td><td>Report cover, slide master, chart examples, evidence card.</td><td>Same variables; 16:9 and A4 frames.</td></tr>
+    <tr><td><strong>99 Archive</strong></td><td>Superseded explorations, clearly dated.</td><td>Never linked from handoff.</td></tr>
+  </tbody>
+</table>
+
+<h2>13.2 Variables and styles</h2>
+
+<div class="grid2">
+  <div>
+    <h3 style="margin-top:0;">Collections</h3>
+    <ul>
+      <li><strong>Color / Base</strong> — the raw palette, one mode per value.</li>
+      <li><strong>Color / Stop</strong> — six stops, light and night modes.</li>
+      <li><strong>Color / Semantic</strong> — aliases used by components: surface, text, border, action, manipulation, organic, evidence-low.</li>
+      <li><strong>Type</strong> — families, weights, sizes, line heights; composite text styles on top.</li>
+      <li><strong>Space / Shape</strong> — 4 px scale, radii, border widths, shadow offset.</li>
+      <li><strong>Layout</strong> — panel widths, header height, target size, chip and track geometry.</li>
+      <li><strong>Motion</strong> — three durations and one easing curve, documented for prototype settings.</li>
+    </ul>
+  </div>
+  <div class="box" style="font-family:var(--mono);font-size:8pt;line-height:1.7;background:var(--panel);">
+    <div class="micro" style="margin-bottom:2mm;">LAYER TREE · PANEL / DEFAULT</div>
+    panel<br>
+    ├─ header · 44<br>
+    │&nbsp;&nbsp;├─ brand / mark + wordmark<br>
+    │&nbsp;&nbsp;└─ controls / language + settings<br>
+    ├─ page-bar · host + count + rescan<br>
+    ├─ list · fill<br>
+    │&nbsp;&nbsp;├─ review-row / collapsed<br>
+    │&nbsp;&nbsp;├─ review-row / expanded<br>
+    │&nbsp;&nbsp;│&nbsp;&nbsp;├─ measure / scored<br>
+    │&nbsp;&nbsp;│&nbsp;&nbsp;└─ signals / 1–5<br>
+    │&nbsp;&nbsp;└─ review-row / low<br>
+    └─ footer · disclaimer + version
+  </div>
+</div>
+
+<p>Text styles are named by role, not by size: <span class="mono">type/panel/score</span>, <span class="mono">type/panel/band</span>, <span class="mono">type/panel/meta</span>, <span class="mono">type/doc/h1</span>. A layer named “Plex 13 semibold” is a defect; it will not survive a theme change or a copy change. Effect styles: one hard-offset shadow, no blur. Grid styles: 4 px baseline, 8 px column grid for documents.</p>
+
+<h2>13.3 Components and variants</h2>
+
+<table class="spec" style="font-size:7.8pt;">
+  <thead><tr><th style="width:34mm;">Component</th><th style="width:56mm;">Variants</th><th>Properties</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Measure</strong></td><td>state = scored · signals-only · unknown; evidence = adequate · low</td><td>Score text, band text, marker position (representative frames; production uses score/100).</td></tr>
+    <tr><td><strong>Review row</strong></td><td>state = collapsed · expanded · unknown · low · signals-only; interaction = rest · hover · focus</td><td>Index, score/state, band, evidence, top signal, chevron.</td></tr>
+    <tr><td><strong>Chip</strong></td><td>state = band 1–6 · unknown · signals-only · error; evidence = adequate · low</td><td>Score text, ladder position, qualifier glyph.</td></tr>
+    <tr><td><strong>Signal row</strong></td><td>direction = manipulative · organic; contribution = shown · hidden</td><td>Summary string, arrow, percentage, bar length.</td></tr>
+    <tr><td><strong>Button</strong></td><td>kind = primary · secondary · quiet · danger; size = default · small; state = rest · hover · pressed · focus · disabled</td><td>Label only. No icon-only except settings and close.</td></tr>
+    <tr><td><strong>Switch</strong></td><td>state = on · off; interaction = rest · focus</td><td>Label and hint live in the option row, not inside the switch.</td></tr>
+    <tr><td><strong>Evidence popover</strong></td><td>evidence = low · adequate</td><td>Heading, body, close.</td></tr>
+    <tr><td><strong>State block</strong></td><td>kind = empty · error · no-reviews · unsupported</td><td>Title, body, 0–1 action.</td></tr>
+    <tr><td><strong>Panel</strong></td><td>state = loading · scored · mixed · empty · error · night</td><td>Header, page bar, list, footer.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="tag">The marker in Figma</span>
+  <p>Figma cannot bind a layer position to an arbitrary 0–100 score. Build three representative frames (for example 34, 51, 73) and annotate the formula <span class="mono">left = score%</span>. Do not create 101 variants. Production uses CSS, not the Figma frame.</p>
+</div>
+
+<h2>13.4 Auto layout and constraints</h2>
+
+<ul class="two-col-list">
+  <li><strong>Panel:</strong> vertical auto layout; width fixed at 360; header and footer hug; list fill. No absolute layers except the marker inside the track.</li>
+  <li><strong>Row:</strong> horizontal auto layout; index fixed 22, score fixed 40, band fill, chevron fixed 12; gap 8; padding 10/16; min-height 58.</li>
+  <li><strong>Chip:</strong> horizontal, hug contents, min-height 26, padding 3/7; the ladder is a nested component with six ticks.</li>
+  <li><strong>Measure:</strong> vertical; score and band on one baseline; track fixed 7; scale labels 7.5; qualifier hug.</li>
+  <li><strong>Text:</strong> no fixed-height text frames. Use auto height and “hug contents”; test the French string, not the English placeholder.</li>
+  <li><strong>Constraints:</strong> header/footer pin to top/bottom; list fills; no stretch that distorts the chip or the mark.</li>
+</ul>
+
+<h2>13.5 Prototype flows</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:34mm;">Flow</th><th>Interaction</th><th style="width:42mm;">Motion</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Chip → panel</strong></td><td>Click the chip; open the panel frame with the matching row expanded and at the top.</td><td>Instant; no page transition.</td></tr>
+    <tr><td><strong>Expand a row</strong></td><td>Click or Enter; the detail appears below the row.</td><td>180 ms height; chevron 180 ms.</td></tr>
+    <tr><td><strong>Rescan</strong></td><td>Click Rescan; show “Rescanning…”, then the updated rows.</td><td>120 ms opacity; no sweep.</td></tr>
+    <tr><td><strong>Language</strong></td><td>Switch EN/FR; every string changes, including band names and disclaimer.</td><td>Instant; no slide.</td></tr>
+    <tr><td><strong>Evidence</strong></td><td>Click the qualifier; popover opens; Esc closes.</td><td>Instant; focus returns.</td></tr>
+    <tr><td><strong>Failure</strong></td><td>Separate frames for empty, error, unknown, signals-only.</td><td>No loading loop; no fake progress.</td></tr>
+  </tbody>
+</table>
+
+<h2>13.6 Figma QA</h2>
+
+<ul class="two-col-list">
+  <li><strong>Variables only.</strong> No detached colour or text style; switching Light/Night changes the whole frame.</li>
+  <li><strong>No gradients or blurs.</strong> The only shadow is the 3 px hard offset. No glass, no glow.</li>
+  <li><strong>Copy deck only.</strong> Every string is traceable to Appendix A; proposed strings are marked in the frame notes.</li>
+  <li><strong>French first.</strong> The longest strings are set in French, at 320 px, before the English frame is approved.</li>
+  <li><strong>States, not just the happy path.</strong> Every component has unknown, low, error, and focus where relevant.</li>
+  <li><strong>No stock imagery, avatars, emoji, or AI-generated art.</strong> The mark and icons are the only graphics.</li>
+  <li><strong>No detached instances.</strong> Overrides are limited to text and variant properties; geometry stays in the component.</li>
+  <li><strong>200% check in the browser.</strong> Figma zoom is not layout zoom; the real test is the built panel at 200% and 320 px.</li>
+</ul>
+
+<h2>13.7 The Figma prompt</h2>
+
+<p>The paste-ready brief lives in <span class="mono">docs/design/figma-prompt.md</span>. It contains the file name, the page structure, the variable collections, the component list, the exact palette and type, and the refusals. It is written to be pasted into a Figma AI or handed to a designer, and it repeats the anti-AI constraints because that is where generic output enters: violet gradients, glass cards, centred hero layouts, rounded pills, and decorative emoji.</p>
+
+<!-- ================= 14 HANDOFF ================= -->
+<h1><span class="num">SECTION 14</span>Handoff</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">A handoff is a small, versioned package with one hierarchy. If a developer has to ask which screenshot is current, the package has failed.</p>
+
+<h2>14.1 File map</h2>
+
+<table class="spec" style="font-size:7.9pt;">
+  <thead><tr><th style="width:62mm;">Path</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">docs/design/README.md</td><td>Index, status, authority, revision rules.</td></tr>
+    <tr><td class="mono">docs/design/TrustLoop-Graphic-Charter-v1.0.pdf</td><td>Immutable export for the release.</td></tr>
+    <tr><td class="mono">docs/design/tokens.css</td><td>Runtime token values.</td></tr>
+    <tr><td class="mono">docs/design/tokens.json</td><td>Tooling and Figma variable values.</td></tr>
+    <tr><td class="mono">docs/design/figma-prompt.md</td><td>Paste-ready Figma brief and refusals.</td></tr>
+    <tr><td class="mono">docs/design/assets/mark.svg</td><td>Open-loop mark, one colour, currentColor.</td></tr>
+    <tr><td class="mono">docs/design/assets/wordmark.svg</td><td>Mark plus live-text wordmark lockup.</td></tr>
+    <tr><td class="mono">docs/design/src/</td><td>HTML source of the charter, one fragment per section.</td></tr>
+  </tbody>
+</table>
+
+<h2>14.2 Source hierarchy</h2>
+
+<ol>
+  <li><strong>Product decisions and model plan.</strong> Score meaning, bands, copy deck, signals, evidence, privacy, D23.</li>
+  <li><strong>This charter.</strong> Visual and interaction rules, components, states, tokens.</li>
+  <li><strong>tokens.css / tokens.json.</strong> The values in code. If they disagree with the charter PDF, the PDF is stale; fix the PDF and the files together.</li>
+  <li><strong>Figma.</strong> The working file. It follows the tokens and the copy deck; it is never the authority for either.</li>
+  <li><strong>Screenshots.</strong> Illustrations, not specifications. Never hand off a screenshot alone.</li>
+</ol>
+
+<h2>14.3 What developers receive</h2>
+
+<div class="grid3">
+  <div class="box"><h4>Values</h4><p class="small"><span class="mono">tokens.css</span> and <span class="mono">tokens.json</span>. No hex codes in tickets. Import the variables once, then use semantic aliases.</p></div>
+  <div class="box"><h4>Behaviour</h4><p class="small">Section 08's state matrix and Section 06's measure rules. Unknown, LOW, signals-only, loading, and error are part of the component, not follow-up work.</p></div>
+  <div class="box"><h4>Copy</h4><p class="small">Appendix A. Normative strings are quoted; proposed strings are marked and need deck approval. No string is invented in code.</p></div>
+</div>
+
+<h2>14.4 Design QA and definition of done</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:12mm;">#</th><th style="width:60mm;">Check</th><th>Done when</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">01</td><td>Tokens</td><td>No raw colour, spacing, or duration values outside the token layer.</td></tr>
+    <tr><td class="mono">02</td><td>States</td><td>Default, hover, focus, expanded, LOW, unknown, signals-only, loading, empty, error are implemented or explicitly out of scope with a reason.</td></tr>
+    <tr><td class="mono">03</td><td>Copy</td><td>English and French strings match Appendix A; no truncation at 320 px.</td></tr>
+    <tr><td class="mono">04</td><td>Accessibility</td><td>Contrast, focus, targets, screen-reader names, 200% zoom, reflow, reduced motion pass Section 10.</td></tr>
+    <tr><td class="mono">05</td><td>Honesty</td><td>No page aggregate, no identity claim, no score for unknown, no colour-only band.</td></tr>
+    <tr><td class="mono">06</td><td>Handoff</td><td>PDF, tokens, Figma link, and copy inventory share one version and one export date.</td></tr>
+  </tbody>
+</table>
+
+<h2>14.5 Change control</h2>
+
+<p>A visual change is a charter revision when it alters colour, type, spacing, a component's anatomy, a state, or a token. Update the HTML source, regenerate the PDF, bump the version and export date, update <span class="mono">tokens.css</span> and <span class="mono">tokens.json</span>, and record the change in the D20 row of the decision register. Band boundaries, band names, score meaning, and the copy deck cannot be changed here; they belong to product decisions and the model plan.</p>
+
+<div class="callout">
+  <span class="tag">Versioning</span>
+  <p>Charter v1.0 is the baseline for the MVP and the defense. Minor revisions use v1.1; a new visual direction uses v2.0. The PDF file name carries the version. The Figma file carries a cover frame with the same version and date.</p>
+</div>
+
+<h2>14.6 What not to hand off</h2>
+
+<ul class="two-col-list">
+  <li><strong>Unmarked explorations.</strong> If an alternative was rejected, archive it with a date; do not leave it in the component page.</li>
+  <li><strong>Detached instances.</strong> They drift within a week and cannot inherit the night mode.</li>
+  <li><strong>Screenshots with sample review text.</strong> Keep the mockups free of realistic personal data; the host-page simulation uses obvious placeholders.</li>
+  <li><strong>Untranslated strings.</strong> A French frame with an English label is not a French frame.</li>
+  <li><strong>Gradient or glass variants.</strong> They contradict the charter; do not ship them as “options”.</li>
+  <li><strong>A page-level number.</strong> No mockup, slide, or report figure may average reviews into a page score.</li>
+</ul>

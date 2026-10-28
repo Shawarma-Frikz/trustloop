@@ -1,0 +1,241 @@
+<!-- ================= 04 TYPE ================= -->
+<h1><span class="num">SECTION 04</span>Typography</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">An editorial serif for judgment, an engineering sans for the interface, and a mono for anything that behaves like a measurement. Three families, tightly scoped.</p>
+
+<h2>4.1 The three families</h2>
+
+<div class="specimen">
+  <div class="micro" style="color:var(--rust);">NEWSREADER · DISPLAY AND VERDICT</div>
+  <div class="big">A second reading.</div>
+  <div class="glyphs">Aa Bb Cc Dd Ee Ff Gg 0123456789 — “ ” « » É À Ç œ</div>
+</div>
+<p><strong>Newsreader</strong> carries the chapter titles, the verdict band, and the document covers. It has a literary, slightly calligraphic voice without becoming decorative. It is never used for controls, metadata, or dense body copy. Available under the SIL Open Font License; self-host the WOFF2 files with the extension.</p>
+
+<div class="specimen">
+  <div class="micro" style="color:var(--rust);">IBM PLEX SANS · INTERFACE</div>
+  <div class="ui">Review 3 · Likely organic · Adequate evidence</div>
+  <div style="font-family:var(--sans);font-size:10pt;color:var(--ink-2);margin-top:2mm;">The text shows a concrete usage detail and varied wording. Signals describe what moved the estimate, not whether the review is true.</div>
+</div>
+<p><strong>IBM Plex Sans</strong> is the working voice: rows, buttons, labels, helper text, and the panel. It is plain enough to disappear and distinctive enough not to read as a default system stack. Do not replace it with Inter, Roboto, Poppins, or Montserrat.</p>
+
+<div class="specimen">
+  <div class="micro" style="color:var(--rust);">IBM PLEX MONO · MEASUREMENT AND PROVENANCE</div>
+  <div class="data">73 · 24% · tl-text-1.1.0 · 0–100</div>
+</div>
+<p><strong>IBM Plex Mono</strong> is reserved for scores, percentages, review indices, model versions, reason codes, and the small scale numbers. It makes the number feel measured without turning the whole interface into a terminal.</p>
+
+<div class="grid3" style="margin-top:4mm;">
+  <div class="box"><h4>Fallbacks</h4><p class="small">Georgia → Segoe UI → Cascadia Mono. Fallbacks exist for resilience, not for design. Never ship a screenshot where the fallback is doing the work.</p></div>
+  <div class="box"><h4>Loading</h4><p class="small">Self-host WOFF2 in the extension. No external font request from the panel: it would leak the page session and break offline use.</p></div>
+  <div class="box"><h4>Licensing</h4><p class="small">All three are OFL. Keep the licence files beside the fonts and list them in <span class="mono">NOTICE</span>.</p></div>
+</div>
+
+<!-- ================= 04 SCALE ================= -->
+<h1 class="page-break"><span class="num">SECTION 04 · SCALE</span>Size, line, and number</h1>
+
+<p class="lede">Two scales, one logic: the document is generous, the panel is dense, and neither goes below 9 px for meaning-bearing text.</p>
+
+<h2>4.2 Document scale</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:34mm;">Token</th><th style="width:22mm;">Size / line</th><th style="width:38mm;">Family / weight</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">type/cover</td><td>58 / 57</td><td>Newsreader 500</td><td>Cover title only.</td></tr>
+    <tr><td class="mono">type/h1</td><td>31 / 35</td><td>Newsreader 500</td><td>Section titles.</td></tr>
+    <tr><td class="mono">type/h2</td><td>15 / 18</td><td>Newsreader 500</td><td>Subsections.</td></tr>
+    <tr><td class="mono">type/h3</td><td>11.2 / 15</td><td>Plex Sans 600</td><td>Component and table headings.</td></tr>
+    <tr><td class="mono">type/body</td><td>9.6 / 14.6</td><td>Plex Sans 400</td><td>Body text.</td></tr>
+    <tr><td class="mono">type/lede</td><td>13.2 / 18.7</td><td>Newsreader 400</td><td>Section introduction.</td></tr>
+    <tr><td class="mono">type/small</td><td>8.2 / 11.9</td><td>Plex Sans 400</td><td>Captions, helper text.</td></tr>
+    <tr><td class="mono">type/micro</td><td>7.2 / 10</td><td>Plex Mono 400</td><td>Labels, tokens, page furniture.</td></tr>
+  </tbody>
+</table>
+
+<h2>4.3 Panel scale</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:34mm;">Token</th><th style="width:22mm;">Size / line</th><th style="width:38mm;">Family / weight</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">panel/score</td><td>28 / 28</td><td>Plex Mono 500</td><td>Expanded score. Tabular, −4% tracking.</td></tr>
+    <tr><td class="mono">panel/score-row</td><td>23 / 23</td><td>Plex Mono 500</td><td>Collapsed row score.</td></tr>
+    <tr><td class="mono">panel/band</td><td>15 / 18</td><td>Newsreader 500</td><td>Band name in the expanded row.</td></tr>
+    <tr><td class="mono">panel/body</td><td>13 / 18.9</td><td>Plex Sans 400</td><td>Panel body and row titles.</td></tr>
+    <tr><td class="mono">panel/meta</td><td>10 / 14</td><td>Plex Sans 400</td><td>Evidence, helper, breadcrumbs.</td></tr>
+    <tr><td class="mono">panel/micro</td><td>9 / 12.6</td><td>Plex Mono 400</td><td>Index, scale labels, version.</td></tr>
+    <tr><td class="mono">panel/tiny</td><td>7.5 / 10</td><td>Plex Mono 400</td><td>Only the 0/50/100 scale. No prose.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <span class="tag">Minimums</span>
+  <p>No sentence below <strong>10 px</strong> in the panel. No meaning-bearing text below <strong>9 px</strong> anywhere. The 7.5 px scale labels are the only exception because the same range is repeated in the accessible name and the band label.</p>
+</div>
+
+<h2>4.4 Numbers</h2>
+
+<div class="grid2">
+  <div class="box">
+    <h4>Score</h4>
+    <p style="font-family:var(--mono);font-size:34px;line-height:1;margin:1mm 0 2mm;">73</p>
+    <p class="small">Integer, 0–100, tabular, never a decimal. No percent sign. The score is always adjacent to a band name in the panel.</p>
+  </div>
+  <div class="box">
+    <h4>Contribution</h4>
+    <p style="font-family:var(--mono);font-size:20px;line-height:1;margin:1mm 0 2mm;">24%</p>
+    <p class="small">Only when the explainer is stable and validated. Always labelled “contribution”; never “confidence”, “probability”, or “accuracy”.</p>
+  </div>
+</div>
+
+<h2>4.5 French and English</h2>
+
+<p>French runs longer. Design at the French string, then check English does not look sparse. The claim must be identical in both languages; only the sentence length changes.</p>
+
+<table class="spec">
+  <thead><tr><th style="width:62mm;">English</th><th style="width:62mm;">French</th><th>Δ length</th></tr></thead>
+  <tbody>
+    <tr><td>Likely organic</td><td>Probablement authentique</td><td class="mono">+43%</td></tr>
+    <tr><td>Strong manipulation signals</td><td>Signaux forts de manipulation</td><td class="mono">+21%</td></tr>
+    <tr><td>Indicative — limited text</td><td>Indicatif — texte limité</td><td class="mono">+8%</td></tr>
+    <tr><td>Shares wording with other visible reviews</td><td>Partage des formulations avec d'autres avis visibles</td><td class="mono">+30%</td></tr>
+    <tr><td>Estimated from text patterns. Does not verify purchase, identity, or truth.</td><td>Estimation fondée sur des motifs textuels. Ne vérifie ni l'achat, ni l'identité, ni la véracité.</td><td class="mono">+23%</td></tr>
+    <tr><td>No estimate</td><td>Aucune estimation</td><td class="mono">+14%</td></tr>
+  </tbody>
+</table>
+
+<ul class="two-col-list">
+  <li><strong>Sentence case.</strong> French accents stay; never set a French sentence in all caps.</li>
+  <li><strong>No truncation of meaning.</strong> Wrap to a second line; never end a band name or reason with “…” .</li>
+  <li><strong>No hyphenation</strong> in band names, buttons, or reason labels. Body copy may hyphenate with <span class="mono">lang="fr"</span>.</li>
+  <li><strong>Test at 320 px.</strong> The French disclaimer is the longest persistent string; it must fit in the footer at 10 px without clipping.</li>
+  <li><strong>Typography.</strong> Use French quotation marks « » with non-breaking spaces, and a narrow no-break space before : ; ! ? as the locale requires.</li>
+  <li><strong>Same strength.</strong> “Probablement” is not weaker or stronger than “Likely”; both describe the band, not the reviewer.</li>
+</ul>
+
+<!-- ================= 05 SPACE ================= -->
+<h1><span class="num">SECTION 05</span>Space and layout</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">A 4 px base, a narrow panel, and a strict left edge. The layout should feel typeset: one column, clear rules, and enough air that a serious estimate does not look like a notification.</p>
+
+<h2>5.1 Spacing</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:26mm;">Token</th><th style="width:18mm;">Value</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">space/1</td><td>4 px</td><td>Icon-to-label, bar-to-label.</td></tr>
+    <tr><td class="mono">space/2</td><td>8 px</td><td>Inside a row, chip padding, tight groups.</td></tr>
+    <tr><td class="mono">space/3</td><td>12 px</td><td>Row rhythm, list gaps.</td></tr>
+    <tr><td class="mono">space/4</td><td>16 px</td><td>Panel gutter, section padding.</td></tr>
+    <tr><td class="mono">space/6</td><td>24 px</td><td>Between blocks, expanded detail.</td></tr>
+    <tr><td class="mono">space/8</td><td>32 px</td><td>Empty-state breathing room.</td></tr>
+    <tr><td class="mono">space/12</td><td>48 px</td><td>Page-level separation only.</td></tr>
+  </tbody>
+</table>
+
+<p>The panel uses a <strong>16 px gutter</strong>. The 4 px base is not a suggestion; avoid 10, 14, 18, and 22 px. A single off-scale value (the 3 px hard shadow offset) is a deliberate print device, not a spacing token.</p>
+
+<h2>5.2 Panel geometry</h2>
+
+<div class="grid2" style="align-items:start;">
+  <div class="figure" style="margin-top:0;">
+    <div class="figlabel">Panel wireframe · 360 × 640</div>
+    <div style="width:300px;border:1px solid var(--rule);background:var(--panel);font-family:var(--sans);position:relative;">
+      <div style="height:40px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:0 12px;">
+        <span style="display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;"><svg viewBox="0 0 24 24" style="width:15px;height:15px;color:var(--petrol);"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>TrustLoop</span>
+        <span style="font-family:var(--mono);font-size:7px;color:var(--faint);">EN / FR</span>
+      </div>
+      <div style="height:34px;border-bottom:1px solid var(--rule);padding:7px 12px;">
+        <div style="height:3px;width:44px;background:var(--rule-strong);"></div>
+        <div style="height:4px;width:96px;background:var(--rule);margin-top:3px;"></div>
+      </div>
+      <div style="padding:6px 0;">
+        <div style="border-bottom:1px solid #E9E2D6;padding:8px 12px;">
+          <div style="display:flex;gap:7px;align-items:center;"><span style="width:14px;height:3px;background:var(--rule);"></span><span style="width:24px;height:12px;background:var(--ink);"></span><span style="width:84px;height:5px;background:var(--rule-strong);"></span></div>
+          <div style="height:3px;width:76%;background:var(--rule);margin-top:5px;"></div>
+        </div>
+        <div style="border-bottom:1px solid #E9E2D6;padding:8px 12px;background:#FAF6EE;">
+          <div style="display:flex;gap:7px;align-items:center;"><span style="width:14px;height:3px;background:var(--rule);"></span><span style="width:24px;height:12px;background:var(--ink);"></span><span style="width:92px;height:5px;background:var(--rule-strong);"></span></div>
+          <div style="height:7px;background:#ECE6DA;margin-top:7px;position:relative;"><span style="position:absolute;left:0;top:0;height:7px;width:20%;background:var(--b1);"></span><span style="position:absolute;left:20%;top:0;height:7px;width:20%;background:var(--b2);"></span><span style="position:absolute;left:40%;top:0;height:7px;width:15%;background:var(--b3);"></span><span style="position:absolute;left:55%;top:0;height:7px;width:15%;background:var(--b4);"></span><span style="position:absolute;left:70%;top:0;height:7px;width:15%;background:var(--b5);"></span><span style="position:absolute;left:85%;top:0;height:7px;width:15%;background:var(--b6);"></span></div>
+          <div style="margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;"><span style="width:90px;height:3px;background:var(--rule-strong);"></span><span style="width:18px;height:3px;background:var(--rule);"></span></div>
+            <div style="height:2px;background:#ECE6DA;margin-top:4px;position:relative;"><span style="position:absolute;left:50%;top:0;height:2px;width:16%;background:var(--rust);"></span></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;"><span style="width:80px;height:3px;background:var(--rule-strong);"></span><span style="width:18px;height:3px;background:var(--rule);"></span></div>
+            <div style="height:2px;background:#ECE6DA;margin-top:4px;position:relative;"><span style="position:absolute;left:50%;top:0;height:2px;width:10%;background:var(--rust);"></span></div>
+          </div>
+        </div>
+        <div style="border-bottom:1px solid #E9E2D6;padding:8px 12px;">
+          <div style="display:flex;gap:7px;align-items:center;"><span style="width:14px;height:3px;background:var(--rule);"></span><span style="width:24px;height:12px;background:var(--ink);"></span><span style="width:74px;height:5px;background:var(--rule-strong);"></span></div>
+          <div style="height:3px;width:60%;background:var(--rule);margin-top:5px;"></div>
+        </div>
+      </div>
+      <div style="height:34px;border-top:1px solid var(--rule);padding:7px 12px;">
+        <div style="height:3px;width:92%;background:var(--rule);"></div>
+        <div style="height:3px;width:64%;background:var(--rule);margin-top:3px;"></div>
+      </div>
+
+      <span style="position:absolute;left:-7px;top:12px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">1</span>
+      <span style="position:absolute;left:-7px;top:56px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">2</span>
+      <span style="position:absolute;left:-7px;top:104px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">3</span>
+      <span style="position:absolute;left:-7px;top:160px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">4</span>
+      <span style="position:absolute;left:-7px;top:232px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">5</span>
+      <span style="position:absolute;left:-7px;top:280px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">6</span>
+      <span style="position:absolute;left:-7px;bottom:8px;width:14px;height:14px;background:var(--rust);color:#fff;font-family:var(--mono);font-size:8px;line-height:14px;text-align:center;">7</span>
+    </div>
+  </div>
+
+  <div>
+    <h3 style="margin-top:0;">Anatomy</h3>
+    <ol style="font-size:8.6pt;">
+      <li><strong>Header.</strong> Wordmark, language control. 44 px.</li>
+      <li><strong>Page bar.</strong> Host name, count, rescan. Counts only; no page score.</li>
+      <li><strong>Review list.</strong> The only scrolling region.</li>
+      <li><strong>Review row.</strong> Index, score or state, band, evidence, top signal.</li>
+      <li><strong>Expanded measure.</strong> Score, band, six stops, marker, qualifier.</li>
+      <li><strong>Signals.</strong> Up to five, with direction and optional contribution.</li>
+      <li><strong>Footer.</strong> Disclaimer and model version. Persistent.</li>
+    </ol>
+    <p class="small">Panel width 360 px; minimum 320; maximum 420. The header and footer do not scroll. The list keeps its scroll position when a row expands.</p>
+  </div>
+</div>
+
+<h2>5.3 Review row anatomy</h2>
+
+<div class="figure">
+  <div class="figlabel">Collapsed row · 360 px</div>
+  <div style="border:1px solid var(--rule);background:var(--panel);width:360px;">
+    <div class="tl-rev" style="border-bottom:0;">
+      <div class="tl-row">
+        <span class="tl-idx">03</span>
+        <span class="tl-score">51</span>
+        <div><div class="tl-band">Inconclusive</div><div class="tl-ev">Adequate evidence · Band 3 of 6</div></div>
+        <span class="tl-chev">⌄</span>
+      </div>
+      <div class="tl-top">Includes a concrete usage detail</div>
+    </div>
+  </div>
+  <div class="grid4" style="margin-top:3mm;gap:3mm;">
+    <div><div class="micro" style="color:var(--rust);">01</div><p class="small"><strong>Index.</strong> Page order, not identity. 9 px mono.</p></div>
+    <div><div class="micro" style="color:var(--rust);">02</div><p class="small"><strong>Score or state.</strong> 23 px mono, right-aligned.</p></div>
+    <div><div class="micro" style="color:var(--rust);">03</div><p class="small"><strong>Band and evidence.</strong> The claim and its limit.</p></div>
+    <div><div class="micro" style="color:var(--rust);">04</div><p class="small"><strong>Top signal.</strong> One line; never a quote.</p></div>
+  </div>
+</div>
+
+<p class="caption"><b>Row height.</b> 58–64 px collapsed, 220–280 px expanded. The chevron is decorative; the whole row is the 44 px target.</p>
+
+<h2>5.4 Placement on the host page</h2>
+
+<div class="grid2">
+  <div>
+    <p>The chip sits at the top-right of each review card, 8 px inside the card's padding box. It must not cover the reviewer's actions, the rating, or the review text. If the host layout has no safe corner, place the chip after the review body, aligned left, on its own line.</p>
+    <p>The chip's visual height is 26 px; its interactive target is 44 × 44 px, extending invisibly around it. It never overlaps another chip. On narrow viewports, chips stack with the review, not over it.</p>
+  </div>
+  <div class="box">
+    <h4>Isolation</h4>
+    <p class="small">The panel and chips live in a Shadow DOM. Host page CSS does not enter; extension CSS does not leak. Use <span class="mono">all: initial</span> on the host, then the token layer. No <span class="mono">!important</span> wars with the page.</p>
+  </div>
+</div>

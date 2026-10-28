@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TrustLoop — Complete Build Playbook</title>
+<meta name="author" content="TrustLoop project team">
+<meta name="description" content="Phase-by-phase build guide for TrustLoop: browser extension, Spring Boot API, Python scoring service, GitHub operating model, and defense runbook.">
+<style>
+  :root{
+    --ink:#15191c;
+    --paper:#fcfbf7;
+    --muted:#5b6267;
+    --faint:#8a8f92;
+    --rule:#d9d4c9;
+    --rule-strong:#b9b2a4;
+    --accent:#0d5b5b;
+    --accent-2:#0a4444;
+    --accent-soft:#e8f0ed;
+    --rust:#a34a2a;
+    --rust-soft:#f6ebe5;
+    --ok:#2f6b4f;
+    --ok-soft:#eaf2ed;
+    --warn:#7a5a12;
+    --warn-soft:#f7f0dd;
+    --code-bg:#f1efe8;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:9.7pt;line-height:1.5;
+    font-variant-numeric:tabular-nums;
+  }
+  @page{size:A4;margin:16mm 15mm 17mm;background:var(--paper);}
+  @page:first{margin:0;}
+  p{margin:0 0 6px;}
+  a{color:var(--accent);text-decoration:none;}
+  strong{font-weight:650;}
+  em{font-style:italic;}
+  ul,ol{margin:4px 0 8px;padding-left:17px;}
+  li{margin:2px 0;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;color:var(--ink);line-height:1.22;}
+  h1{
+    font-size:24pt;margin:0 0 4mm;padding:0 0 4mm;
+    border-bottom:1.4pt solid var(--ink);
+    break-before:page;
+  }
+  h1 .num{
+    display:block;font-family:var(--sans);font-size:8pt;letter-spacing:.22em;
+    color:var(--rust);margin-bottom:2.5mm;font-weight:700;
+  }
+  h2{font-size:14pt;margin:8mm 0 2.5mm;padding-top:1mm;border-top:.6pt solid var(--rule);}
+  h3{font-size:11.2pt;margin:5mm 0 1.8mm;color:var(--accent-2);}
+  h4{font-size:9.8pt;margin:4mm 0 1mm;font-family:var(--sans);color:var(--ink);}
+  h2,h3,h4{break-after:avoid;}
+  .lede{font-family:var(--serif);font-size:12.2pt;line-height:1.45;color:#2b3236;margin:0 0 6mm;}
+  .small{font-size:8.4pt;color:var(--muted);}
+  .kicker{font-size:7.6pt;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:2mm;}
+  .chapter-intro{font-size:10.2pt;color:#333a3e;margin-bottom:5mm;max-width:150mm;}
+
+  /* cover */
+  .cover{
+    min-height:297mm;padding:22mm 20mm 18mm;background:var(--paper);
+    display:flex;flex-direction:column;justify-content:space-between;
+    break-after:page;position:relative;
+  }
+  .cover:before{
+    content:"";position:absolute;left:0;top:0;width:100%;height:7mm;background:var(--accent);
+  }
+  .cover:after{
+    content:"";position:absolute;left:20mm;bottom:0;width:38mm;height:2.2mm;background:var(--rust);
+  }
+  .cover-top{display:flex;justify-content:space-between;align-items:baseline;margin-top:6mm;}
+  .brand{font-family:var(--sans);font-weight:800;letter-spacing:.28em;font-size:10pt;color:var(--accent);}
+  .cover-kicker{font-size:8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .cover-title{font-family:var(--serif);font-size:40pt;line-height:1.06;margin:16mm 0 7mm;border:0;padding:0;break-before:auto;}
+  .cover-sub{font-family:var(--serif);font-size:13.4pt;line-height:1.45;color:#343b3f;max-width:150mm;margin:0 0 12mm;}
+  .cover .flow{margin:0 0 12mm;}
+  .cover-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm;border-top:.7pt solid var(--rule);padding-top:5mm;}
+  .cover-meta span{display:block;font-size:7.2pt;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:1mm;}
+  .cover-meta div{font-size:8.8pt;color:#2e3539;}
+
+  .flow{display:flex;align-items:stretch;border-top:1pt solid var(--rule-strong);border-bottom:1pt solid var(--rule-strong);padding:10px 0;}
+  .flow .node{flex:1;padding:9px 10px;border:.6pt solid var(--rule);background:#fff;}
+  .flow .node .n{font-size:6.9pt;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;}
+  .flow .node b{display:block;font-family:var(--serif);font-size:11pt;font-weight:600;margin:2px 0 1px;}
+  .flow .node span{font-size:7.4pt;color:var(--muted);line-height:1.35;display:block;}
+  .flow .arrow{width:22px;display:flex;align-items:center;justify-content:center;color:var(--rust);font-size:13pt;}
+
+  /* front matter */
+  .front{max-width:172mm;}
+  .front h1{break-before:auto;font-size:21pt;}
+  .control-table{width:100%;border-collapse:collapse;margin:4mm 0 8mm;font-size:8.8pt;}
+  .control-table td{border-top:.5pt solid var(--rule);padding:2.2mm 2mm;vertical-align:top;}
+  .control-table td:first-child{width:34mm;color:var(--muted);font-size:7.6pt;text-transform:uppercase;letter-spacing:.08em;}
+  .principles{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin:4mm 0 6mm;}
+  .principle{border-left:2.4pt solid var(--accent);padding:2mm 0 2mm 3.5mm;background:#fff;border-top:.5pt solid var(--rule);border-right:.5pt solid var(--rule);border-bottom:.5pt solid var(--rule);padding-right:3mm;}
+  .principle b{display:block;font-family:var(--serif);font-size:10.4pt;margin-bottom:.8mm;}
+  .principle span{font-size:8.4pt;color:var(--muted);}
+
+  /* toc */
+  .toc{break-before:page;break-after:page;}
+  .toc h1{break-before:auto;}
+  .toc table{width:100%;border-collapse:collapse;font-size:8.9pt;}
+  .toc td{padding:1.35mm 0;vertical-align:baseline;border-bottom:.4pt dotted var(--rule);}
+  .toc td.n{width:12mm;color:var(--rust);font-weight:700;font-family:var(--sans);font-size:7.8pt;letter-spacing:.06em;}
+  .toc td.t{font-family:var(--serif);font-size:9.8pt;}
+  .toc tr.sub td{padding:.8mm 0 .9mm;border-bottom:0;}
+  .toc tr.sub td.n{width:12mm;color:transparent;}
+  .toc tr.sub td.t{padding-left:7mm;font-family:var(--sans);font-size:8.2pt;color:var(--muted);}
+  .toc-note{margin-top:4mm;font-size:7.8pt;color:var(--faint);}
+
+  /* generic components */
+  .grid{width:100%;border-collapse:collapse;margin:3mm 0 5mm;font-size:8.5pt;}
+  .grid th{
+    background:var(--accent);color:#fff;text-align:left;font-family:var(--sans);
+    font-size:7.5pt;letter-spacing:.05em;text-transform:uppercase;font-weight:650;
+    padding:2mm 2mm;border:.4pt solid var(--accent-2);
+  }
+  .grid td{padding:1.8mm 2mm;border:.5pt solid var(--rule);vertical-align:top;}
+  .grid tbody tr:nth-child(even) td{background:#f6f4ee;}
+  .grid thead{display:table-header-group;}
+  .grid tr{break-inside:avoid;}
+  .grid td.c{text-align:center;}
+  .grid td.mono,.mono{font-family:var(--mono);font-size:7.9pt;}
+
+  .step{border:.6pt solid var(--rule);background:#fff;margin:0 0 5mm;padding:4mm 4.5mm 3.5mm;break-inside:auto;}
+  .step-head{display:flex;align-items:baseline;gap:3.5mm;border-bottom:.7pt solid var(--rule);padding-bottom:2mm;margin-bottom:2.5mm;}
+  .step-id{
+    font-family:var(--sans);font-size:7.4pt;font-weight:750;letter-spacing:.1em;
+    color:#fff;background:var(--accent);padding:1mm 2mm;white-space:nowrap;
+  }
+  .step h3{margin:0;font-size:12pt;color:var(--ink);}
+  .step .meta{font-size:7.5pt;color:var(--muted);margin:0 0 3mm;letter-spacing:.01em;}
+  .step .meta b{color:#3b4246;font-weight:600;}
+  .step p{font-size:9.2pt;}
+  .step ol,.step ul{font-size:9.2pt;}
+  .step .label{font-size:7.2pt;letter-spacing:.13em;text-transform:uppercase;color:var(--rust);font-weight:700;margin:3mm 0 1mm;}
+
+  .callout{border-left:3pt solid var(--accent);background:var(--accent-soft);padding:2.8mm 3.5mm;margin:3mm 0 4mm;break-inside:avoid;}
+  .callout .tag{display:block;font-size:6.9pt;letter-spacing:.16em;text-transform:uppercase;font-weight:750;color:var(--accent);margin-bottom:1mm;}
+  .callout p{margin:0;font-size:8.7pt;}
+  .callout.rule{border-left-color:var(--rust);background:var(--rust-soft);}
+  .callout.rule .tag{color:var(--rust);}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-soft);}
+  .callout.warn .tag{color:var(--warn);}
+  .callout.ok{border-left-color:var(--ok);background:var(--ok-soft);}
+  .callout.ok .tag{color:var(--ok);}
+
+  .verify{border:.7pt solid #bfd3c6;background:var(--ok-soft);padding:3mm 3.5mm;margin:3mm 0 1mm;break-inside:avoid;}
+  .verify .tag{display:block;font-size:6.9pt;letter-spacing:.15em;text-transform:uppercase;font-weight:750;color:var(--ok);margin-bottom:1.2mm;}
+  .checklist{list-style:none;padding-left:0;margin:1mm 0 0;break-inside:avoid;}
+  .checklist li{padding-left:7mm;position:relative;font-size:8.7pt;margin:1.4mm 0;}
+  .checklist li:before{content:"";position:absolute;left:0;top:.9mm;width:2.7mm;height:2.7mm;border:.7pt solid var(--ok);background:#fff;}
+
+  .cmd{margin:2.5mm 0 4mm;break-inside:auto;}
+  .cmd-label{font-family:var(--sans);font-size:6.9pt;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:0 0 1mm;break-after:avoid;}
+  pre{
+    font-family:var(--mono);font-size:7.9pt;line-height:1.42;
+    background:var(--code-bg);border-left:2.6pt solid var(--accent);
+    margin:0;padding:2.6mm 3mm;white-space:pre-wrap;word-break:break-word;
+    color:#1c2226;orphans:6;widows:6;
+  }
+  code{font-family:var(--mono);font-size:8.1pt;background:#f1efe8;padding:.3mm 1mm;border-radius:1px;color:#223034;}
+  .step code{font-size:8.2pt;}
+
+  .phase-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:2mm;margin:4mm 0 6mm;}
+  .phase-cell{border-top:2.2pt solid var(--accent);background:#fff;border-right:.5pt solid var(--rule);border-bottom:.5pt solid var(--rule);border-left:.5pt solid var(--rule);padding:2.2mm 2mm;}
+  .phase-cell b{display:block;font-size:7pt;letter-spacing:.12em;color:var(--rust);}
+  .phase-cell span{display:block;font-family:var(--serif);font-size:9.2pt;line-height:1.25;margin-top:.8mm;}
+  .phase-cell em{display:block;font-style:normal;font-size:7.2pt;color:var(--muted);margin-top:1.2mm;}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:5mm;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;}
+  .box{border:.6pt solid var(--rule);background:#fff;padding:3mm 3.5mm;break-inside:avoid;}
+  .box h4{margin-top:0;}
+  .box p:last-child,.box ul:last-child{margin-bottom:0;}
+
+  .band-row{display:grid;grid-template-columns:22mm 1fr 1fr;gap:0;border-bottom:.5pt solid var(--rule);font-size:8.4pt;}
+  .band-row div{padding:1.6mm 2mm;}
+  .band-row.head{background:var(--accent);color:#fff;font-size:7.2pt;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-bottom:0;}
+  .band-row .score{font-family:var(--mono);color:var(--rust);font-weight:700;}
+
+  .matrix td:first-child{font-family:var(--mono);font-size:7.7pt;font-weight:600;}
+  .tag-inline{display:inline-block;font-size:6.8pt;letter-spacing:.07em;text-transform:uppercase;font-weight:700;padding:.6mm 1.4mm;border:.5pt solid currentColor;color:var(--accent);}
+  .tag-inline.rust{color:var(--rust);}
+
+  .footer-note{margin-top:8mm;padding-top:2mm;border-top:.5pt solid var(--rule);font-size:7.4pt;color:var(--faint);}
+  .gate-block{break-inside:avoid;}
+
+  /* colophon */
+  .colophon{break-before:page;padding-top:18mm;}
+  .colophon .mark{font-family:var(--sans);font-weight:800;letter-spacing:.3em;font-size:10pt;color:var(--accent);}
+  .colophon .rule{height:2.2mm;width:38mm;background:var(--rust);margin:6mm 0 10mm;}
+  .colophon-title{font-family:var(--serif);font-size:30pt;line-height:1.1;margin:0 0 6mm;max-width:140mm;}
+  .colophon-sub{font-family:var(--serif);font-size:12.4pt;line-height:1.5;color:#343b3f;max-width:148mm;margin:0 0 12mm;}
+  .colophon-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6mm;border-top:.7pt solid var(--rule);padding-top:5mm;margin-bottom:10mm;}
+  .colophon-grid span{display:block;font-size:7.2pt;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:1.2mm;}
+  .colophon-grid div{font-size:8.6pt;color:#2e3539;line-height:1.5;}
+  .colophon-fine{border-top:.5pt solid var(--rule);padding-top:4mm;font-size:7.8pt;color:var(--muted);max-width:160mm;}
+
+  .page-break{break-before:page;}
+  .avoid{break-inside:avoid;}
+  .nowrap{white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <div class="cover-top">
+    <div class="brand">TRUSTLOOP</div>
+    <div class="cover-kicker">Engineering playbook · v1.0</div>
+  </div>
+
+  <div>
+    <div class="cover-title">From empty folder<br>to a defended system.</div>
+    <p class="cover-sub">The complete, phase-by-phase build guide for TrustLoop — the browser extension, the Spring Boot API, the Python scoring service, and the GitHub operating model that holds them together.</p>
+
+    <div class="flow">
+      <div class="node"><div class="n">Layer 1</div><b>Extension</b><span>Adapter, scanner, badge, panel, local history</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="n">Layer 2</div><b>Spring API</b><span>Validate, rate-limit, call, verify, respond</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="n">Layer 3</div><b>Scoring</b><span>Calibrated model, signals, evidence state</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="cover-meta">
+      <div><span>Scope</span>Phases 0–5<br>MVP and beyond</div>
+      <div><span>Audience</span>Build team<br>Reviewer and professor</div>
+      <div><span>Baseline</span>docs/ decision set<br>27 October 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOCUMENT CONTROL ================= -->
+<section class="front">
+  <div class="kicker">Document control</div>
+  <h1 style="break-before:auto;">About this playbook</h1>
+
+  <p class="lede">This is the operational companion to the TrustLoop decision baseline. It turns the decisions into an ordered build: what to create, in what order, how to prove it works, and how to run the repository while doing it.</p>
+
+  <table class="control-table">
+    <tr><td>Document</td><td>TrustLoop Complete Build Playbook</td></tr>
+    <tr><td>Version</td><td>1.0 — first complete edition</td></tr>
+    <tr><td>Date</td><td>27 October 2026</td></tr>
+    <tr><td>Status</td><td>Working guide. The product baseline is <span class="mono">docs/product-decisions.md</span>; this playbook does not override it.</td></tr>
+    <tr><td>Scope</td><td>Phase 0 through Phase 5: foundation, analysis core, additional adapters and local admin, evaluation and accessibility, authentication and persistence, deployment and expansion.</td></tr>
+    <tr><td>Out of scope</td><td>Writing the application for the reader. Code listings are illustrative seams and signatures; the build steps tell you what to implement and how to verify it.</td></tr>
+    <tr><td>Companion docs</td><td>Product decisions · Model plan · MVP requirements · Architecture and data · Delivery plan · Design source of truth</td></tr>
+    <tr><td>Owner</td><td>Project lead; each phase has a named gate owner.</td></tr>
+  </table>
+
+  <div class="callout rule">
+    <span class="tag">Authority rule</span>
+    <p>If this playbook and the decision baseline disagree, the baseline wins. Fix the disagreement by changing the decision register and every dependent document — not by quietly following the PDF.</p>
+  </div>
+
+  <h2>What this playbook adds</h2>
+  <p>The baseline documents already define the product, contract, model gate, architecture, and delivery phases. This playbook adds four things those documents deliberately leave open:</p>
+  <ul>
+    <li><strong>An operating model for GitHub</strong>, starting from zero repositories: account shape, monorepo decision, branch rules, issues, project board, CI, releases, and security.</li>
+    <li><strong>A concrete order of work</strong> inside each phase, with dependencies, verification steps, and commit points.</li>
+    <li><strong>Cross-cutting standards</strong> that would otherwise be rediscovered in every component: errors, logging, privacy, testing, performance, accessibility, review.</li>
+    <li><strong>A demonstration and defense runbook</strong>, including failure injection and the questions a reviewer is likely to ask.</li>
+  </ul>
+
+  <div class="callout warn">
+    <span class="tag">Version assumptions</span>
+    <p>Examples assume Java 21 LTS, Spring Boot 3.x, Node 22 LTS, and Python 3.12, because those versions have the widest library and tooling support. Your course may mandate different versions. Confirm them in Step 0.1, use the course-approved versions, and update the build files and CI in one commit. Do not silently mix JDKs or Python minors across machines.</p>
+  </div>
+</section>
+
+<!-- ================= HOW TO USE ================= -->
+<section class="front">
+  <div class="kicker">Working method</div>
+  <h1 style="break-before:auto;">How to use this book</h1>
+
+  <p class="lede">Read the whole book once before writing code. Then work one phase at a time, one step at a time, and do not start the next phase until the gate evidence exists.</p>
+
+  <h2>Four conventions</h2>
+  <div class="two-col">
+    <div class="box">
+      <h4>1. Steps are ordered, not optional</h4>
+      <p>Each step lists its dependencies. If a dependency is missing, fix that first. Parallel work is allowed only where the dependency graph says it is.</p>
+    </div>
+    <div class="box">
+      <h4>2. Every step ends with proof</h4>
+      <p>A step is done when the verification block passes and the evidence is recorded. “It worked on my machine” is not evidence; a test, a log excerpt, a metrics file, or a signed checklist is.</p>
+    </div>
+    <div class="box">
+      <h4>3. The contract is the integration point</h4>
+      <p>Components do not integrate through conversation. They integrate through <span class="mono">contracts/v1/</span> fixtures. Change the contract first, in its own pull request, with all three consumers updated.</p>
+    </div>
+    <div class="box">
+      <h4>4. Honesty beats completeness</h4>
+      <p>When a model, language, adapter, or page is not validated, the product says so. An explicit unknown is a feature. A fabricated score is a defect.</p>
+    </div>
+  </div>
+
+  <h2>Step anatomy</h2>
+  <p>Every build step is written in the same shape:</p>
+  <table class="grid">
+    <thead><tr><th style="width:28mm;">Part</th><th>What it gives you</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Goal</strong></td><td>The outcome in one sentence. If you cannot state it, the step is not ready to start.</td></tr>
+      <tr><td><strong>Do</strong></td><td>The ordered actions, files, and decisions. Commands are labelled by shell.</td></tr>
+      <tr><td><strong>Verify</strong></td><td>The checks that must pass before you commit and move on.</td></tr>
+      <tr><td><strong>Commit</strong></td><td>The conventional commit and branch hint, so history stays legible.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Shell labels</h2>
+  <p>Commands are labelled for the environment they assume:</p>
+  <ul>
+    <li><span class="tag-inline">Git Bash</span> — the shell supplied with Git for Windows; paths use forward slashes.</li>
+    <li><span class="tag-inline">PowerShell</span> — Windows PowerShell 7 or Windows PowerShell 5.1; activation and environment syntax differ from Bash.</li>
+    <li><span class="tag-inline">cmd</span> — only where a tool insists on it; otherwise avoid.</li>
+    <li><span class="tag-inline">Any shell</span> — Git commands and other portable commands.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="tag">Placeholders</span>
+    <p><span class="mono">[repo]</span> is the local repository root. <span class="mono">&lt;extension-id&gt;</span> is the 32-character Chrome extension ID shown at <span class="mono">chrome://extensions</span>. <span class="mono">&lt;modelVersion&gt;</span> matches <span class="mono">tl-text-x.y.z</span>. Replace placeholders; never commit a literal token or password.</p>
+  </div>
+
+  <h2>Evidence files</h2>
+  <p>Each phase writes a short evidence note under <span class="mono">docs/evidence/phase-N.md</span>. It is not a second specification. It records: what was run, on which commit, by whom, the result, and links to test reports, metrics, screenshots, or decisions. The phase gate links to this file. Suggested shape:</p>
+
+  <div class="cmd">
+    <div class="cmd-label">Markdown · docs/evidence/phase-1.md</div>
+<pre># Phase 1 evidence
+Commit: &lt;sha&gt;        Date: &lt;yyyy-mm-dd&gt;        Owner: &lt;name&gt;
+## Gate checks
+- [ ] End-to-end scan on &lt;fixture/page&gt; — evidence: &lt;link&gt;
+- [ ] Contract fixtures pass — evidence: &lt;CI run&gt;
+- [ ] Model gate EN — metrics.json hash &lt;hash&gt;
+- [ ] Privacy log-capture — test report &lt;link&gt;
+## Demo script result
+&lt;what was demonstrated, in order, with timings&gt;
+## Open risks carried to Phase 2
+&lt;risk IDs and owners&gt;</pre>
+  </div>
+
+  <h2>What “done” means at a gate</h2>
+  <p>A phase gate is not a meeting where someone says “looks good.” It is a short review with five questions:</p>
+  <ol>
+    <li>Does the phase exit condition in the delivery plan hold, with evidence?</li>
+    <li>Are the tests for this phase present, green, and run in CI?</li>
+    <li>Did any decision change? Is the decision register updated?</li>
+    <li>Did any risk change likelihood or impact? Is the risk register updated?</li>
+    <li>Can a person who did not write the code run the demo from the runbook?</li>
+  </ol>
+
+  <div class="callout ok">
+    <span class="tag">The one rule that saves the project</span>
+    <p>Never trade a test or an honest unknown for a prettier demo. Cut adapters, admin polish, or deployment instead. The score’s meaning is the product.</p>
+  </div>
+</section>
+
+<!-- ================= TOC ================= -->
+<section class="toc">
+  <div class="kicker">Contents</div>
+  <h1 style="break-before:auto;">The build at a glance</h1>
+
+  <table>
+    <tr><td class="n">01</td><td class="t">The system in one page</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">What it does · what it refuses · the contract · the six bands · status and engine</td></tr>
+
+    <tr><td class="n">02</td><td class="t">GitHub strategy from zero</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Account and visibility · monorepo decision · repository setup · branches · commits · issues · CI · releases · security · cadence</td></tr>
+
+    <tr><td class="n">03</td><td class="t">Repository blueprint</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Target tree · ownership map · naming and placement rules</td></tr>
+
+    <tr><td class="n">04</td><td class="t">Phase 0 — Foundation and contract freeze</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Course constraints · toolchain · repository · three skeletons · contract v1 · CI · design assets · data decisions · Amazon spike · gate</td></tr>
+
+    <tr><td class="n">05</td><td class="t">Phase 1 — The analysis core</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Contract implementation · backend pipeline · scoring client · data · model · gate · explainer · service · adapter · UI · history · observability · demo</td></tr>
+
+    <tr><td class="n">06</td><td class="t">Phase 2 — Breadth without risk</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Second adapter decision · adapter packaging · <span class="mono">dev-admin</span> profile · isolation tests · gate</td></tr>
+
+    <tr><td class="n">07</td><td class="t">Phase 3 — Evidence, accessibility, and quality</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Evaluation protocol · explanation stability · accessibility audit · bilingual QA · performance · privacy re-audit · model card · report mapping</td></tr>
+
+    <tr><td class="n">08</td><td class="t">Phase 4 — Accounts, ownership, and persistence</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Scope and retention · PostgreSQL · authentication · history ownership · admin protection · access-matrix tests</td></tr>
+
+    <tr><td class="n">09</td><td class="t">Phase 5 — Deployment and expansion</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Hosting decision · containers · edge and TLS · secrets · quotas · observability · backups · expansion rules</td></tr>
+
+    <tr><td class="n">10</td><td class="t">Cross-cutting standards</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Errors · logging · security · performance · accessibility · testing · code review</td></tr>
+
+    <tr><td class="n">11</td><td class="t">Demo and defense runbook</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Five-minute demo · twelve-minute defense · failure injection · likely questions</td></tr>
+
+    <tr><td class="n">12</td><td class="t">Risk-to-task map</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Every register risk translated into a build task and a trigger to watch</td></tr>
+
+    <tr><td class="n">13</td><td class="t">Appendices</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Constants · reason codes · copy deck · decision summary · signal taxonomy · CI blueprint · command sheet · glossary</td></tr>
+  </table>
+
+  <div class="phase-strip">
+    <div class="phase-cell"><b>PHASE 0</b><span>Foundation</span><em>Builds, contract frozen</em></div>
+    <div class="phase-cell"><b>PHASE 1</b><span>Analysis core</span><em>One honest scan</em></div>
+    <div class="phase-cell"><b>PHASE 2</b><span>Breadth</span><em>Adapters + local admin</em></div>
+    <div class="phase-cell"><b>PHASE 3</b><span>Evidence</span><em>Gate, access, report</em></div>
+    <div class="phase-cell"><b>PHASE 4</b><span>Accounts</span><em>Auth + persistence</em></div>
+    <div class="phase-cell"><b>PHASE 5</b><span>Deployment</span><em>Hosted, if chosen</em></div>
+  </div>
+
+  <p class="toc-note">The PDF outline follows the numbered chapters. Page numbers are shown by your PDF reader. Sections 04–09 are build phases; section 10 applies to every phase; section 11 is the demo script.</p>
+</section>
+
+<!-- ================= 01 SYSTEM ================= -->
+<h1><span class="num">CHAPTER 01</span>The system in one page</h1>
+
+<p class="chapter-intro">Before the steps, hold the whole shape in your head. TrustLoop is three processes and one contract. The contract is the product boundary; everything else is an implementation detail.</p>
+
+<h2>1.1 What TrustLoop does</h2>
+<p>TrustLoop is a browser extension with a Spring Boot API and a Python scoring service. On a supported product-review page, it identifies review cards, extracts the review text, and sends up to ten reviews per request to the API. The API validates the request, calls the scoring service, validates the result, and returns one result per review. The extension renders a badge beside each review and an explanation panel on demand.</p>
+
+<p>The model estimates <span class="mono">p_organic</span>: the probability that the review text is organic rather than manipulated, based only on text patterns and a transient within-batch duplicate flag. That probability is calibrated to the evaluation distribution, then mapped to an integer score and one of six fixed bands. It is an estimate about text, not a statement about the reviewer or the product.</p>
+
+<div class="callout">
+  <span class="tag">The sentence to memorize</span>
+  <p>“TrustLoop estimates whether review text looks organic or manipulated, shows its evidence quality, and explains which text patterns influenced the estimate. It does not verify purchases, identify people, prove fraud, or rate products.”</p>
+</div>
+
+<h2>1.2 What it refuses to do</h2>
+<table class="grid">
+  <thead><tr><th style="width:52mm;">Refusal</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td>Verify a purchase or reviewer identity</td><td>Model v1 never receives reviewer names, profiles, ratings, or verified-purchase flags. Claiming verification would be false.</td></tr>
+    <tr><td>Prove a review is fake or true</td><td>Labels are noisy proxies for text patterns. The UI says “signals,” never “proof.”</td></tr>
+    <tr><td>Score a product or a page</td><td>Averaging review scores hides mixed evidence and invents a meaning the score does not have. No page aggregate exists.</td></tr>
+    <tr><td>Scrape arbitrary page text</td><td>Only eligible review cards inside a supported adapter container are extracted. A selector miss is an explicit unsupported state.</td></tr>
+    <tr><td>Fall back to a heuristic score</td><td>If the model is unavailable or a language fails its gate, the result is <span class="mono">UNKNOWN</span>; validated descriptive patterns may produce <span class="mono">SIGNALS_ONLY</span> with no score.</td></tr>
+    <tr><td>Send live review text to an external AI provider</td><td>Inference is local or private. Review text is processed transiently and never logged or persisted.</td></tr>
+    <tr><td>Silently mix engines or model versions</td><td>Every result carries provenance. A version mismatch invalidates the batch rather than hiding the mismatch.</td></tr>
+  </tbody>
+</table>
+
+<h2>1.3 Components and data flow</h2>
+<div class="flow" style="margin:3mm 0 4mm;">
+  <div class="node"><div class="n">Browser</div><b>Content script</b><span>Adapter finds cards. Scanner checks eligibility, deduplicates, batches ten.</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="n">Extension worker</div><b>Network layer</b><span>Adds request ID, calls the public API, enforces the six-second ceiling.</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="n">Public boundary</div><b>Spring API</b><span>Validates, rate-limits, calls scoring with an internal token, verifies the response.</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="n">Private boundary</div><b>Scoring service</b><span>Detects language, checks evidence, runs the calibrated model, builds signals.</span></div>
+</div>
+
+<p>Two boundaries matter more than the boxes. The Spring API is the <em>only</em> public boundary: the extension never calls Python directly. The scoring service is the <em>only</em> model boundary: the API never computes a score and never accepts one from the client. Persistence is absent from the analysis path; PostgreSQL arrives only in Phase 4 for accounts, history, and audit.</p>
+
+<h2>1.4 The batch contract at a glance</h2>
+<table class="grid">
+  <thead><tr><th style="width:42mm;">Element</th><th>Contract</th></tr></thead>
+  <tbody>
+    <tr><td>Public endpoint</td><td><span class="mono">POST /api/v1/analyze</span> — one adapter, 1–10 reviews, JSON only.</td></tr>
+    <tr><td>Request identity</td><td><span class="mono">X-Request-Id</span> required on the wire; backend regenerates if absent or malformed; response echoes it.</td></tr>
+    <tr><td>Request shape</td><td><span class="mono">{ adapterId, languageHint?, reviews:[{ reviewKey, text }] }</span>. No names, URLs, ratings, or page text.</td></tr>
+    <tr><td>Limits</td><td>2,000 Unicode code points per review; 10 reviews; 131,072 bytes per request.</td></tr>
+    <tr><td>Per-review status</td><td><span class="mono">SCORED</span>, <span class="mono">SIGNALS_ONLY</span>, or <span class="mono">UNKNOWN</span>.</td></tr>
+    <tr><td>Per-review engine</td><td><span class="mono">MODEL</span> or <span class="mono">SIGNALS_ONLY</span>.</td></tr>
+    <tr><td>Scored result</td><td><span class="mono">trustScore</span>, <span class="mono">verdict</span>, <span class="mono">evidenceQuality</span>, at most five <span class="mono">signals</span>, <span class="mono">modelVersion</span>, <span class="mono">engine=MODEL</span>.</td></tr>
+    <tr><td>Unknown result</td><td>No score, no verdict; a <span class="mono">reasonCode</span>; evidence and model version only when the service assessed input and produced the unknown.</td></tr>
+    <tr><td>Request errors</td><td>Separate envelope: <span class="mono">{ requestId, error:{ code, message } }</span>; no stack traces, no internals.</td></tr>
+  </tbody>
+</table>
+
+<h2>1.5 The six bands</h2>
+<p>The band is derived only from the score. It is not adjusted after calibration, and 50 sits deliberately inside the inconclusive band so the interface never treats it as a decision line.</p>
+
+<div class="band-row head"><div>Score</div><div>English</div><div>French</div></div>
+<div class="band-row"><div class="score">0–19</div><div>Strong manipulation signals</div><div>Signaux forts de manipulation</div></div>
+<div class="band-row"><div class="score">20–39</div><div>Likely manipulated</div><div>Probablement manipulé</div></div>
+<div class="band-row"><div class="score">40–54</div><div>Inconclusive</div><div>Non concluant</div></div>
+<div class="band-row"><div class="score">55–69</div><div>Mixed signals</div><div>Signaux mitigés</div></div>
+<div class="band-row"><div class="score">70–84</div><div>Likely organic</div><div>Probablement authentique</div></div>
+<div class="band-row"><div class="score">85–100</div><div>Strong organic signals</div><div>Signaux forts d'authenticité</div></div>
+
+<p class="small" style="margin-top:2mm;">Score mapping: <span class="mono">trustScore = round_half_up(100 × p_organic)</span>, clipped to 0–100. No separate mapping layer, no post-hoc band adjustment.</p>
+
+<h2>1.6 Status and engine matrix</h2>
+<table class="grid matrix">
+  <thead><tr><th>Status</th><th>Engine</th><th>Score / verdict</th><th>Evidence</th><th>Model version</th><th>When</th></tr></thead>
+  <tbody>
+    <tr><td>SCORED</td><td>MODEL</td><td>Yes / yes</td><td>LOW or ADEQUATE</td><td>Required</td><td>Supported language, at least 20 words, model meets its language gate.</td></tr>
+    <tr><td>SIGNALS_ONLY</td><td>SIGNALS_ONLY</td><td>No / no</td><td>Present when assessed</td><td>Omitted</td><td>Language and length qualify, but no validated score exists; validated descriptive patterns do.</td></tr>
+    <tr><td>UNKNOWN</td><td>MODEL</td><td>No / no</td><td>Present for service-produced unknown</td><td>Present for service-produced unknown</td><td>Insufficient text, unsupported language, or another input-level reason assessed by the service.</td></tr>
+    <tr><td>UNKNOWN</td><td>MODEL</td><td>No / no</td><td>Omitted</td><td>Omitted</td><td>Timeout, connection failure, malformed response, version mismatch, invalid service output.</td></tr>
+  </tbody>
+</table>
+<p class="small">The engine names the intended producer of the result. The model version is provenance for a valid model output; it is omitted when no valid output exists. The UI must never infer a score from an unknown.</p>
+
+<h2>1.7 Non-negotiables</h2>
+<div class="two-col">
+  <div class="box">
+    <h4>Honesty</h4>
+    <p>No unvalidated score. No fabricated 0 or 50. No “bot” or “fraud” claim from a band. No page aggregate. Low evidence stays visible and qualified.</p>
+    <h4>Privacy</h4>
+    <p>No request or response body logging. No raw text in local history. No URLs, review keys, reviewer identifiers, or persistent fingerprints. No external AI provider for live text.</p>
+  </div>
+  <div class="box">
+    <h4>Testability</h4>
+    <p>Tests arrive with the behaviour. Contract fixtures are shared, not re-created per component. The model gate is a script, not a slide.</p>
+    <h4>Operability</h4>
+    <p>The local admin surface is loopback-only and absent by default. The scoring service is internal-only. Every request is traceable by ID, and logs stay content-free.</p>
+  </div>
+</div>
+
+<div class="callout rule">
+  <span class="tag">Scope discipline</span>
+  <p>Breadth is optional; meaning is not. If time runs short, cut a second adapter, admin polish, or deployment. Never cut the gate, the tests, or the honest unknown state.</p>
+</div>

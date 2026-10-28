@@ -1,0 +1,463 @@
+<!-- ================= 06 PHASE 2 ================= -->
+<h1><span class="num">CHAPTER 06 · PHASE 2</span>Breadth without risk</h1>
+
+<p class="chapter-intro">Phase 2 adds only what the MVP can absorb without changing the score’s meaning: another supported page, adapter packaging, and a local inspection surface that cannot be reached from a network. If time is short, this phase can legitimately ship with one adapter and the admin surface only. It must not introduce a database, runtime adapter authoring, or an unauthenticated shared surface.</p>
+
+<div class="callout ok">
+  <span class="tag">Phase exit condition</span>
+  <p>All agreed non-auth flows work locally. The default profile has no admin surface. The <span class="mono">dev-admin</span> profile binds to loopback and refuses to start otherwise. Adapter files are versioned, fixtures exist, and no database was introduced without a persistence decision.</p>
+</div>
+
+<h2>6.1 Decide whether to add a second adapter</h2>
+
+<p>A second adapter is optional. It is worth doing only when the first adapter is stable, the model’s inputs do not change, and the new page type can meet the same evidence standard. It is not worth doing to make the demo look broader.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:38mm;">Question</th><th>Required answer before starting</th></tr></thead>
+  <tbody>
+    <tr><td>Is the first adapter stable?</td><td>Phase 1 gate passed; no selector regression in the last two weeks.</td></tr>
+    <tr><td>Does the new page add a distinct surface?</td><td>Yes: a different layout, domain, or review presentation — not a cosmetic variant.</td></tr>
+    <tr><td>Can it meet the spike criteria?</td><td>Three variants, ≥5 eligible reviews, ≥90% precision, stable across two loads.</td></tr>
+    <tr><td>Does it require new model inputs?</td><td>No. If it does, the model changes and needs a new gate; that is not Phase 2 scope.</td></tr>
+    <tr><td>Are the terms acceptable?</td><td>Recorded and compatible with a manual/demo use; no crawler.</td></tr>
+    <tr><td>Is there time to do it without cutting tests?</td><td>Yes. Otherwise skip the adapter and finish the admin surface.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout rule">
+  <span class="tag">No generic fallback</span>
+  <p>A second adapter is a second explicit contract with the page. If a selector is not understood, the result is an unsupported state. A generic page scraper would send navigation, ads, and unrelated text to the model, which is both a privacy failure and a meaningless score.</p>
+</div>
+
+<h2>6.2 Package adapters as versioned files</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 2.1</span><h3>Manifest, selectors, supported pages, fixtures</h3></div>
+  <div class="meta"><b>Owner</b> Extension lead &nbsp;|&nbsp; <b>Time</b> 2–4 days &nbsp;|&nbsp; <b>Depends</b> 6.1 decision; Phase 1 gate</div>
+
+  <p><strong>Goal.</strong> Each adapter is a self-contained, inspectable directory with no runtime authoring and no hidden configuration.</p>
+
+  <div class="cmd">
+    <div class="cmd-label">Text · extension/adapters/&lt;adapterId&gt;/</div>
+<pre>manifest.json          id, version, supported hosts, entry module, status
+selectors.json         container, card, body, stable-id, exclusions
+supported-pages.md     what is supported, what is not, known variants
+fixtures/              sanitized supported and unsupported HTML
+README.md              owner, last verified date, spike result link</pre>
+  </div>
+
+  <p class="label">Manifest rules</p>
+  <ul>
+    <li>The adapter ID follows <span class="mono">site.surface.vN</span> and never changes for a compatible selector update.</li>
+    <li>A breaking change to eligibility or extraction increments the adapter version; the old adapter remains until the new one passes its fixtures.</li>
+    <li>The manifest lists exact hosts. No wildcard top-level domain and no <span class="mono">&lt;all_urls&gt;</span>.</li>
+    <li>The registry is assembled at build time from the versioned files. The extension does not fetch adapter code at runtime.</li>
+    <li>Enable/disable is local UI state in the admin surface, not a write to these files.</li>
+  </ul>
+
+  <p class="label">Fixture rules</p>
+  <ul>
+    <li>Every supported variant has a fixture; every known unsupported variant has one too.</li>
+    <li>Sanitize fixtures: remove names, avatars, account links, order IDs, and any personal data. Keep the DOM structure needed to test selectors.</li>
+    <li>A fixture test asserts the exact set of extracted review texts and stable IDs; a selector change that silently adds a navigation block fails the test.</li>
+    <li>Fixtures are not a license to store live pages. They are minimal, sanitized reproductions.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The adapter registry contains only bundled, versioned adapters.</li>
+      <li>Each adapter has at least one supported and one unsupported fixture.</li>
+      <li>An unsupported fixture produces <span class="mono">UNSUPPORTED_PAGE</span>, not an empty batch or a generic scrape.</li>
+      <li>No fixture contains a reviewer name, avatar, URL, or order identifier.</li>
+      <li>Disabling an adapter in the local admin UI does not modify any file in <span class="mono">extension/adapters/</span>.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>6.3 Build the local dev-admin profile</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 2.2</span><h3>Inspection, in-memory toggles, and loopback enforcement</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead &nbsp;|&nbsp; <b>Time</b> 3–4 days &nbsp;|&nbsp; <b>Depends</b> Phase 1 backend stable</div>
+
+  <p><strong>Goal.</strong> A local-only surface for inspecting bundled adapters and content-free metrics, enforced by profile, bind address, and a startup guard — not by a sentence in the README.</p>
+
+  <p class="label">Profile boundary</p>
+  <table class="grid">
+    <thead><tr><th style="width:30mm;">Profile</th><th>Admin behaviour</th><th>Bind</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">default</span></td><td>No admin beans, no admin routes; <span class="mono">/api/v1/admin/**</span> returns <span class="mono">404</span>.</td><td><span class="mono">127.0.0.1</span> by default.</td></tr>
+      <tr><td><span class="mono">dev-admin</span></td><td>Inspection endpoints, local toggles, in-memory metrics; warning at startup; no authentication.</td><td>Must be loopback; boot guard refuses anything else.</td></tr>
+      <tr><td><span class="mono">test</span></td><td>Deterministic stubs; no external calls; admin tests use the test profile or a dedicated slice.</td><td>No network required.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Endpoints</p>
+  <table class="grid">
+    <thead><tr><th style="width:66mm;">Endpoint</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">GET /api/v1/admin/adapters</span></td><td>List bundled adapter IDs, versions, supported pages, fixture paths, and enabled state.</td></tr>
+      <tr><td><span class="mono">GET /api/v1/admin/adapters/{id}</span></td><td>Inspect selectors, supported-page description, and fixture inventory.</td></tr>
+      <tr><td><span class="mono">POST /api/v1/admin/adapters/{id}/enabled</span></td><td>Toggle local enablement in memory; reset on restart; no file write.</td></tr>
+      <tr><td><span class="mono">GET /api/v1/admin/metrics</span></td><td>Content-free counters: requests by status, results by status/reason, scoring latency buckets, model version.</td></tr>
+    </tbody>
+  </table>
+
+  <p>A minimal HTML page can render the same data, but JSON plus a simple local page is enough. Do not build a dashboard framework. The admin surface exists to inspect and demonstrate isolation, not to become a second product.</p>
+
+  <p class="label">Boot guard</p>
+  <ol>
+    <li><span class="mono">application-dev-admin.properties</span> sets <span class="mono">server.address=127.0.0.1</span>.</li>
+    <li>A startup component active only under <span class="mono">dev-admin</span> reads the effective bind address. If it is unset, empty, <span class="mono">0.0.0.0</span>, or a non-loopback address, it throws and the application refuses to start.</li>
+    <li>Accept <span class="mono">127.0.0.1</span>, <span class="mono">::1</span>, and <span class="mono">localhost</span> after normalization. Do not accept a hostname that merely resolves to loopback without checking.</li>
+    <li>Log a clear warning at startup: local-only, no authentication, never expose through a tunnel.</li>
+  </ol>
+
+  <div class="callout warn">
+    <span class="tag">“Local-only” must be mechanical</span>
+    <p>A profile that defaults to loopback but can be overridden with <span class="mono">--server.address=0.0.0.0</span> is not local-only. The guard converts the promise into a startup failure. Test it by launching with a non-loopback bind and asserting the context fails.</p>
+  </div>
+
+  <p class="label">Metrics</p>
+  <ul>
+    <li>Counters: requests received, responses by HTTP status, results by status, unknowns by reason code, scoring latency buckets, model version.</li>
+    <li>No per-review content, no review key, no URL, no adapter-specific page identifier beyond the adapter ID.</li>
+    <li>In-memory only; reset on restart. Persistence would require a retention and ownership decision, which is Phase 4 work.</li>
+  </ul>
+
+  <p class="label">Access rules</p>
+  <ul>
+    <li>No authentication in this phase, because the surface is loopback-only and local. It must never be exposed through a tunnel, reverse proxy, or shared network.</li>
+    <li>When authentication arrives in Phase 4, admin functions require an authenticated admin role before any shared or hosted use. The <span class="mono">dev-admin</span> profile remains a local development tool.</li>
+    <li>Do not add runtime adapter authoring. Editing adapter files at runtime requires persistence, audit, and ownership rules that do not exist yet.</li>
+  </ul>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Default profile: every <span class="mono">/api/v1/admin/**</span> route returns <span class="mono">404</span>, including a made-up subpath.</li>
+      <li><span class="mono">dev-admin</span> with a loopback bind starts and lists bundled adapters.</li>
+      <li><span class="mono">dev-admin</span> with a non-loopback bind fails to start with a clear error.</li>
+      <li>A toggle changes the response until restart, then resets to the bundled default.</li>
+      <li>The adapter directory hash is unchanged before and after a toggle.</li>
+      <li>Metrics contain no text, key, URL, or hostname.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="gate-block">
+<h2>6.4 Phase 2 gate</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:12mm;">#</th><th>Gate check</th><th style="width:42mm;">Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Agreed adapters are packaged with manifests, selectors, supported pages, and fixtures.</td><td>Adapter directory + fixture tests.</td></tr>
+    <tr><td>2</td><td>Unsupported pages produce an explicit state.</td><td>Fixture test.</td></tr>
+    <tr><td>3</td><td>Default profile has no admin surface.</td><td>MockMvc 404 test.</td></tr>
+    <tr><td>4</td><td><span class="mono">dev-admin</span> loopback bind works; non-loopback boot fails.</td><td>Context test + startup log.</td></tr>
+    <tr><td>5</td><td>Toggles are in-memory and do not write adapter files.</td><td>Directory hash before/after.</td></tr>
+    <tr><td>6</td><td>No database, no runtime authoring, no server-side user history.</td><td>Dependency and schema inspection.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout ok">
+  <span class="tag">Close the phase</span>
+  <p>Tag <span class="mono">phase-2-complete</span>, close M2, and record in the README which adapters are bundled and which are explicitly unsupported. If no second adapter was added, say so; a narrow, honest release is a valid outcome.</p>
+</div>
+</div>
+
+<!-- ================= 07 PHASE 3 ================= -->
+<h1><span class="num">CHAPTER 07 · PHASE 3</span>Evidence, accessibility, and quality</h1>
+
+<p class="chapter-intro">Phase 3 is where the project becomes defensible. The model is evaluated on held-out data, the explanation is tested for stability, the interface is audited with a keyboard and a screen reader, and the privacy claims are re-proven against the final build. Nothing new is added except evidence and fixes.</p>
+
+<div class="callout ok">
+  <span class="tag">Phase exit condition</span>
+  <p>The held-out evaluation and model card are complete, accessibility checks pass, performance and timeout behaviour are confirmed on the reference environment, privacy and security are re-audited, and the traceability evidence is ready for the report and defense.</p>
+</div>
+
+<h2>7.1 Run the held-out evaluation</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 3.1</span><h3>Evaluate the frozen artifact once, honestly</h3></div>
+  <div class="meta"><b>Owner</b> ML lead &nbsp;|&nbsp; <b>Time</b> 3–5 days &nbsp;|&nbsp; <b>Depends</b> Phase 1 artifact</div>
+
+  <p><strong>Goal.</strong> A reproducible evaluation report on the untouched manual sample, with confidence intervals and a per-language gate decision.</p>
+
+  <p class="label">Protocol</p>
+  <ol>
+    <li>Freeze the artifact and the held-out sample manifest. Record both hashes in the report.</li>
+    <li>Run the evaluation script against the artifact. Do not retrain, tune, or select a threshold on the held-out data.</li>
+    <li>Report AUROC, AUPRC, F1 at 0.50, ECE, Brier, reliability curves, class balance, and sample size, overall and per language.</li>
+    <li>Compute 95% bootstrap confidence intervals (at least 1,000 resamples) and state the resampling unit (review or group).</li>
+    <li>Report public-dataset transfer results separately. They are evidence about transfer, not the gate.</li>
+    <li>Report the gate result as pass/fail per language. If a language fails, state the fallback and update D23.</li>
+    <li>Include the disappointing numbers. A report that only shows the best candidate is not an evaluation.</li>
+  </ol>
+
+  <table class="grid">
+    <thead><tr><th style="width:46mm;">Report item</th><th>Why the reviewer needs it</th></tr></thead>
+    <tbody>
+      <tr><td>Dataset manifest and split counts</td><td>Shows the evaluation is group-disjoint and licensed.</td></tr>
+      <tr><td>Label protocol and kappa</td><td>Shows the labels are not one person’s opinion.</td></tr>
+      <tr><td>Reliability curve</td><td>Shows calibration, not only ranking.</td></tr>
+      <tr><td>Confusion matrix at 0.50</td><td>Makes the operating point concrete.</td></tr>
+      <tr><td>Per-language table</td><td>Prevents an overall average from hiding a failing language.</td></tr>
+      <tr><td>Transfer table</td><td>Separates in-domain evidence from cross-domain claims.</td></tr>
+      <tr><td>Failure examples</td><td>Shows where the model is weak without quoting live reviews.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>A clean rerun on the same artifact and sample reproduces the metrics within the stated tolerance.</li>
+      <li>Every metric has a confidence interval and a sample size.</li>
+      <li>The gate decision is per language and matches <span class="mono">metrics.json</span>.</li>
+      <li>No live review text or reviewer identifier appears in the report.</li>
+      <li>The calibration scope limitation is stated in plain language.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>7.2 Test explanation stability and UI mapping</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 3.2</span><h3>Prove the panel matches the result</h3></div>
+  <div class="meta"><b>Owner</b> ML lead + extension lead &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 3.1</div>
+
+  <p><strong>Goal.</strong> The top-five signal set is stable, deterministic, and rendered without adding claims the API did not make.</p>
+
+  <p class="label">Tests</p>
+  <ul>
+    <li>Top-five Jaccard ≥ 0.80 across three bootstrap models for a fixed input set; store per-input values, not just the mean.</li>
+    <li>Identical input and artifact produce an identical result hash across repeated runs.</li>
+    <li>A UI mapping test feeds a fixture into the panel and asserts every visible string comes from that fixture: score, band, evidence, engine, model version, signal summaries, and directions.</li>
+    <li>A signal with no contribution renders without a bar, a zero, or a percentage.</li>
+    <li>A sentinel phrase in the review text never appears in the panel, including tooltips and aria-labels.</li>
+    <li>The panel never says “proof,” “fake,” “bot account,” “fraud,” or “verified.” A string test enforces the forbidden list in both languages.</li>
+  </ul>
+
+  <div class="callout rule">
+    <span class="tag">Explanation is part of the contract</span>
+    <p>If the panel invents a reason, the product lies even when the score is correct. The panel is a renderer, not an analyst: it displays the API’s signals, direction, evidence, and provenance, and nothing else.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>Stability and determinism gates pass and are linked in the evidence file.</li>
+      <li>Every visible panel field is traceable to a fixture field.</li>
+      <li>No raw text, name, or URL appears in a signal summary.</li>
+      <li>Forbidden claim strings are absent from both language files.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>7.3 Audit accessibility</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 3.3</span><h3>Keyboard, focus, zoom, contrast, screen reader</h3></div>
+  <div class="meta"><b>Owner</b> QA and docs lead + extension lead &nbsp;|&nbsp; <b>Time</b> 2–3 days &nbsp;|&nbsp; <b>Depends</b> Phase 1 UI stable</div>
+
+  <p><strong>Goal.</strong> A reviewer can operate the scanner with a keyboard and a screen reader, at 200% zoom, without relying on colour.</p>
+
+  <table class="grid">
+    <thead><tr><th style="width:46mm;">Check</th><th>How to test</th><th>Pass</th></tr></thead>
+    <tbody>
+      <tr><td>Keyboard reachability</td><td>Tab through the page and every badge/panel control; no mouse.</td><td>Every control reachable and operable; no keyboard trap.</td></tr>
+      <tr><td>Focus visible</td><td>Inspect focus ring on badge, panel buttons, close, retry.</td><td>Ring visible, not clipped, 3:1 against adjacent colours.</td></tr>
+      <tr><td>Focus order</td><td>Tab after opening the panel; Shift+Tab back.</td><td>Logical order; returns to the badge on close.</td></tr>
+      <tr><td>Zoom / reflow</td><td>Browser zoom 200%; viewport 320 CSS px wide.</td><td>No horizontal scrolling for the panel; text reflows.</td></tr>
+      <tr><td>Contrast</td><td>Measure badge text, band text, panel text, focus ring.</td><td>4.5:1 text; 3:1 large text and essential graphics.</td></tr>
+      <tr><td>Non-colour cue</td><td>Grayscale screenshot; check shape, label, icon.</td><td>Band and unknown state remain distinguishable.</td></tr>
+      <tr><td>Screen reader</td><td>NVDA + Chrome on Windows; navigate to a badge; open panel.</td><td>Label includes score, band, evidence, engine; unknown announces no estimate; dialog has a name.</td></tr>
+      <tr><td>Live status</td><td>Trigger a slow scan; listen for status changes.</td><td>Polite announcement; no repeated chatter per card.</td></tr>
+      <tr><td>Language of parts</td><td>Switch UI to French; inspect <span class="mono">lang</span> attributes.</td><td>French strings marked <span class="mono">lang="fr"</span>; screen reader pronounces correctly.</td></tr>
+      <tr><td>Reduced motion</td><td>Enable OS reduce motion; open panel.</td><td>No non-essential animation.</td></tr>
+      <tr><td>Target size</td><td>Measure badge and close button.</td><td>At least 24×24 CSS px, preferably 44×44 for touch.</td></tr>
+      <tr><td>Error identification</td><td>Force timeout; inspect the message.</td><td>Plain-language cause and retry; not colour-only.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Run an automated scan (axe-core or Lighthouse) as a supplement, not as the audit. Automated tools catch missing labels and contrast; they do not catch a focus trap that strands a keyboard user or a panel that reads the wrong review.</p>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The full checklist is recorded with pass/fail and a screenshot or note per item.</li>
+      <li>One complete keyboard-only scan and one screen-reader scan are demonstrated.</li>
+      <li>200% zoom and 320 px reflow pass for the panel and popup.</li>
+      <li>No verdict relies on colour alone in grayscale.</li>
+      <li>Defects found are fixed before the gate, not listed as “known issues” unless unavoidable and documented.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>7.4 Audit the bilingual copy</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:42mm;">Check</th><th>Pass</th></tr></thead>
+  <tbody>
+    <tr><td>Key parity</td><td>Every key in <span class="mono">en.json</span> exists in <span class="mono">fr.json</span>, and vice versa.</td></tr>
+    <tr><td>Normative deck</td><td>Strings match the copy deck; no paraphrasing that strengthens a claim.</td></tr>
+    <tr><td>Claim parity</td><td>French does not say “vrai,” “prouvé,” “fraude,” or “bot” where English says “signal.”</td></tr>
+    <tr><td>Typography</td><td>French spacing before <span class="mono">:</span>, <span class="mono">;</span>, <span class="mono">!</span>, <span class="mono">?</span>; non-breaking spaces where the deck specifies.</td></tr>
+    <tr><td>Length</td><td>French strings fit the badge/panel without clipping at 200% zoom.</td></tr>
+    <tr><td>Screen reader</td><td>French labels are pronounced correctly and include the same facts as English.</td></tr>
+    <tr><td>Model language</td><td>UI translation does not imply model support; unsupported French still returns <span class="mono">UNKNOWN</span> if the gate failed.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <span class="tag">Translation is not model coverage</span>
+  <p>The interface can be bilingual while the model supports English only. The panel must not imply that a French review was analyzed in French. If the gate failed, the French UI shows the French “language not supported” string — in French, because the interface is translated, while the model is honest about its limits.</p>
+</div>
+
+<h2>7.5 Confirm performance and resilience</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 3.4</span><h3>Reference environment, timeout hierarchy, failure injection</h3></div>
+  <div class="meta"><b>Owner</b> Backend lead + ML lead &nbsp;|&nbsp; <b>Time</b> 2 days &nbsp;|&nbsp; <b>Depends</b> 3.1</div>
+
+  <p><strong>Goal.</strong> The published latency and timeout numbers are measured on the stated hardware and hold under a realistic local load.</p>
+
+  <table class="grid">
+    <thead><tr><th style="width:44mm;">Measurement</th><th>Target</th><th>Method</th></tr></thead>
+    <tbody>
+      <tr><td>Scoring warm p95, 10 reviews</td><td>≤ 1.5 s</td><td>20 warmups + 100 measured batches; report p50/p95/p99.</td></tr>
+      <tr><td>Backend end-to-end p95</td><td>Within the 4 s ceiling</td><td>Same load through <span class="mono">/api/v1/analyze</span>; include validation.</td></tr>
+      <tr><td>Cold start</td><td>Health not ready until warm</td><td>Restart service; poll <span class="mono">/health</span>; measure readiness time separately.</td></tr>
+      <tr><td>Timeout hierarchy</td><td>3 s / 4 s / 6 s</td><td>Inject delays at 2.9 s, 3.5 s, 5.5 s; observe each layer.</td></tr>
+      <tr><td>Local load</td><td>60 requests/minute sustained</td><td>Hold the rate limit; watch error rate, memory, CPU.</td></tr>
+      <tr><td>Rate limiting</td><td>Excess returns 429</td><td>Burst above the limit; assert <span class="mono">Retry-After</span>.</td></tr>
+      <tr><td>Recovery</td><td>Retry succeeds after restart</td><td>Stop scoring, scan, restart, retry.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="label">Failure injection matrix</p>
+  <table class="grid">
+    <thead><tr><th style="width:44mm;">Injected failure</th><th>Expected product behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>Scoring service stopped</td><td>All results <span class="mono">UNKNOWN</span> / <span class="mono">SCORING_UNAVAILABLE</span>; retry available.</td></tr>
+      <tr><td>Scoring delayed beyond 3 s</td><td><span class="mono">SCORING_TIMEOUT</span>; no partial score.</td></tr>
+      <tr><td>Wrong model version</td><td>Batch invalidated; <span class="mono">SCORING_UNAVAILABLE</span>.</td></tr>
+      <tr><td>Malformed service JSON</td><td>Batch invalidated; no panel rendering from partial data.</td></tr>
+      <tr><td>Model artifact hash mismatch</td><td>Service refuses to start; health remains down.</td></tr>
+      <tr><td>Unsupported page</td><td><span class="mono">UNSUPPORTED_PAGE</span>; no network request.</td></tr>
+      <tr><td>Short review</td><td><span class="mono">INSUFFICIENT_TEXT</span>; no score.</td></tr>
+      <tr><td>French gate failed</td><td><span class="mono">UNSUPPORTED_LANGUAGE</span>; no score.</td></tr>
+      <tr><td>Oversized request</td><td><span class="mono">413</span>; safe message.</td></tr>
+      <tr><td>Rate exceeded</td><td><span class="mono">429</span>; retry after the interval.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The reference environment is described exactly; results are not extrapolated from a faster laptop.</li>
+      <li>Every failure in the matrix was injected at least once and behaved as specified.</li>
+      <li>Cold start is visibly “not ready,” never a model failure or a low score.</li>
+      <li>No fallback score appears under any failure condition.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>7.6 Re-audit privacy and security</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:46mm;">Control</th><th>Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>No body logging</td><td>Sentinel test across backend, service, and extension; root logger captured.</td></tr>
+    <tr><td>No content persistence</td><td>Storage dump after scans; database inspection if Phase 4 exists (not yet).</td></tr>
+    <tr><td>No external AI/analytics</td><td>Network capture during a scan; only the backend origin.</td></tr>
+    <tr><td>CORS</td><td>Allowed origin succeeds; other origins fail; preflight correct.</td></tr>
+    <tr><td>Request size</td><td>131,072 boundary accepted; 131,073 rejected with 413.</td></tr>
+    <tr><td>Rate limit</td><td>60/minute; 429 with Retry-After.</td></tr>
+    <tr><td>Internal token</td><td>Missing/wrong rejected; not in logs, repo, or response; constant-time compare.</td></tr>
+    <tr><td>Secrets</td><td>No secret in repository or history; secret scanning clean; local <span class="mono">.env</span> ignored.</td></tr>
+    <tr><td>Dependencies</td><td>No critical vulnerability without a documented exception; Dependabot reviewed.</td></tr>
+    <tr><td>Admin isolation</td><td>Default 404; dev-admin loopback only; boot guard verified.</td></tr>
+    <tr><td>Safe errors</td><td>No stack trace, internal class, SQL, URL, or token in any response.</td></tr>
+    <tr><td>Input trust</td><td>Backend never accepts a score or verdict from the extension; response is re-validated.</td></tr>
+  </tbody>
+</table>
+
+<h2>7.7 Finalize the model card and reproducibility</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">STEP 3.5</span><h3>Write the model card a reviewer can use</h3></div>
+  <div class="meta"><b>Owner</b> ML lead &nbsp;|&nbsp; <b>Time</b> 1–2 days &nbsp;|&nbsp; <b>Depends</b> 3.1–3.2</div>
+
+  <p><strong>Goal.</strong> The model’s intended use, data, metrics, limitations, and version are documented in one place, and a clean rerun reproduces the metrics.</p>
+
+  <p class="label">Model card sections</p>
+  <ol>
+    <li>Intended use and out-of-scope use.</li>
+    <li>Training and evaluation data, licenses, hashes, split method, and label protocol.</li>
+    <li>Supported languages and per-language caveats.</li>
+    <li>Metrics with confidence intervals, reliability curve, and gate result.</li>
+    <li>Explanation method, signal taxonomy, and stability result.</li>
+    <li>Known limitations: domain shift, label noise, class-balanced calibration, short text, sarcasm, translation artifacts, adversarial and LLM-generated text.</li>
+    <li>Version, date, artifact hash, and the decision-register entries that authorized the release.</li>
+  </ol>
+
+  <div class="callout">
+    <span class="tag">Reproduction check</span>
+    <p>Create a clean Python environment from <span class="mono">requirements.lock</span> on a second machine or a fresh virtual environment. Run the evaluation script against the published artifact and split manifest. The metrics must match <span class="mono">metrics.json</span>; if they do not, report the discrepancy and the cause rather than hiding it.</p>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The model card is complete and linked from the README and the report.</li>
+      <li>The artifact hash and model version appear in the card and in <span class="mono">/api/v1/version</span>.</li>
+      <li>A clean rerun reproduces the metrics within the stated tolerance.</li>
+      <li>Every limitation has a mitigation or an explicit acceptance.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>7.8 Map the evidence to the course report</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:44mm;">Report section</th><th>Evidence source</th></tr></thead>
+  <tbody>
+    <tr><td>Product definition and scope</td><td>Product decisions §Product definition; refusal table; copy deck.</td></tr>
+    <tr><td>Architecture</td><td>Component flow; API surface; professor package layout; deployment boundary.</td></tr>
+    <tr><td>Contract and API</td><td><span class="mono">contracts/v1</span>; fixtures; contract workflow; reason codes.</td></tr>
+    <tr><td>Model and data</td><td>Model plan §3–§7; dataset manifest; annotation protocol; kappa.</td></tr>
+    <tr><td>Evaluation</td><td>Gate report; metrics with CIs; reliability curve; transfer results.</td></tr>
+    <tr><td>Explainability</td><td>Signal taxonomy; stability test; panel mapping test.</td></tr>
+    <tr><td>Privacy</td><td>Sentinel log test; storage inspection; network capture; retention policy.</td></tr>
+    <tr><td>Security</td><td>CORS, size, rate, token, safe error, dependency, secret scanning.</td></tr>
+    <tr><td>Accessibility</td><td>Keyboard, focus, zoom, contrast, screen-reader checklist.</td></tr>
+    <tr><td>Testing</td><td>Traceability table; per-phase test counts; CI runs.</td></tr>
+    <tr><td>Risks</td><td>Risk register R-01–R-14 with triggers and mitigations.</td></tr>
+    <tr><td>Demo</td><td>Runbook; failure injection matrix; request-ID trace.</td></tr>
+  </tbody>
+</table>
+
+<div class="gate-block">
+<h2>7.9 Phase 3 gate</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:12mm;">#</th><th>Gate check</th><th style="width:42mm;">Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Held-out evaluation is complete with CIs and per-language results.</td><td>Evaluation report + <span class="mono">metrics.json</span>.</td></tr>
+    <tr><td>2</td><td>Calibration and explanation stability gates pass or the fallback is recorded.</td><td>Reliability curve + Jaccard test.</td></tr>
+    <tr><td>3</td><td>Accessibility audit passes, including screen reader and 200% zoom.</td><td>Checklist + notes.</td></tr>
+    <tr><td>4</td><td>Bilingual copy matches the normative deck and makes equal claims.</td><td>Key-parity test + native review.</td></tr>
+    <tr><td>5</td><td>Performance and failure injection pass on the reference environment.</td><td>Perf report + injection log.</td></tr>
+    <tr><td>6</td><td>Privacy and security re-audit pass.</td><td>Sentinel, storage, network, CORS, rate, token evidence.</td></tr>
+    <tr><td>7</td><td>Model card complete; clean rerun reproduces metrics.</td><td>Model card + rerun log.</td></tr>
+    <tr><td>8</td><td>Report evidence is mapped to sections and traceability rows.</td><td>Evidence index.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout ok">
+  <span class="tag">Close the phase</span>
+  <p>Tag <span class="mono">phase-3-complete</span> and freeze the model and contract for the defense. Any later model change is a new version and a new gate, even if it “only” improves a metric.</p>
+</div>
+</div>

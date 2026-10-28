@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-labelledby="tl-mark-title tl-mark-desc">
+  <title id="tl-mark-title">TrustLoop mark</title>
+  <desc id="tl-mark-desc">An open circle with a square set in its gap: the loop is deliberately incomplete.</desc>
+  <style>
+    svg{color:#14524B}
+    @media (prefers-color-scheme: dark){svg{color:#79B3A4}}
+  </style>
+  <path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="butt"/>
+  <rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/>
+</svg>

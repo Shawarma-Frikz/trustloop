@@ -1,0 +1,287 @@
+<!-- ================= 01 THE IDEA ================= -->
+<h1><span class="num">SECTION 01</span>The idea</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">TrustLoop does not tell you whether a review is true. It gives the text a second reading, shows which patterns moved the estimate, and says plainly when it cannot estimate at all.</p>
+
+<div class="grid3">
+  <div class="box petrol">
+    <h3>What it does</h3>
+    <p>Estimates whether review text reads as organic or manipulated, using text patterns only. Returns a score, a band, evidence quality, up to five signals, and the model version.</p>
+  </div>
+  <div class="box rust">
+    <h3>What it refuses</h3>
+    <p>No identity, purchase, or truth claim. No page average. No guess when the text, language, or service cannot support one. Unknown is a designed outcome, not a failure to hide.</p>
+  </div>
+  <div class="box">
+    <h3>Why the loop is open</h3>
+    <p>A closed loop is a seal of approval. TrustLoop's mark stays open: the reading returns to the text, and the missing segment is where doubt lives.</p>
+  </div>
+</div>
+
+<h2>1.1 The brand in one line</h2>
+
+<div class="figure">
+  <div class="figlabel">Positioning line</div>
+  <p style="font-family:var(--serif);font-size:27pt;line-height:1.12;letter-spacing:-.02em;margin:0;max-width:150mm;">A second reading,<br>not a verdict.</p>
+</div>
+
+<p><strong>Tagline.</strong> <em>A second reading.</em> French: <em>Une seconde lecture.</em> It is a method, not a promise. It says what the product does — it reads again — and what it does not do: decide for you.</p>
+
+<p><strong>Name.</strong> One word, camel case: <span class="mono">TrustLoop</span>. Never <span class="mono">Trust Loop</span>, <span class="mono">Trustloop</span>, <span class="mono">TRUSTLOOP</span> in running text, or <span class="mono">TrustLoop™</span> without legal need. All-caps is reserved for the wordmark in very small contexts and for code identifiers. In French prose, keep the product name unchanged: <em>TrustLoop analyse les motifs du texte.</em></p>
+
+<h2>1.2 Personality</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:30mm;">Trait</th><th>It sounds like</th><th style="width:55mm;">It never sounds like</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Measured</strong></td><td>“The text shows patterns associated with promotional copy.”</td><td>“This review is fake.”</td></tr>
+    <tr><td><strong>Literate</strong></td><td>“Repeated phrasing appears in both genuine and manipulated reviews.”</td><td>“Our AI detects deception with 99% accuracy.”</td></tr>
+    <tr><td><strong>Candid</strong></td><td>“Not enough text to estimate.”</td><td>“Score unavailable” followed by a spinner that never ends.</td></tr>
+    <tr><td><strong>Quiet</strong></td><td>One estimate, one explanation, no confetti.</td><td>Alerts, streaks, scores for the page, badges for the reviewer.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="tag">Voice is part of the visual system</span>
+  <p>A calm interface with an overclaiming sentence still looks untrustworthy. The copy deck in <span class="mono">product-decisions.md</span> is normative; section 09 shows how it behaves in layout.</p>
+</div>
+
+<h2>1.3 What TrustLoop is not</h2>
+
+<div class="grid2">
+  <div class="box">
+    <h3 style="color:var(--rust);">Not a fraud detector</h3>
+    <p>It estimates a text pattern. It cannot prove intent, identity, purchase, or truth. The interface never uses “fraud”, “fake”, “bot account”, or “verified”.</p>
+  </div>
+  <div class="box">
+    <h3 style="color:var(--rust);">Not a page score</h3>
+    <p>Reviews stay individual. There is no average, no product grade, no “trustworthy seller” badge. Counts of reviews are allowed; an aggregate verdict is not.</p>
+  </div>
+  <div class="box">
+    <h3 style="color:var(--rust);">Not a surveillance tool</h3>
+    <p>No reviewer names, avatars, profiles, or identity cues appear in the panel. The interface reads the text, not the person.</p>
+  </div>
+  <div class="box">
+    <h3 style="color:var(--rust);">Not an AI product page</h3>
+    <p>No sparkles, robots, neural-network illustrations, or “powered by AI” labels. The method is named in the details, in plain language, where it belongs.</p>
+  </div>
+</div>
+
+<!-- ================= 01 MARK ================= -->
+<h1 class="page-break"><span class="num">SECTION 01 · MARK</span>The open loop</h1>
+
+<p class="lede">The mark is a circle with a missing segment and a small square resting in the gap. The square is the review; the opening is the limit of what the system can know.</p>
+
+<div class="grid2" style="align-items:start;">
+  <div class="figure" style="margin-top:0;">
+    <div class="figlabel">Construction · 24-unit grid</div>
+    <svg viewBox="0 0 240 240" style="width:100%;height:auto;display:block;">
+      <defs>
+        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10 0H0V10" fill="none" stroke="#DAD3C5" stroke-width=".7"/>
+        </pattern>
+      </defs>
+      <rect width="240" height="240" fill="#FCFAF5"/>
+      <rect width="240" height="240" fill="url(#grid)"/>
+      <circle cx="120" cy="120" r="85" fill="none" stroke="#BDB4A4" stroke-width=".8" stroke-dasharray="2 3"/>
+      <circle cx="120" cy="120" r="5" fill="none" stroke="#BDB4A4" stroke-width=".8"/>
+      <path d="M185.1 65.4 A85 85 0 1 0 185.1 174.6" fill="none" stroke="#14524B" stroke-width="20" stroke-linecap="butt"/>
+      <rect x="172.4" y="107.8" width="25" height="25" fill="#14524B"/>
+      <line x1="120" y1="0" x2="120" y2="240" stroke="#A24A2C" stroke-width=".8" stroke-dasharray="4 4"/>
+      <line x1="0" y1="120" x2="240" y2="120" stroke="#A24A2C" stroke-width=".8" stroke-dasharray="4 4"/>
+      <text x="8" y="14" font-family="IBM Plex Mono" font-size="8" fill="#686D66">24 × 24</text>
+    </svg>
+  </div>
+
+  <div>
+    <h3 style="margin-top:0;">Geometry</h3>
+    <ul>
+      <li>Outer diameter: <strong>17 units</strong> of a 24-unit box; stroke <strong>2 units</strong>.</li>
+      <li>The gap spans <strong>80°</strong>, centred on the horizontal axis.</li>
+      <li>The square is <strong>2.5 units</strong>, aligned to the gap centre, with equal space above and below.</li>
+      <li>Terminals are square, not rounded. The mark should feel cut, not drawn with a pen.</li>
+    </ul>
+    <h3>Clear space</h3>
+    <p>Keep at least <strong>half the mark's height</strong> clear on every side. In the horizontal lockup, the space between mark and wordmark is <strong>0.6×</strong> the mark height.</p>
+    <h3>Minimum size</h3>
+    <p>Mark: <strong>16 px</strong> on screen, <strong>6 mm</strong> in print. Horizontal lockup: <strong>88 px</strong> wide. Below that, use the mark alone.</p>
+  </div>
+</div>
+
+<h2>1.4 Lockups</h2>
+
+<div class="grid2">
+  <div class="figure" style="margin:0;">
+    <div class="figlabel">Horizontal · default</div>
+    <div style="display:flex;align-items:center;gap:12px;padding:8mm 0;">
+      <svg viewBox="0 0 24 24" style="width:34px;height:34px;color:var(--petrol);" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+      <span style="font-family:var(--serif);font-size:27pt;font-weight:500;letter-spacing:-.01em;">TrustLoop</span>
+    </div>
+    <p class="caption" style="margin:0;">Wordmark: Newsreader Medium, −1% tracking. The mark is petrol; the wordmark is ink.</p>
+  </div>
+  <div class="figure" style="margin:0;">
+    <div class="figlabel">Stacked · cover and print</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:6mm 0;">
+      <svg viewBox="0 0 24 24" style="width:34px;height:34px;color:var(--petrol);" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+      <span style="font-family:var(--serif);font-size:21pt;font-weight:500;letter-spacing:-.01em;">TrustLoop</span>
+      <span style="font-family:var(--mono);font-size:6.6pt;letter-spacing:.16em;color:var(--muted);">A SECOND READING</span>
+    </div>
+    <p class="caption" style="margin:0;">Use the tagline only when the product needs explaining. Never set it in all-caps French.</p>
+  </div>
+</div>
+
+<h2>1.5 Misuse</h2>
+
+<div class="grid3">
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <div class="misuse-plate">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="16.2" y="10.75" width="2.5" height="2.5" fill="currentColor"/><line x1="3.5" y1="20.5" x2="20.5" y2="3.5" stroke="#A24A2C" stroke-width="1.2"/></svg>
+    </div>
+    <h4>Do not close the loop</h4>
+    <p class="small">A closed circle reads as a seal of approval or a completed verification. TrustLoop never claims either.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <div class="misuse-plate">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.2-3 7.3-7 9-4-1.7-7-4.8-7-9V6z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M9 12l2.2 2.2L15.4 10" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="3.5" y1="20.5" x2="20.5" y2="3.5" stroke="#A24A2C" stroke-width="1.2"/></svg>
+    </div>
+    <h4>Do not add a check, shield, or eye</h4>
+    <p class="small">These borrow the visual language of security and surveillance. The product is neither.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <div class="misuse-plate">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-26 12 12)"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="#8A6A32" stroke-width="1.5"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="#8A6A32"/></g><line x1="3.5" y1="20.5" x2="20.5" y2="3.5" stroke="#A24A2C" stroke-width="1.2"/></svg>
+    </div>
+    <h4>Do not rotate, outline, or recolour</h4>
+    <p class="small">Use petrol on paper, paper on petrol. No gradients, no drop shadow, no decorative animation.</p>
+  </div>
+</div>
+
+<div class="callout rust">
+  <span class="tag">The misuse test</span>
+  <p>If a change makes the mark look more official, more certain, or more like a security product, it is wrong — even when it looks better. The loop stays open, the palette stays earth, and the square never moves out of the gap.</p>
+</div>
+
+<!-- ================= 02 PRINCIPLES ================= -->
+<h1><span class="num">SECTION 02</span>Principles</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">Six rules decide most of the interface. When a new screen is ambiguous, apply them in order. The first rule wins.</p>
+
+<div class="grid2">
+  <div class="box petrol">
+    <div class="micro" style="color:var(--rust);">01</div>
+    <h3>The number is never alone</h3>
+    <p>A score always appears with its band, its evidence quality, and its engine. Never a naked “73”, never a number without the sentence that limits it.</p>
+    <p class="small"><strong>In practice:</strong> the chip may show only the score because the panel is one click away; the panel always shows the full cluster.</p>
+  </div>
+  <div class="box petrol">
+    <div class="micro" style="color:var(--rust);">02</div>
+    <h3>Doubt is a state, not an error</h3>
+    <p>Unknown, low evidence, signals-only, timeout: each has a designed layout, plain copy, and a next action. None is a red error toast.</p>
+    <p class="small"><strong>In practice:</strong> the unknown chip is hollow, not red; the panel explains the reason in one sentence.</p>
+  </div>
+  <div class="box petrol">
+    <div class="micro" style="color:var(--rust);">03</div>
+    <h3>Evidence before decoration</h3>
+    <p>Every line, bar, and mark carries meaning. No ornamental charts, no decorative gradients, no icons that repeat the label.</p>
+    <p class="small"><strong>In practice:</strong> if a visual element can be removed without losing information, remove it.</p>
+  </div>
+  <div class="box petrol">
+    <div class="micro" style="color:var(--rust);">04</div>
+    <h3>Paper, not glass</h3>
+    <p>Flat surfaces, hairline rules, solid ink. The interface should feel printed and inspectable, not floating and translucent.</p>
+    <p class="small"><strong>In practice:</strong> a 1 px rule and a hard 3 px offset replace blur, glow, and elevation.</p>
+  </div>
+  <div class="box petrol">
+    <div class="micro" style="color:var(--rust);">05</div>
+    <h3>Read the text, not the person</h3>
+    <p>No avatars, names, profiles, flags, or identity cues. Reviews are identified by their order on the page, not by who wrote them.</p>
+    <p class="small"><strong>In practice:</strong> “Review 3”, not a username or a profile picture.</p>
+  </div>
+  <div class="box petrol">
+    <div class="micro" style="color:var(--rust);">06</div>
+    <h3>Two languages, one claim</h3>
+    <p>French and English carry the same strength of claim. A longer French sentence may wrap; it may not become more certain or more vague.</p>
+    <p class="small"><strong>In practice:</strong> design at the longer string and test both at 320 px.</p>
+  </div>
+</div>
+
+<div class="callout rust" style="margin-top:6mm;">
+  <span class="tag">Decision test · use before adding a visual</span>
+  <p><strong>1.</strong> Does it clarify a state, a direction, or a limit? <strong>2.</strong> Would it survive without colour? <strong>3.</strong> Does it imply more certainty, identity, or aggregation than the model has? <strong>4.</strong> Would a careful reader mistake it for a verdict? If any answer is wrong, the element does not ship.</p>
+</div>
+
+<!-- ================= 02 ANTI-PATTERNS ================= -->
+<h1 class="page-break"><span class="num">SECTION 02 · REFUSALS</span>The tells we refuse</h1>
+
+<p class="lede">“AI-made” is rarely one bad colour. It is a cluster of shortcuts that signal a template rather than a point of view. These are wrong here for a specific reason, not because they are universally bad.</p>
+
+<div class="grid2">
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Violet or indigo gradients</h3>
+    <p>Generic SaaS branding. They also imply a polished intelligence the model does not have. Use paper, petrol, rust, and the six stops.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Glassmorphism and blur</h3>
+    <p>Frosted cards look like an AI dashboard and reduce text contrast over a busy host page. Surfaces are opaque.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Sparkles, robots, brains</h3>
+    <p>They advertise a technology instead of explaining an estimate. The panel names the model version in the footer, quietly.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Shields, checks, seals</h3>
+    <p>They claim safety and verification. TrustLoop estimates text patterns and says so. A checkmark is never the verdict icon.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Gauges, needles, rings</h3>
+    <p>They make a probability look like a physical measurement. The measure is a banded rule, not a dial.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Emoji and emoji-like icons</h3>
+    <p>They set an informal, chat-app tone and render differently across platforms. Icons are drawn, 1.5 px, single colour.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Avatars and reviewer cards</h3>
+    <p>They invite judgments about a person. Review rows are numbered. Identity is out of scope.</p>
+  </div>
+  <div class="box" style="border-top:2.5pt solid var(--rust);">
+    <h3 style="color:var(--rust);">Centered everything</h3>
+    <p>Centered marketing layouts are hard to scan in a 360 px panel. The panel is left-aligned and rule-led.</p>
+  </div>
+</div>
+
+<h2>2.1 Four visual refusals, shown</h2>
+
+<div class="grid4">
+  <div class="figure" style="margin:0;text-align:center;">
+    <div style="height:24mm;background:#6C5CE7;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--mono);font-size:7pt;">violet</div>
+    <div style="font-family:var(--mono);font-size:7pt;color:var(--rust);margin-top:2mm;">NO · GRADIENT / VIOLET</div>
+  </div>
+  <div class="figure" style="margin:0;text-align:center;">
+    <div style="height:24mm;background:var(--petrol);display:flex;align-items:center;justify-content:center;">
+      <div style="width:70%;height:14mm;background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.5);border-radius:3px;"></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:7pt;color:var(--rust);margin-top:2mm;">NO · GLASS</div>
+  </div>
+  <div class="figure" style="margin:0;text-align:center;">
+    <svg viewBox="0 0 120 70" style="width:100%;height:24mm;">
+      <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="#BDB4A4" stroke-width="7"/>
+      <path d="M60 60 L88 28" stroke="#A24A2C" stroke-width="3"/>
+      <circle cx="60" cy="60" r="4" fill="#A24A2C"/>
+    </svg>
+    <div style="font-family:var(--mono);font-size:7pt;color:var(--rust);margin-top:2mm;">NO · GAUGE</div>
+  </div>
+  <div class="figure" style="margin:0;text-align:center;">
+    <div style="height:24mm;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:30pt;color:var(--rust);">✳</div>
+    <div style="font-family:var(--mono);font-size:7pt;color:var(--rust);margin-top:2mm;">NO · SPARKLE</div>
+  </div>
+</div>
+
+<div class="callout">
+  <span class="tag">The replacement rule</span>
+  <p>When a template suggests a familiar AI visual, replace it with a documentary one: a rule, a numbered row, a stamped label, a measured band, or a plain sentence. The interface should look like it was made by someone who read the reviews.</p>
+</div>

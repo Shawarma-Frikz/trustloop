@@ -1,0 +1,516 @@
+<style>
+  /* section 15 figures */
+  .report-cover{
+    width:78mm;height:110.3mm;background:var(--panel);border:.5pt solid var(--rule);
+    box-shadow:3px 3px 0 var(--shadow);position:relative;padding:7mm 6mm 6mm 11mm;
+    display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;
+  }
+  .report-cover:before{content:"";position:absolute;left:0;top:0;width:4mm;height:100%;background:var(--petrol);}
+  .report-cover .rc-top{display:flex;align-items:center;justify-content:space-between;gap:3mm;}
+  .report-cover .rc-mark{display:flex;align-items:center;gap:1.8mm;font-family:var(--sans);font-weight:600;font-size:7.4pt;}
+  .report-cover .rc-mark svg{width:13px;height:13px;color:var(--petrol);}
+  .report-cover .rc-kicker{font-family:var(--mono);font-size:5.2pt;letter-spacing:.12em;text-transform:uppercase;color:var(--rust);line-height:1.4;}
+  .report-cover h2{font-family:var(--serif);font-weight:500;font-size:23pt;line-height:1.0;letter-spacing:-.02em;margin:0 0 3.5mm;border:0;padding:0;}
+  .report-cover .rc-sub{font-family:var(--serif);font-size:8pt;line-height:1.4;color:var(--ink-2);margin:0;}
+  .report-cover .rc-meta{border-top:.5pt solid var(--rule);padding-top:2.2mm;font-family:var(--mono);font-size:5.2pt;line-height:1.6;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
+
+  .slide16{
+    width:160mm;height:90mm;background:var(--panel);border:.5pt solid var(--rule);padding:7mm 8mm 6mm;
+    position:relative;display:flex;flex-direction:column;justify-content:space-between;
+    break-inside:avoid;box-shadow:3px 3px 0 var(--shadow);
+  }
+  .slide16 .s-eyebrow{font-family:var(--mono);font-size:5.8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);}
+  .slide16 h2{font-size:19pt;line-height:1.06;letter-spacing:-.015em;margin:2mm 0 2.5mm;border:0;padding:0;max-width:118mm;}
+  .slide16 .s-body{font-size:8.6pt;line-height:1.45;color:var(--ink-2);max-width:98mm;margin:0;}
+  .slide16 .s-foot{display:flex;justify-content:space-between;gap:4mm;border-top:.4pt solid var(--rule);padding-top:2mm;font-family:var(--mono);font-size:5.2pt;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+
+  .read-card{
+    width:84mm;height:59.2mm;background:var(--panel);border:.5pt solid var(--rule);
+    box-shadow:3px 3px 0 var(--shadow);padding:4.5mm;display:flex;flex-direction:column;
+    justify-content:space-between;break-inside:avoid;
+  }
+  .read-card .rc-head{display:flex;align-items:baseline;justify-content:space-between;gap:3mm;border-bottom:.4pt solid var(--rule);padding-bottom:1.8mm;}
+  .read-card .rc-title{font-family:var(--mono);font-size:5.6pt;letter-spacing:.12em;text-transform:uppercase;color:var(--rust);}
+  .read-card .rc-brand{font-family:var(--mono);font-size:5.2pt;letter-spacing:.08em;color:var(--faint);}
+  .read-card .rc-score{display:flex;align-items:flex-start;gap:3mm;}
+  .read-card .rc-num{font-family:var(--mono);font-size:25pt;line-height:.9;letter-spacing:-.04em;}
+  .read-card .rc-band{font-family:var(--serif);font-size:11pt;line-height:1.1;margin-bottom:1mm;}
+  .read-card .rc-ev{font-family:var(--mono);font-size:5.4pt;color:var(--muted);line-height:1.35;}
+  .read-card .rc-body{font-size:6.1pt;line-height:1.42;color:var(--ink-2);}
+  .read-card .rc-body p{margin:0 0 1.2mm;}
+  .read-card .rc-foot{border-top:.4pt solid var(--rule);padding-top:1.5mm;font-size:5.2pt;line-height:1.35;color:var(--muted);}
+
+  .chart-track{display:grid;grid-template-columns:52mm 1fr 9mm;gap:3mm;align-items:center;margin:1.6mm 0;}
+  .chart-track .bar{height:4.2mm;position:relative;background:#EFEADE;}
+  .chart-track .bar span{position:absolute;left:0;top:0;height:4.2mm;}
+  .chart-track .n{font-family:var(--mono);font-size:7pt;color:var(--muted);text-align:right;}
+  .chart-track .lab{font-size:7.2pt;line-height:1.25;color:var(--ink-2);}
+  .chart-track .lab b{font-family:var(--mono);font-size:6.2pt;font-weight:400;color:var(--muted);margin-right:2mm;}
+
+  .deckmap{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin:3mm 0 2mm;break-inside:avoid;}
+  .deckcell{border:.5pt solid var(--rule);background:var(--panel);padding:2.5mm 3mm;aspect-ratio:16/9;display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;}
+  .deckcell .dn{font-family:var(--mono);font-size:5.8pt;letter-spacing:.1em;color:var(--rust);}
+  .deckcell .dt{font-family:var(--serif);font-size:8.4pt;line-height:1.1;}
+  .deckcell .dr{height:2px;width:12mm;background:var(--petrol);margin-top:1.2mm;}
+
+  .slide-mini{
+    width:80mm;height:45mm;background:var(--petrol-deep);color:var(--paper);padding:4mm 5mm;
+    display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;
+    box-shadow:3px 3px 0 var(--shadow);
+  }
+  .slide-mini .sm-top{display:flex;align-items:center;justify-content:space-between;gap:3mm;font-family:var(--mono);font-size:4.8pt;letter-spacing:.1em;text-transform:uppercase;}
+  .slide-mini .sm-brand{display:flex;align-items:center;gap:1.6mm;font-family:var(--sans);font-weight:600;font-size:6.4pt;letter-spacing:0;text-transform:none;}
+  .slide-mini .sm-brand svg{width:11px;height:11px;}
+  .slide-mini .sm-num{color:rgba(247,243,234,.62);}
+  .slide-mini .sm-eyebrow{font-family:var(--mono);font-size:4.6pt;letter-spacing:.12em;text-transform:uppercase;color:#D08A6B;margin-bottom:1.6mm;}
+  .slide-mini h4{font-family:var(--serif);font-weight:500;font-size:15pt;line-height:1.02;letter-spacing:-.015em;margin:0 0 1.4mm;color:var(--paper);}
+  .slide-mini p{font-size:5.6pt;line-height:1.35;color:rgba(247,243,234,.78);margin:0;max-width:62mm;}
+  .slide-mini .sm-foot{font-family:var(--mono);font-size:4.4pt;letter-spacing:.08em;text-transform:uppercase;color:rgba(247,243,234,.55);border-top:.4pt solid rgba(247,243,234,.18);padding-top:1.5mm;}
+</style>
+
+<!-- ================= 15 DOCUMENTS AND DEFENSE ================= -->
+<h1><span class="num">SECTION 15</span>Documents and defense</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">The report and the defense use the same language as the panel: one measure, one caveat, one number at a time. A jury should recognise the product before the first slide is read.</p>
+
+<h2>15.1 Report cover</h2>
+
+<div class="grid2" style="align-items:start;">
+  <div class="figure" style="margin-top:0;padding:4mm;display:flex;justify-content:center;">
+    <div style="width:100%;">
+      <div class="figlabel">A4 report cover · 55% scale</div>
+      <div class="report-cover">
+        <div class="rc-top">
+          <div class="rc-mark">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+            TrustLoop
+          </div>
+          <div class="rc-kicker">Project report<br>v1.0</div>
+        </div>
+        <div>
+          <div class="rc-kicker" style="margin-bottom:3mm;">Text-pattern estimation · EN / FR</div>
+          <h2>A second reading.</h2>
+          <p class="rc-sub">Estimating review authenticity from text patterns — design, implementation, and limits.</p>
+        </div>
+        <div class="rc-meta">Academic project · 2026<br>TrustLoop · graphic charter v1.0<br>October 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h3 style="margin-top:0;">Rules</h3>
+    <p>The report cover is a document, not a poster. One mark, one title, one subtitle, one colour block. The petrol spine is the only full-height element; it aligns the cover with the charter and costs one pass of ink.</p>
+    <ul>
+      <li><strong>A4, 210 × 297 mm.</strong> Petrol spine 14 mm; text block begins at 32 mm; right margin 22 mm.</li>
+      <li><strong>Title in Newsreader 44 pt,</strong> left aligned, maximum two lines. The subtitle is 14 pt and never bold.</li>
+      <li><strong>Paper stock, not a dark cover.</strong> It prints cleanly on an office printer and still reads as designed.</li>
+      <li><strong>No school logo until one is supplied.</strong> Leave the lower right free; do not invent an institutional mark.</li>
+      <li><strong>The French cover is re-set, not translated in place.</strong> The French subtitle is longer; the title drops to 40 pt if needed.</li>
+    </ul>
+    <div class="callout" style="margin-top:4mm;">
+      <span class="tag">If a template is imposed</span>
+      <p>Keep the spine, the mark, and the type. Drop the rest without argument. A required template is not a design decision; the identity survives in two elements.</p>
+    </div>
+  </div>
+</div>
+
+<h3>What the jury receives</h3>
+<div class="grid4">
+  <div class="box"><h4>Report</h4><p class="small">A4, bound or PDF. Claim, method, results, limits. The cover is 15.1; the copy is the product's, not the charter's.</p></div>
+  <div class="box"><h4>Deck</h4><p class="small">Nine 16:9 slides, under nine minutes. One sentence per slide; the sequence is 15.5.</p></div>
+  <div class="box"><h4>Card</h4><p class="small">A6 handout, one result in four lines. Printed at 100%, never over a real review.</p></div>
+  <div class="box"><h4>Demo</h4><p class="small">A prepared page with fixture reviews. No live account, no review text in a slide.</p></div>
+</div>
+
+<h2 style="break-before:page;">15.2 Slide master</h2>
+
+<div class="figure">
+  <div class="figlabel">16:9 slide · 160 × 90 mm at 1280 × 720 px</div>
+  <div class="slide16">
+    <div>
+      <div class="s-eyebrow">04 · The measure</div>
+      <h2>The band is the claim. The score is the measure.</h2>
+      <p class="s-body">A number without a band invites false precision. Every score sits inside a named range and an evidence qualifier — and every qualifier is part of the result, not fine print.</p>
+    </div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:5mm;margin-bottom:2.5mm;">
+        <span style="font-family:var(--mono);font-size:30pt;font-weight:500;line-height:.9;letter-spacing:-.04em;">73</span>
+        <span style="font-family:var(--serif);font-size:14pt;">Likely organic</span>
+        <span style="font-family:var(--mono);font-size:6.4pt;color:var(--muted);margin-left:auto;">Adequate evidence · Band 5 of 6</span>
+      </div>
+      <div class="tl-track" style="height:8px;margin:0;">
+        <span class="tl-seg1" style="width:20%;"></span><span class="tl-seg2" style="width:20%;"></span><span class="tl-seg3" style="width:15%;"></span><span class="tl-seg4" style="width:15%;"></span><span class="tl-seg5" style="width:15%;"></span><span class="tl-seg6" style="width:15%;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:5.4pt;color:var(--muted);margin-top:1.5mm;"><span>0</span><span>50</span><span>100</span></div>
+    </div>
+    <div class="s-foot"><span>TrustLoop · Graphic charter</span><span>Illustrative result · no review text</span><span>04 / 09</span></div>
+  </div>
+</div>
+
+<div class="grid3" style="margin-top:5mm;">
+  <div class="box"><h4>Geometry</h4><p class="small">1280 × 720 px. Margins 64 px; content width 1152 px. Title starts at 96 px from the top, footer at 664 px. Nothing enters the outer 64 px.</p></div>
+  <div class="box"><h4>Type</h4><p class="small">Title 44 / 48; body 24 / 34; source 16 / 22. Nothing projected below 16 px. French re-flows; it is never shrunk to fit.</p></div>
+  <div class="box"><h4>Colour</h4><p class="small">Paper, ink, petrol, rust. Band stops appear only where a measure appears. No background gradient, no decorative rule, no logo on every slide.</p></div>
+</div>
+
+<ul class="two-col-list" style="margin-top:4mm;">
+  <li><strong>One claim per slide.</strong> If the title needs a comma and a second sentence, it is two slides.</li>
+  <li><strong>The mark appears twice:</strong> title slide and closing. Everywhere else, the footer carries the name.</li>
+  <li><strong>No bullet walls.</strong> Three lines maximum of body copy; the rest is a figure, a table, or speech.</li>
+  <li><strong>Every figure has a source line:</strong> dataset, n, and date. “Illustrative” is a source line.</li>
+  <li><strong>No screenshots with live review text.</strong> Use the charter's mockups with placeholder content.</li>
+  <li><strong>The last slide is not “Questions?”.</strong> It repeats the claim and the limits, so the final image is honest.</li>
+</ul>
+
+<h3 style="break-before:page;">Deck shape</h3>
+<div class="deckmap">
+  <div class="deckcell"><span class="dn">01</span><span class="dt">Two reviews</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">02</span><span class="dt">The claim</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">03</span><span class="dt">The measure</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">04</span><span class="dt">The experience</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">05</span><span class="dt">The model</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">06</span><span class="dt">The honest failures</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">07</span><span class="dt">The evidence</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">08</span><span class="dt">The limits</span><span class="dr"></span></div>
+  <div class="deckcell"><span class="dn">09</span><span class="dt">The next reading</span><span class="dr"></span></div>
+</div>
+<p class="caption">The deck is read left to right, row by row: 1–3 establish the claim, 4–6 show the product, 7–9 defend the evidence and stop. Each cell is a slide, not a section divider.</p>
+
+<h3>First and last</h3>
+
+<div class="grid2" style="grid-template-columns:80mm 80mm;justify-content:space-between;gap:0;">
+  <div>
+    <div class="figlabel">Slide 01 · title · 80 × 45 mm</div>
+    <div class="slide-mini">
+      <div class="sm-top">
+        <span class="sm-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+          TrustLoop
+        </span>
+        <span class="sm-num">01 / 09</span>
+      </div>
+      <div>
+        <div class="sm-eyebrow">Project report · v1.0</div>
+        <h4>A second reading.</h4>
+        <p>Estimating review authenticity from text patterns.</p>
+      </div>
+      <div class="sm-foot">Academic project · 2026 · EN / FR</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="figlabel">Slide 09 · closing · 80 × 45 mm</div>
+    <div class="slide-mini">
+      <div class="sm-top">
+        <span class="sm-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+          TrustLoop
+        </span>
+        <span class="sm-num">09 / 09</span>
+      </div>
+      <div>
+        <div class="sm-eyebrow">The limits</div>
+        <h4>The band is the claim.</h4>
+        <p>Text patterns are not truth. Bilingual interface is not bilingual coverage. History is metadata only.</p>
+      </div>
+      <div class="sm-foot">Ask what it cannot do.</div>
+    </div>
+  </div>
+</div>
+
+<p class="caption"><b>Two slides carry the mark: the first and the last.</b> Neither carries a score. If the session is cut to four slides, keep 02, 03, 06, and 08 — the claim, the measure, the honest failures, and the limits.</p>
+
+<h2 style="break-before:page;">15.3 Charts</h2>
+
+<p>A chart in this project has one job: show a distribution or a relationship that a single number would hide. It never turns a page into a score. The same banded rule used in the panel is the default chart; everything else must earn its place.</p>
+
+<div class="figure">
+  <div class="figlabel">Evaluation figure · illustrative form, not results</div>
+  <div style="max-width:158mm;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:.5pt solid var(--rule);padding-bottom:2mm;margin-bottom:2mm;">
+      <strong style="font-size:8.8pt;">Predicted bands on the evaluation set</strong>
+      <span class="mono" style="color:var(--muted);">n = 126 · labelled fixtures · Oct 2026</span>
+    </div>
+    <div class="chart-track"><div class="lab"><b>0–19</b>Strong manipulation signals</div><div class="bar"><span class="tl-seg1" style="width:26%;"></span></div><div class="n">9</div></div>
+    <div class="chart-track"><div class="lab"><b>20–39</b>Likely manipulated</div><div class="bar"><span class="tl-seg2" style="width:40%;"></span></div><div class="n">14</div></div>
+    <div class="chart-track"><div class="lab"><b>40–54</b>Inconclusive</div><div class="bar"><span class="tl-seg3" style="width:54%;"></span></div><div class="n">19</div></div>
+    <div class="chart-track"><div class="lab"><b>55–69</b>Mixed signals</div><div class="bar"><span class="tl-seg4" style="width:69%;"></span></div><div class="n">24</div></div>
+    <div class="chart-track"><div class="lab"><b>70–84</b>Likely organic</div><div class="bar"><span class="tl-seg5" style="width:89%;"></span></div><div class="n">31</div></div>
+    <div class="chart-track"><div class="lab"><b>85–100</b>Strong organic signals</div><div class="bar"><span class="tl-seg6" style="width:83%;"></span></div><div class="n">29</div></div>
+    <p class="caption" style="margin:2.5mm 0 0;">Bars are counts, not percentages. Direct labels replace a legend. The source line names the set, its size, and the date; “illustrative” would appear here on a template. Never chart the reviews of a single product as if they were a population.</p>
+  </div>
+</div>
+
+<div class="grid2" style="margin-top:4mm;">
+  <div class="box petrol">
+    <h4>Use</h4>
+    <ul class="small" style="margin-bottom:0;">
+      <li>The banded rule for one review, with marker and scale.</li>
+      <li>A calibration curve when the model plan validates one.</li>
+      <li>A predicted-band distribution with an explicit n.</li>
+      <li>A confusion matrix with counts and row totals.</li>
+      <li>A horizontal bar chart with direct labels and a zero baseline.</li>
+    </ul>
+  </div>
+  <div class="box rust">
+    <h4>Do not use</h4>
+    <ul class="small" style="margin-bottom:0;">
+      <li>Gauges, dials, speedometers, or semicircles.</li>
+      <li>Donuts, pies, word clouds, or radar plots.</li>
+      <li>A page score, an average trust score, or a site ranking.</li>
+      <li>Dual axes, 3D bars, gradients, or shadows on data.</li>
+      <li>A number without its band, n, or source.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout warn">
+  <span class="tag">The one-number test</span>
+  <p>If a chart communicates a single value, show the value. A gauge adds theatre, not information. The defence should be readable with the projector off.</p>
+</div>
+
+<h2>15.4 Evidence reading card</h2>
+
+<div class="grid2" style="align-items:start;">
+  <div class="figure" style="margin-top:0;padding:4mm;display:flex;justify-content:center;">
+    <div style="width:100%;">
+      <div class="figlabel">A6 handout · 84 × 59 mm at 100%</div>
+      <div class="read-card">
+        <div class="rc-head"><span class="rc-title">How to read a result</span><span class="rc-brand">TRUSTLOOP</span></div>
+        <div class="rc-score">
+          <div class="rc-num">51</div>
+          <div>
+            <div class="rc-band">Inconclusive</div>
+            <div class="rc-ev">Adequate evidence · Band 3 of 6</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <p><strong>Score.</strong> 0–100, from text patterns. Not a probability.</p>
+          <p><strong>Band.</strong> The claim. Six fixed ranges; none judges a person.</p>
+          <p><strong>Signals.</strong> What moved the estimate. Not proof of intent.</p>
+        </div>
+        <div class="rc-foot">Estimated from text patterns. Does not verify purchase, identity, or truth.</div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3 style="margin-top:0;">Use</h3>
+    <p>The card is for the jury table, the report annex, and the user-testing session. It answers the first question — “what am I looking at?” — without a paragraph.</p>
+    <ul>
+      <li><strong>Print at A6 landscape,</strong> 300 gsm or plain paper. No bleed, no fold.</li>
+      <li><strong>One result only.</strong> Never place a card over a real review screenshot.</li>
+      <li><strong>Same layout in French.</strong> “51 · Non concluant · Texte suffisant · Bande 3 sur 6”.</li>
+      <li><strong>Do not add a logo or a QR code.</strong> The card is an explanation, not merchandise.</li>
+      <li><strong>Unknown is a second card, not a footnote.</strong> If the study shows unknown, print “No estimate” with its reason and keep the same structure.</li>
+    </ul>
+  </div>
+</div>
+
+<div style="break-inside:avoid;">
+<h2>15.5 Defense sequence</h2>
+
+<p>Nine slides, under nine minutes, one sentence per slide that can be said without looking at it. The sequence moves from the claim to the measure, then to the evidence, and ends on the limit — not on a thank-you slide.</p>
+
+<table class="spec">
+  <thead><tr><th style="width:8mm;">#</th><th style="width:30mm;">Slide</th><th>The sentence</th><th style="width:34mm;">Visual</th><th style="width:13mm;">Time</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">01</td><td>Two reviews</td><td>A review can be useful and still be unverifiable. TrustLoop works on the text, where the doubt actually is.</td><td>Host page, one chip, no numbers</td><td class="mono">0:40</td></tr>
+    <tr><td class="mono">02</td><td>The claim</td><td>It estimates how much a review reads like manipulation; it does not verify truth, purchase, or identity.</td><td>Claim + disclaimer, set large</td><td class="mono">0:40</td></tr>
+    <tr><td class="mono">03</td><td>The measure</td><td>Six fixed bands, one score, one evidence qualifier. The band is the claim; the number is the measure.</td><td>Banded rule at 73</td><td class="mono">1:00</td></tr>
+    <tr><td class="mono">04</td><td>The experience</td><td>The panel lists reviews, expands one result, and keeps the limit visible at the bottom.</td><td>Panel mockup, one row open</td><td class="mono">1:00</td></tr>
+    <tr><td class="mono">05</td><td>The model</td><td>Seven signal families, trained and gated per language; no score is served until the language passes.</td><td>Signal table + pipeline strip</td><td class="mono">1:15</td></tr>
+    <tr><td class="mono">06</td><td>The honest failures</td><td>Unknown and low evidence are designed states, not errors: the interface never invents a number.</td><td>Unknown + LOW panels</td><td class="mono">1:00</td></tr>
+    <tr><td class="mono">07</td><td>The evidence</td><td>Evaluation is per band, per language, with calibration and a stated n — and the failures are shown.</td><td>Band distribution or calibration</td><td class="mono">1:15</td></tr>
+    <tr><td class="mono">08</td><td>The limits</td><td>Text patterns are not truth; bilingual interface is not bilingual coverage; history is metadata only.</td><td>Three limits, one line each</td><td class="mono">0:45</td></tr>
+    <tr><td class="mono">09</td><td>The next reading</td><td>More adapters, gated languages, validated contributions — in that order, without widening the claim.</td><td>Closing slide with mark</td><td class="mono">0:45</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Total.</b> 8 minutes 20 seconds, leaving time for the demonstration and questions. The demo is not a slide; it runs on a prepared page with fixture reviews, never on a live account.</p>
+
+<div class="callout">
+  <span class="tag">The sentence to memorise</span>
+  <p>“It estimates how much a review reads like manipulation — and it tells you when it cannot.” No slide, no adjective, no number required.</p>
+</div>
+</div>
+
+<h2 style="break-before:page;">15.6 Questions to expect</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:62mm;">Question</th><th>Answer</th></tr></thead>
+  <tbody>
+    <tr><td>“Is this an AI that detects fake reviews?”</td><td>No. It estimates whether text patterns resemble manipulation. “Fake” is a claim about intent and truth that the model cannot make.</td></tr>
+    <tr><td>“Why six bands instead of one percentage?”</td><td>A percentage invites false precision. The band carries the claim; the score carries the measure; the evidence line carries the limit.</td></tr>
+    <tr><td>“What happens when it is wrong?”</td><td>It can be wrong inside a band, and the interface says so. When the input is insufficient, it returns unknown rather than a low score.</td></tr>
+    <tr><td>“Why is the interface French if the model may not be?”</td><td>The interface is translated; model coverage is gated per language (D13, D23). The unsupported-language state never implies coverage.</td></tr>
+    <tr><td>“Why not show a score for the whole page?”</td><td>An average of reviews would invent a claim the model cannot support. The panel counts reviews; it does not grade the product.</td></tr>
+    <tr><td>“What do you store?”</td><td>History is off by default. When enabled: host, time, adapter, status, result, model version — never review text, review keys, or the URL.</td></tr>
+  </tbody>
+</table>
+
+<h2>15.7 Demo script</h2>
+
+<p>Two minutes, six actions, no live account. The demo proves the states, not the model; the model is defended on slide 7.</p>
+
+<table class="spec">
+  <thead><tr><th style="width:8mm;">#</th><th style="width:54mm;">Action</th><th>What it proves</th><th style="width:13mm;">Time</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">01</td><td>Open the prepared product page.</td><td>Three reviews, fixture text, no account and no network dependency.</td><td class="mono">0:20</td></tr>
+    <tr><td class="mono">02</td><td>Click the chip on review 2.</td><td>The panel opens at that review; focus lands on the matching row.</td><td class="mono">0:20</td></tr>
+    <tr><td class="mono">03</td><td>Expand review 3.</td><td>The LOW qualifier stays visible; the score never becomes a verdict.</td><td class="mono">0:30</td></tr>
+    <tr><td class="mono">04</td><td>Switch the interface to French.</td><td>Same claim, longer strings, no truncation at 320 px.</td><td class="mono">0:20</td></tr>
+    <tr><td class="mono">05</td><td>Show the unknown row.</td><td>“No estimate”, the reason, and no zero.</td><td class="mono">0:20</td></tr>
+    <tr><td class="mono">06</td><td>Open history while it is off, then clear it.</td><td>Opt-in, metadata only; the empty state is explicit.</td><td class="mono">0:20</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Two minutes ten.</b> If the demo fails, say so and show the PDF; never improvise a live page. The panel is the product, not the network.</p>
+
+<!-- ================= APPENDIX A ================= -->
+<h1 class="page-break"><span class="num">APPENDIX A</span>Copy inventory</h1>
+
+<div class="chapter-rule"><span class="a"></span><span class="b"></span></div>
+
+<p class="lede">Every string the interface can show, in both languages, with its status. Normative strings come from the copy deck; proposed strings are this charter's additions and need deck approval before implementation.</p>
+
+<h2>A.1 Status</h2>
+
+<div class="grid3">
+  <div class="box petrol"><h4>Normative</h4><p class="small">Quoted from <span class="mono">product-decisions.md</span>. A developer may ship it. A designer may not paraphrase it.</p></div>
+  <div class="box"><h4>Proposed</h4><p class="small">Written here to fill a gap the deck does not cover. It is marked in the table and must be added to the deck, in both languages, before release.</p></div>
+  <div class="box rust"><h4>Forbidden</h4><p class="small">A claim the product cannot support, a word that implies coverage, or a tone that breaks the voice. See Section 9.2.</p></div>
+</div>
+
+<p style="margin-top:4mm;">The inventory contains <strong>14 normative interface strings</strong>, <strong>6 band names</strong>, <strong>7 signal summaries</strong> (English normative, French proposed), <strong>17 proposed additions</strong>, and <strong>4 transport-failure sentences</strong>. Any string not in this appendix is not approved for the interface.</p>
+
+<h2>A.2 Band names · normative</h2>
+
+<table class="spec">
+  <thead><tr><th style="width:18mm;">Range</th><th style="width:24mm;">Code</th><th>English</th><th>French</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">0–19</td><td class="mono">STRONG_MANIPULATION_SIGNALS</td><td>Strong manipulation signals</td><td>Signaux forts de manipulation</td></tr>
+    <tr><td class="mono">20–39</td><td class="mono">LIKELY_MANIPULATED</td><td>Likely manipulated</td><td>Probablement manipulé</td></tr>
+    <tr><td class="mono">40–54</td><td class="mono">INCONCLUSIVE</td><td>Inconclusive</td><td>Non concluant</td></tr>
+    <tr><td class="mono">55–69</td><td class="mono">MIXED_SIGNALS</td><td>Mixed signals</td><td>Signaux mitigés</td></tr>
+    <tr><td class="mono">70–84</td><td class="mono">LIKELY_ORGANIC</td><td>Likely organic</td><td>Probablement authentique</td></tr>
+    <tr><td class="mono">85–100</td><td class="mono">STRONG_ORGANIC_SIGNALS</td><td>Strong organic signals</td><td>Signaux forts d'authenticité</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Fixed.</b> Ranges and names are product decisions. The UI may not soften, merge, or rename a band. The French names are not comparative claims: “Probablement authentique” is not stronger than “Likely organic”.</p>
+
+<h2 style="break-before:page;">A.3 Interface strings · normative</h2>
+
+<table class="spec compact">
+  <thead><tr><th style="width:32mm;">Key</th><th>English</th><th>French</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">estimate disclaimer</td><td>Estimated from text patterns. Does not verify purchase, identity, or truth.</td><td>Estimation fondée sur des motifs textuels. Ne vérifie ni l'achat, ni l'identité, ni la véracité.</td></tr>
+    <tr><td class="mono">low evidence</td><td>Indicative — limited text</td><td>Indicatif — texte limité</td></tr>
+    <tr><td class="mono">unknown heading</td><td>No estimate</td><td>Aucune estimation</td></tr>
+    <tr><td class="mono">unsupported page</td><td>This page is not supported yet.</td><td>Cette page n'est pas encore prise en charge.</td></tr>
+    <tr><td class="mono">no reviews found</td><td>No reviews found to analyze.</td><td>Aucun avis à analyser.</td></tr>
+    <tr><td class="mono">insufficient text</td><td>Not enough text to estimate.</td><td>Texte insuffisant pour une estimation.</td></tr>
+    <tr><td class="mono">unsupported language</td><td>This language is not supported yet.</td><td>Cette langue n'est pas encore prise en charge.</td></tr>
+    <tr><td class="mono">timeout</td><td>Analysis timed out. Try again.</td><td>L'analyse a expiré. Réessayez.</td></tr>
+    <tr><td class="mono">unavailable</td><td>Analysis is unavailable right now. Try again.</td><td>L'analyse est indisponible. Réessayez.</td></tr>
+    <tr><td class="mono">signal-only mode</td><td>Descriptive signals only — no score</td><td>Signaux descriptifs seulement — aucun score</td></tr>
+    <tr><td class="mono">details action</td><td>Details</td><td>Détails</td></tr>
+    <tr><td class="mono">retry action</td><td>Retry</td><td>Réessayer</td></tr>
+    <tr><td class="mono">history label</td><td>History</td><td>Historique</td></tr>
+    <tr><td class="mono">clear history action</td><td>Clear history</td><td>Effacer l'historique</td></tr>
+  </tbody>
+</table>
+
+<h2>A.4 Signal summaries</h2>
+
+<p>The English summaries are normative templates from the model plan. The French column is a proposed translation: it must be reviewed with the copy deck before the French interface ships. No summary may quote, paraphrase, or identify the review.</p>
+
+<table class="spec">
+  <thead><tr><th style="width:38mm;">Code</th><th>English · normative</th><th>French · proposed</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">REPEATED_PHRASING</td><td>Repeats the same phrasing</td><td>Répète les mêmes formulations</td></tr>
+    <tr><td class="mono">CROSS_REVIEW_DUPLICATE</td><td>Shares wording with other visible reviews</td><td>Partage des formulations avec d'autres avis visibles</td></tr>
+    <tr><td class="mono">GENERIC_WORDING</td><td>Uses generic wording with few concrete details</td><td>Utilise des formulations génériques avec peu de détails concrets</td></tr>
+    <tr><td class="mono">PROMOTIONAL_TONE</td><td>Reads like promotional copy</td><td>Ressemble à un texte promotionnel</td></tr>
+    <tr><td class="mono">EXTREME_CLAIMS</td><td>Makes extreme or unverifiable claims</td><td>Formule des affirmations extrêmes ou invérifiables</td></tr>
+    <tr><td class="mono">CONCRETE_DETAIL</td><td>Includes a concrete usage detail</td><td>Inclut un détail concret d'utilisation</td></tr>
+    <tr><td class="mono">LEXICAL_VARIETY</td><td>Shows varied, natural wording</td><td>Montre une formulation variée et naturelle</td></tr>
+  </tbody>
+</table>
+
+<h2 style="break-before:page;">A.5 Proposed additions</h2>
+
+<p>These strings are used in this charter and in the mockups. They are not normative yet. Each one needs an approved English and French string in the copy deck; until then, implementation waits.</p>
+
+<table class="spec compact">
+  <thead><tr><th style="width:30mm;">Key</th><th>English · proposed</th><th>French · proposed</th><th style="width:30mm;">Where</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">adequate evidence</td><td>Adequate evidence</td><td>Texte suffisant</td><td>Row qualifier, screen reader</td></tr>
+    <tr><td class="mono">band position</td><td>Band N of 6</td><td>Bande N sur 6</td><td>Row qualifier, screen reader</td></tr>
+    <tr><td class="mono">rescan action</td><td>Rescan</td><td>Relancer l'analyse</td><td>Page bar</td></tr>
+    <tr><td class="mono">signals only · compact</td><td>Signals only</td><td>Signaux seulement</td><td>Chip</td></tr>
+    <tr><td class="mono">unavailable · compact</td><td>Unavailable</td><td>Indisponible</td><td>Chip</td></tr>
+    <tr><td class="mono">reading reviews</td><td>Reading reviews…</td><td>Lecture des avis…</td><td>Page bar, live region</td></tr>
+    <tr><td class="mono">rescanning</td><td>Rescanning…</td><td>Nouvelle analyse…</td><td>Page bar, live region</td></tr>
+    <tr><td class="mono">reviews found</td><td>3 reviews found</td><td>3 avis trouvés</td><td>Announcement</td></tr>
+    <tr><td class="mono">review count</td><td>0 reviews · 3 reviews</td><td>0 avis · 3 avis</td><td>Page bar</td></tr>
+    <tr><td class="mono">no scans</td><td>No scans yet.</td><td>Aucun scan pour l'instant.</td><td>History empty state</td></tr>
+    <tr><td class="mono">empty guidance</td><td>Open a supported product page to start.</td><td>Ouvrez une page produit prise en charge pour commencer.</td><td>History empty state</td></tr>
+    <tr><td class="mono">supported pages</td><td>See supported pages</td><td>Voir les pages prises en charge</td><td>Unsupported-page action</td></tr>
+    <tr><td class="mono">how this works</td><td>How this works</td><td>Comment ça marche</td><td>Empty panel action</td></tr>
+    <tr><td class="mono">what is sent</td><td>What is sent?</td><td>Quelles données ?</td><td>Options, error panel</td></tr>
+    <tr><td class="mono">settings</td><td>Settings</td><td>Réglages</td><td>Header control</td></tr>
+    <tr><td class="mono">refresh failure</td><td>Couldn't refresh. Showing the last result.</td><td>Impossible d'actualiser. Dernier résultat affiché.</td><td>Stale-result notice</td></tr>
+    <tr><td class="mono">open in panel</td><td>Open in TrustLoop.</td><td>Ouvrir dans TrustLoop.</td><td>Chip accessible name</td></tr>
+  </tbody>
+</table>
+
+<h2>A.6 Transport failures · proposed</h2>
+
+<table class="spec compact">
+  <thead><tr><th style="width:30mm;">Code</th><th style="width:14mm;">HTTP</th><th>English · proposed</th><th>French · proposed</th><th style="width:16mm;">Action</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">INVALID_REQUEST</td><td class="mono">400</td><td>The request could not be read.</td><td>La requête n'a pas pu être lue.</td><td>Reload</td></tr>
+    <tr><td class="mono">PAYLOAD_TOO_LARGE</td><td class="mono">413</td><td>This page's review text is too large to analyze.</td><td>Le texte d'avis de cette page est trop long pour être analysé.</td><td>Reload</td></tr>
+    <tr><td class="mono">RATE_LIMITED</td><td class="mono">429</td><td>Too many requests. Try again in a moment.</td><td>Trop de requêtes. Réessayez dans un instant.</td><td>Retry</td></tr>
+    <tr><td class="mono">INTERNAL_ERROR</td><td class="mono">500</td><td>Something went wrong. Try again.</td><td>Une erreur est survenue. Réessayez.</td><td>Retry</td></tr>
+  </tbody>
+</table>
+
+<p class="caption"><b>Actions.</b> “Retry” is normative. “Reload” is proposed and appears only when retrying the same payload cannot succeed. These sentences describe the transport, not the review; they never imply the review is suspicious.</p>
+
+<h2>A.7 String QA</h2>
+
+<ul class="two-col-list">
+  <li><strong>One source.</strong> The copy deck is the only place a normative string is edited. Figma, code, and this appendix follow it.</li>
+  <li><strong>Both languages together.</strong> A key is not done until English and French exist. No placeholder English in a French frame.</li>
+  <li><strong>No concatenation.</strong> Build sentences whole; do not stitch “Band” + number + “of 6” in code, which breaks French word order and pluralisation.</li>
+  <li><strong>No truncation.</strong> Test the longest French string at 320 px; the disclaimer and the refresh notice are the stress cases.</li>
+  <li><strong>Numbers and spaces.</strong> English “31%”, French “31 %” with a no-break space; scores have no percent sign and no decimal.</li>
+  <li><strong>Punctuation.</strong> French uses « guillemets » and a narrow no-break space before : ; ! ?. English uses curly quotes and an em dash without surrounding spaces.</li>
+  <li><strong>Pluralisation.</strong> “1 review / 3 reviews”; “1 avis / 3 avis”. Zero takes the plural in both languages.</li>
+  <li><strong>Forbidden words.</strong> No “AI”, “fake”, “bot”, “verified”, “confidence”, “accuracy”, “probability”, or “page score” in user-facing copy. The model is described by what it estimates, not by what it is.</li>
+</ul>
+
+<div class="callout rust">
+  <span class="tag">The boundary</span>
+  <p>This appendix documents copy; it does not create it. A proposed string becomes normative only when the copy deck changes, in both languages, with the same claim. Until then, the mockup is a proposal, not a specification.</p>
+</div>
+
+<!-- ================= CLOSING ================= -->
+<section class="closing">
+  <div class="mark">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+    <span style="font-family:var(--sans);font-size:12pt;font-weight:600;">TrustLoop</span>
+  </div>
+  <div>
+    <h2>A second reading,<br>not a verdict.</h2>
+    <p>The interface is finished when it can say “no estimate” without looking broken, when a score never travels without its band, and when the limit is as legible as the number. Everything else is decoration.</p>
+  </div>
+  <div class="meta">GRAPHIC CHARTER · V1.0 · OCTOBER 2026<br>TRUSTLOOP · EN / FR · CONTRACT V1</div>
+</section>
+
+</body>
+</html>

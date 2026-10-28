@@ -1,0 +1,635 @@
+<!-- ================= 02 GITHUB ================= -->
+<h1><span class="num">CHAPTER 02</span>GitHub strategy from zero</h1>
+
+<p class="chapter-intro">No repositories exist yet, which is an advantage: the operating model can be set correctly once. This chapter creates the repository, the rules, the board, and the automation before the first feature. It assumes a small course team, a private repository, and a single deliverable that a professor must be able to inspect.</p>
+
+<div class="callout">
+  <span class="tag">Outcome of this chapter</span>
+  <p>One private monorepo, a protected <span class="mono">main</span>, a project board mapped to phases, four CI checks that run on every pull request, a release convention, and a security baseline. Every later chapter assumes this exists.</p>
+</div>
+
+<h2>2.1 Decide the account and the visibility</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:40mm;">Decision</th><th>Recommendation</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Owner</td><td>A GitHub Organization (free) if two or more people contribute; a personal account only if the course requires individual submission.</td><td>Teams, CODEOWNERS, and role separation work cleanly in an organization. A personal repo can still add collaborators, but ownership of the work is less clear.</td></tr>
+    <tr><td>Visibility</td><td>Private during development.</td><td>Protects unfinished work, dataset notes, and any accidental secret. Flip to public only after the professor confirms it is allowed and the license and data notices are in place.</td></tr>
+    <tr><td>License</td><td>MIT for code; CC BY 4.0 for documentation; explicit “no license” for third-party datasets, which are never committed.</td><td>A repository without a license is “all rights reserved,” which blocks reuse. Datasets keep their own licenses; the repository only carries manifests and download scripts.</td></tr>
+    <tr><td>Identity</td><td>Require two-factor authentication for every member.</td><td>The scoring token and deployment secrets will eventually live in this account. Treat it as production infrastructure.</td></tr>
+    <tr><td>Access</td><td>Owner: project lead. Write: all builders. Read: reviewer or professor if the course allows.</td><td>Least privilege. No one needs admin to merge a feature.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <span class="tag">Academic integrity check</span>
+  <p>Confirm with the professor whether the repository may be public, whether the course platform requires a specific repository name, and whether a personal account is mandatory. Record the answer as an evidence line in <span class="mono">docs/evidence/phase-0.md</span>. Do not discover this at submission time.</p>
+</div>
+
+<h2>2.2 One repository or several</h2>
+
+<p><strong>Recommendation: one monorepo named <span class="mono">trustloop</span>.</strong> It contains three independently runnable components (<span class="mono">backend/</span>, <span class="mono">scoring-service/</span>, <span class="mono">extension/</span>), the shared <span class="mono">contracts/v1/</span>, the baseline <span class="mono">docs/</span>, and the operational files. This is already decision D07. The reasons are practical, not ideological:</p>
+
+<table class="grid">
+  <thead><tr><th style="width:44mm;">Benefit</th><th>What it buys the project</th></tr></thead>
+  <tbody>
+    <tr><td>Atomic contract changes</td><td>A schema change, the Java DTO change, the Python response change, and the extension rendering change can land in one pull request. With separate repositories, the contract is briefly broken across three histories.</td></tr>
+    <tr><td>One source of truth</td><td>One issue tracker, one board, one milestone per phase, one CI badge, one README a reviewer can follow.</td></tr>
+    <tr><td>Cheap cross-component tests</td><td>The contract workflow can check out all three components and run fixture tests together without publishing private packages.</td></tr>
+    <tr><td>Simple course submission</td><td>One link, one release tag, one evidence folder. The report and the code cannot drift into different repositories.</td></tr>
+    <tr><td>Independent runtimes still preserved</td><td>Each component keeps its own build file, tests, and runtime. The monorepo is a source-control decision, not a deployment decision.</td></tr>
+  </tbody>
+</table>
+
+<h3>When a split is justified</h3>
+<p>A split is justified only if a component needs an independent release cadence, a different access policy, or a build that cannot tolerate the others. For this project, none of those is true during Phases 0–5. If the professor nevertheless requires separate repositories, use <strong>four</strong> repositories, never three:</p>
+
+<table class="grid">
+  <thead><tr><th style="width:48mm;">Repository</th><th>Contents</th><th>Release unit</th></tr></thead>
+  <tbody>
+    <tr><td><span class="mono">trustloop-contracts</span></td><td>JSON schemas, examples, fixtures, contract README.</td><td><span class="mono">contract-v1.0.0</span> tag</td></tr>
+    <tr><td><span class="mono">trustloop-backend</span></td><td>Spring Boot API.</td><td><span class="mono">v0.x.y</span> tag</td></tr>
+    <tr><td><span class="mono">trustloop-scoring</span></td><td>Python service, training, artifacts, model card.</td><td><span class="mono">model-tl-text-x.y.z</span> plus service tag</td></tr>
+    <tr><td><span class="mono">trustloop-extension</span></td><td>Manifest V3 extension and adapters.</td><td><span class="mono">v0.x.y</span> tag</td></tr>
+  </tbody>
+</table>
+
+<p>If you split, consume the contract repository as a pinned Git submodule at <span class="mono">contracts/</span>, and pin a tag, not a branch. A submodule on <span class="mono">main</span> gives you the worst of both worlds: separate histories and silent drift. The contract repository becomes the first thing released in every phase.</p>
+
+<div class="callout rule">
+  <span class="tag">Do not split into three</span>
+  <p>Without a shared contract repository, the schema will be copied into each component and will diverge. The first symptom is one component accepting a reason code that another rejects. That is risk R-12, and it is entirely self-inflicted.</p>
+</div>
+
+<h2>2.3 Create the repository</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-id">SETUP 2.1</span><h3>Create the organization and the empty repository</h3></div>
+  <div class="meta"><b>Time</b> 20 minutes &nbsp;|&nbsp; <b>Owner</b> Project lead &nbsp;|&nbsp; <b>Depends</b> Course constraints confirmed</div>
+
+  <p><strong>Goal.</strong> A private, empty repository with <span class="mono">main</span> as the default branch and the team added at the right permission level.</p>
+
+  <p class="label">Do — web interface</p>
+  <ol>
+    <li>Sign in to GitHub. If using an organization, create it first: <em>Settings → Organizations → New organization → Free</em>. Name it something stable, for example <span class="mono">trustloop-&lt;course&gt;</span>.</li>
+    <li>Create the repository: <em>New repository</em>. Owner: the organization (or your account). Name: <span class="mono">trustloop</span>. Visibility: <strong>Private</strong>.</li>
+    <li>Do <strong>not</strong> initialize with a README, <span class="mono">.gitignore</span>, or license. The first commit will be created locally, with all baseline files together. This avoids an unrelated-history merge on day one.</li>
+    <li>Create the repository, then copy the SSH or HTTPS URL.</li>
+    <li>Add the team under <em>Settings → Collaborators and teams</em> (or organization teams). Give <em>Write</em> to builders; do not give <em>Admin</em> broadly.</li>
+    <li>Set <em>Settings → General → Default branch</em> to <span class="mono">main</span> after the first push if it is not already.</li>
+  </ol>
+
+  <p class="label">Do — local first commit</p>
+  <div class="cmd">
+    <div class="cmd-label">Any shell · from the project folder that contains docs/</div>
+<pre>git init -b main
+git config user.name "Your Name"
+git config user.email "you@example.com"
+git add .
+git commit -m "chore: initialize TrustLoop baseline"
+git remote add origin git@github.com:&lt;owner&gt;/trustloop.git
+git push -u origin main</pre>
+  </div>
+
+  <div class="callout">
+    <span class="tag">SSH before the first push</span>
+    <p>If SSH is not configured, create a key and add the public half under <em>GitHub → Settings → SSH and GPG keys</em>. Never paste a private key into a chat, an issue, or a repository file.</p>
+  </div>
+
+  <div class="cmd">
+    <div class="cmd-label">Git Bash · create an Ed25519 key</div>
+<pre>ssh-keygen -t ed25519 -C "you@example.com"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub</pre>
+  </div>
+
+  <div class="cmd">
+    <div class="cmd-label">PowerShell · create an Ed25519 key</div>
+<pre>ssh-keygen -t ed25519 -C "you@example.com"
+Get-Service ssh-agent | Set-Service -StartupType Automatic
+Start-Service ssh-agent
+ssh-add $env:USERPROFILE\.ssh\id_ed25519
+Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub</pre>
+  </div>
+
+  <p class="label">Optional — GitHub CLI</p>
+  <p><span class="mono">gh</span> is not installed in the current environment. The web interface above is the primary path. If you choose to install it:</p>
+  <div class="cmd">
+    <div class="cmd-label">PowerShell · optional</div>
+<pre>winget install --id GitHub.cli
+gh auth login
+gh repo create &lt;owner&gt;/trustloop --private --source . --remote origin --push</pre>
+  </div>
+
+  <div class="verify">
+    <span class="tag">Verify</span>
+    <ul class="checklist">
+      <li>The repository is private and the default branch is <span class="mono">main</span>.</li>
+      <li><span class="mono">git remote -v</span> shows <span class="mono">origin</span> pointing at the correct repository.</li>
+      <li><span class="mono">git status</span> is clean and <span class="mono">git log --oneline</span> shows the initial commit.</li>
+      <li>Every team member can clone, and no one has Admin except the owner.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>2.4 Baseline files</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:44mm;">File</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><span class="mono">.gitignore</span></td><td>Build outputs, virtual environments, node modules, IDE files, local env files, datasets, model binaries, logs.</td></tr>
+    <tr><td><span class="mono">.gitattributes</span></td><td>Normalize text to LF; mark common binaries; keep fixture HTML from being treated as a document.</td></tr>
+    <tr><td><span class="mono">.editorconfig</span></td><td>UTF-8, LF, final newline, two-space JavaScript/JSON/Python, four-space Java.</td></tr>
+    <tr><td><span class="mono">README.md</span></td><td>What the project is, the architecture in one diagram, how to run each component, phase status, links to the baseline docs.</td></tr>
+    <tr><td><span class="mono">LICENSE</span></td><td>MIT for code.</td></tr>
+    <tr><td><span class="mono">NOTICE</span></td><td>Documentation license, third-party dataset notices, and a statement that datasets are not redistributed.</td></tr>
+    <tr><td><span class="mono">CONTRIBUTING.md</span></td><td>Setup, branch names, commit format, tests, PR expectations, code review.</td></tr>
+    <tr><td><span class="mono">SECURITY.md</span></td><td>How to report a vulnerability privately; supported versions; secret-handling rules.</td></tr>
+    <tr><td><span class="mono">.github/CODEOWNERS</span></td><td>Review ownership by path.</td></tr>
+    <tr><td><span class="mono">.github/PULL_REQUEST_TEMPLATE.md</span></td><td>What/why, contract impact, privacy impact, tests, screenshots, risk.</td></tr>
+    <tr><td><span class="mono">.github/ISSUE_TEMPLATE/</span></td><td>Feature, bug, spike, and decision templates.</td></tr>
+    <tr><td><span class="mono">.github/dependabot.yml</span></td><td>Dependency updates for Maven, pip, npm, and Actions.</td></tr>
+    <tr><td><span class="mono">.env.example</span></td><td>Placeholders for local configuration; never real secrets.</td></tr>
+  </tbody>
+</table>
+
+<h3>A .gitignore that prevents the expensive mistakes</h3>
+<div class="cmd">
+  <div class="cmd-label">Git Bash · repository root</div>
+<pre># Build outputs
+backend/target/
+scoring-service/.venv/
+scoring-service/__pycache__/
+extension/node_modules/
+extension/dist/
+**/*.class
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Data and model binaries
+data/
+scoring-service/data/
+scoring-service/artifacts/*/model.joblib
+*.joblib
+*.pkl
+
+# Logs and OS noise
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml</pre>
+  </div>
+
+<div class="callout warn">
+  <span class="tag">Binary policy</span>
+  <p>Do not commit restricted datasets, reviewer-level data, or large model binaries. Commit the <span class="mono">dataset-manifest.json</span>, <span class="mono">metrics.json</span>, and model card; publish the artifact bundle as a GitHub Release asset with a SHA-256 checksum. If a small model must be committed for the demo, keep it under roughly 5 MB and document why. Prefer release assets over Git LFS for a course project; LFS adds a dependency every teammate must install.</p>
+</div>
+
+<h3>README skeleton</h3>
+<p>The README is not a second specification. It is the front door: what the project is, how to run it, where the decisions live.</p>
+<div class="cmd">
+  <div class="cmd-label">Markdown · README.md</div>
+<pre># TrustLoop
+Browser-extension analysis of review text on a supported product-review page.
+
+## What it is — and is not
+Estimates whether review text looks organic or manipulated.
+Does not verify purchases, identify reviewers, prove fraud, or rate products.
+
+## Components
+- extension/       Manifest V3 browser extension
+- backend/         Spring Boot public API
+- scoring-service/ Python model service (internal)
+- contracts/v1/    Frozen request/response fixtures
+- docs/            Product, model, architecture, delivery baseline
+
+## Local run
+1. Scoring service: see scoring-service/README.md
+2. Backend: see backend/README.md
+3. Extension: load extension/dist unpacked in Chrome
+
+## Status
+Phase 0 complete. Phase 1 in progress. See docs/delivery-plan.md.
+
+## Documentation
+Start at docs/README.md.</pre>
+  </div>
+
+<h2>2.5 Branch and merge model</h2>
+
+<p>Use GitHub Flow: a protected <span class="mono">main</span>, short-lived branches, pull requests, squash merges, and tags for releases. Do not create a permanent <span class="mono">develop</span> branch. Do not create a branch per phase; phases are milestones and tags, not long-lived code lines.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:38mm;">Branch</th><th>Pattern</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td>Trunk</td><td><span class="mono">main</span></td><td>Always green, always demoable. Protected. No direct pushes.</td></tr>
+    <tr><td>Feature</td><td><span class="mono">feat/api-analyze-endpoint</span></td><td>One coherent change, linked to one issue.</td></tr>
+    <tr><td>Fix</td><td><span class="mono">fix/extension-dedup-scroll</span></td><td>A defect with a reproducible test.</td></tr>
+    <tr><td>Contract</td><td><span class="mono">contract/v1-reason-codes</span></td><td>A contract change. Requires all three code owners.</td></tr>
+    <tr><td>Model</td><td><span class="mono">model/calibration-platt</span></td><td>Training, evaluation, or artifact changes. Includes metrics evidence.</td></tr>
+    <tr><td>Docs</td><td><span class="mono">docs/phase-1-evidence</span></td><td>Documentation and evidence only.</td></tr>
+    <tr><td>Chore</td><td><span class="mono">chore/ci-cache</span></td><td>Tooling, dependencies, CI, repository housekeeping.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Branch rules.</strong> One branch, one purpose. Rebase on <span class="mono">main</span> before requesting review; do not merge <span class="mono">main</span> into the branch repeatedly. Target fewer than 400 changed lines and fewer than three days of life. If a change cannot fit, split it by seam — contract first, then consumer — rather than by file count. Delete the branch after merge.</p>
+
+<div class="callout">
+  <span class="tag">Merge method</span>
+  <p>Enable <strong>squash merge only</strong> and disable merge commits and rebase merging. The pull-request title becomes the commit subject. This keeps a readable linear history and makes <span class="mono">git bisect</span> useful when the model or contract breaks.</p>
+</div>
+
+<h2>2.6 Commit and pull-request conventions</h2>
+
+<p>Use Conventional Commits with a component scope. The format is <span class="mono">type(scope): imperative summary</span>, under 72 characters, with a body that explains why when the change is not obvious.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:26mm;">Type</th><th>When</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td><span class="mono">feat</span></td><td>A user-visible or contract-visible capability.</td><td><span class="mono">feat(api): add analyze endpoint with batch validation</span></td></tr>
+    <tr><td><span class="mono">fix</span></td><td>A defect with a test that would have caught it.</td><td><span class="mono">fix(extension): keep dedup keys stable across rescans</span></td></tr>
+    <tr><td><span class="mono">test</span></td><td>Tests only, no production behaviour.</td><td><span class="mono">test(scoring): cover version mismatch on score response</span></td></tr>
+    <tr><td><span class="mono">docs</span></td><td>Documentation, decisions, evidence.</td><td><span class="mono">docs: record Phase 0 spike result and fallback</span></td></tr>
+    <tr><td><span class="mono">refactor</span></td><td>No behaviour change.</td><td><span class="mono">refactor(api): extract response validator from service</span></td></tr>
+    <tr><td><span class="mono">perf</span></td><td>Measured performance change.</td><td><span class="mono">perf(scoring): batch vectorize ten reviews</span></td></tr>
+    <tr><td><span class="mono">ci</span></td><td>Workflows, caching, release automation.</td><td><span class="mono">ci: add contract fixture workflow</span></td></tr>
+    <tr><td><span class="mono">chore</span></td><td>Dependencies, housekeeping, no product change.</td><td><span class="mono">chore: bump Spring Boot patch version</span></td></tr>
+  </tbody>
+</table>
+
+<p>Scopes: <span class="mono">api</span>, <span class="mono">scoring</span>, <span class="mono">extension</span>, <span class="mono">contract</span>, <span class="mono">model</span>, <span class="mono">docs</span>, <span class="mono">ci</span>. A commit that touches more than two scopes is usually two commits or a contract change that needs its own PR.</p>
+
+<h3>Pull-request template</h3>
+<div class="cmd">
+  <div class="cmd-label">Markdown · .github/PULL_REQUEST_TEMPLATE.md</div>
+<pre>## What
+&lt;one paragraph&gt;
+## Why
+Closes #&lt;issue&gt;. &lt;the user or system problem&gt;
+## Contract impact
+- [ ] No change to contracts/v1
+- [ ] Contract change: &lt;schema/field/constant&gt; + all consumers updated
+## Privacy impact
+- [ ] No new data collected, logged, or stored
+- [ ] Reviewed: &lt;what changed&gt;
+## Evidence
+- [ ] Tests added/updated and passing
+- [ ] Screenshots or recording for UI changes
+- [ ] Metrics/model card update for model changes
+## Risk
+&lt;new risk, changed risk, or "none"&gt;</pre>
+  </div>
+
+<p><strong>Review rules.</strong> One approval is required for ordinary changes; two approvals, including every code owner, for <span class="mono">contracts/</span>, authentication, security configuration, and model gate changes. The author does not merge their own PR without a review. Review within one working day. A review comment is either a request for change or a question; avoid “nit” comments that block a merge on style when a formatter can decide.</p>
+
+<h3>Pull-request size and drafting</h3>
+<ul>
+  <li>Open a <strong>draft PR</strong> as soon as the approach is visible; it is cheaper to redirect early.</li>
+  <li>Keep generated files, lockfiles, and fixtures in separate commits so the review focuses on logic.</li>
+  <li>If a PR needs a contract change, land the contract PR first and rebase the consumers onto it. Do not merge a consumer against an unreleased schema.</li>
+  <li>UI changes include a before/after screenshot and a keyboard/focus note. Model changes include the metric delta and the gate result.</li>
+</ul>
+
+<h2>2.7 Issues, labels, milestones, and the project board</h2>
+
+<p>Use issues for work that will be discussed or verified; use the decision register for decisions; use the risk register for risks. Every PR closes an issue. Every phase has one milestone. This is enough structure for a course team and avoids a second project-management system.</p>
+
+<h3>Issue types</h3>
+<table class="grid">
+  <thead><tr><th style="width:34mm;">Template</th><th>Use</th><th>Required fields</th></tr></thead>
+  <tbody>
+    <tr><td>Feature</td><td>A requirement slice with a testable outcome.</td><td>User outcome, acceptance checks, contract impact, area, phase.</td></tr>
+    <tr><td>Bug</td><td>A reproducible defect.</td><td>Steps, expected, actual, environment, request ID or fixture, severity.</td></tr>
+    <tr><td>Spike</td><td>Time-boxed feasibility work, such as the Amazon adapter spike.</td><td>Question, time box, pass criteria, decision to make, fallback.</td></tr>
+    <tr><td>Decision</td><td>An open decision such as D22–D24.</td><td>Options, evidence, recommendation, owner, due date, register row to update.</td></tr>
+  </tbody>
+</table>
+
+<h3>Labels</h3>
+<table class="grid">
+  <thead><tr><th style="width:36mm;">Group</th><th>Labels</th></tr></thead>
+  <tbody>
+    <tr><td>Type</td><td><span class="mono">type:feature</span>, <span class="mono">type:bug</span>, <span class="mono">type:spike</span>, <span class="mono">type:decision</span>, <span class="mono">type:docs</span></td></tr>
+    <tr><td>Area</td><td><span class="mono">area:backend</span>, <span class="mono">area:scoring</span>, <span class="mono">area:extension</span>, <span class="mono">area:contract</span>, <span class="mono">area:ci</span>, <span class="mono">area:design</span></td></tr>
+    <tr><td>Phase</td><td><span class="mono">phase:0</span> through <span class="mono">phase:5</span></td></tr>
+    <tr><td>Priority</td><td><span class="mono">priority:p0</span> blocks the phase gate; <span class="mono">priority:p1</span> needed for the MVP; <span class="mono">priority:p2</span> later.</td></tr>
+    <tr><td>Risk</td><td><span class="mono">risk:R-01</span> through <span class="mono">risk:R-14</span>, linked to the register.</td></tr>
+    <tr><td>State</td><td><span class="mono">status:blocked</span>, <span class="mono">needs:decision</span>, <span class="mono">needs:review</span>, <span class="mono">good-first-task</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Milestones</h3>
+<table class="grid">
+  <thead><tr><th style="width:22mm;">Milestone</th><th>Scope</th><th>Exit evidence</th></tr></thead>
+  <tbody>
+    <tr><td><span class="mono">M0</span></td><td>Foundation and contract freeze.</td><td>Three skeletons build, contract fixtures pass, spike result recorded.</td></tr>
+    <tr><td><span class="mono">M1</span></td><td>Analysis core, no accounts.</td><td>End-to-end scan on fixture/page, model gate result, tests green.</td></tr>
+    <tr><td><span class="mono">M2</span></td><td>Breadth without risk.</td><td>Agreed adapters packaged, <span class="mono">dev-admin</span> local-only and tested.</td></tr>
+    <tr><td><span class="mono">M3</span></td><td>Evidence and quality.</td><td>Evaluation report, accessibility audit, model card, performance result.</td></tr>
+    <tr><td><span class="mono">M4</span></td><td>Accounts and persistence.</td><td>Access matrix tests, migrations, retention rules, admin protection.</td></tr>
+    <tr><td><span class="mono">M5</span></td><td>Deployment and expansion.</td><td>Optional hosted demo with controls, or a documented decision not to host.</td></tr>
+  </tbody>
+</table>
+
+<p>Set a real due date for each milestone at kickoff. An empty milestone date is a wish. Close the milestone only when its evidence file is linked from the milestone description.</p>
+
+<h3>Project board</h3>
+<p>Create one GitHub Project linked to the repository. Keep the default <em>Status</em> field and add: <em>Phase</em> (single select), <em>Area</em> (single select), <em>Priority</em> (single select), <em>Size</em> (XS–L), <em>Risk</em> (text or single select), and <em>Owner</em> (person). Use three views:</p>
+<ul>
+  <li><strong>Current phase</strong> — filter <span class="mono">phase = current</span>, group by status, hide done.</li>
+  <li><strong>My work</strong> — filter <span class="mono">assignee = @me</span>, sort by priority.</li>
+  <li><strong>Risks and decisions</strong> — filter <span class="mono">label:risk:*</span> or <span class="mono">type:decision</span>, sorted by due date.</li>
+</ul>
+<p>Enable the built-in workflows: item added → Backlog; pull request linked → In review; pull request merged → Done. Do not automate “In progress” from branch creation; it creates noise when branches are abandoned.</p>
+
+<h2>2.8 CODEOWNERS and review ownership</h2>
+
+<p>Assign one primary owner per component. With a five-person team, one person may own two areas, but the contract always has at least three reviewers. Replace the handles with real GitHub usernames.</p>
+
+<div class="cmd">
+  <div class="cmd-label">Text · .github/CODEOWNERS</div>
+<pre># Default owner
+*                       @project-lead
+
+# Components
+/backend/               @backend-lead
+/scoring-service/       @ml-lead
+/extension/             @extension-lead
+
+# Shared contract: every consumer reviews
+/contracts/             @project-lead @backend-lead @ml-lead @extension-lead
+
+# Documentation, design, and repository operations
+/docs/                  @docs-lead
+/.github/               @project-lead
+/.github/workflows/     @project-lead @backend-lead</pre>
+  </div>
+
+<p>Require code-owner review in the branch ruleset. CODEOWNERS is advisory without that setting: GitHub will request the review but will not block the merge.</p>
+
+<h2>2.9 Branch protection and rulesets</h2>
+
+<p>Use a repository ruleset rather than classic branch protection; it is easier to audit and can target tags as well.</p>
+
+<ol>
+  <li>Push the CI workflows first and open a throwaway PR so GitHub registers the check names.</li>
+  <li>Go to <em>Settings → Rules → Rulesets → New branch ruleset</em>. Target <span class="mono">main</span>.</li>
+  <li>Enable: require a pull request before merging; required approvals 1 (2 for a stricter team); dismiss stale approvals on new commits; require review from code owners; require conversation resolution; require linear history; block force pushes; block deletions; require branches to be up to date before merging.</li>
+  <li>Require the status checks: <span class="mono">backend / verify</span>, <span class="mono">scoring / test</span>, <span class="mono">extension / test</span>, <span class="mono">contract / validate</span>, and <span class="mono">docs / links</span> if you add it.</li>
+  <li>Add a second ruleset for tags matching <span class="mono">v*</span> and <span class="mono">model-*</span>: block deletion and non-fast-forward updates. Releases are immutable.</li>
+  <li>Bypass list: empty, or the project lead only for an emergency. An emergency bypass is recorded in the phase evidence and followed by a retrospective issue.</li>
+</ol>
+
+<div class="callout warn">
+  <span class="tag">Check-name trap</span>
+  <p>A required check that never runs blocks every PR forever. If you rename a workflow or job, update the ruleset in the same PR. Keep job names stable: <span class="mono">verify</span>, <span class="mono">test</span>, <span class="mono">validate</span>.</p>
+</div>
+
+<p>Signed commits are optional for a course project. If the team enables them, do it at kickoff for everyone; enabling halfway creates a history where half the commits are unverified and the rule becomes noise.</p>
+
+<h2>2.10 CI blueprint</h2>
+
+<p>Five workflows, each with path filters so a documentation commit does not run the Java build. All workflows use least-privilege permissions and cancel superseded runs.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:34mm;">Workflow</th><th>Triggers</th><th>What it proves</th></tr></thead>
+  <tbody>
+    <tr><td><span class="mono">backend.yml</span></td><td><span class="mono">backend/**</span>, <span class="mono">contracts/**</span>, workflow file</td><td>Compiles on the approved JDK, unit and MockMvc tests pass, contract fixtures deserialize.</td></tr>
+    <tr><td><span class="mono">scoring.yml</span></td><td><span class="mono">scoring-service/**</span>, <span class="mono">contracts/**</span></td><td>Lint, unit tests, service contract tests, artifact smoke test with a tiny fixture model. No full training.</td></tr>
+    <tr><td><span class="mono">extension.yml</span></td><td><span class="mono">extension/**</span>, <span class="mono">contracts/**</span></td><td>Lint, unit tests with DOM fixtures, production build, packaged ZIP artifact.</td></tr>
+    <tr><td><span class="mono">contract.yml</span></td><td><span class="mono">contracts/**</span>, all component paths</td><td>Every example validates against its schema; every component consumes the same fixtures; status/engine/reason-code enumerations match.</td></tr>
+    <tr><td><span class="mono">docs.yml</span></td><td><span class="mono">docs/**</span>, <span class="mono">README.md</span></td><td>Markdown links resolve, required design assets exist, no placeholder secrets.</td></tr>
+  </tbody>
+</table>
+
+<h3>Backend workflow — concrete shape</h3>
+<div class="cmd">
+  <div class="cmd-label">YAML · .github/workflows/backend.yml</div>
+<pre>name: backend
+on:
+  pull_request:
+    paths: ["backend/**", "contracts/**", ".github/workflows/backend.yml"]
+  push:
+    branches: [main]
+    paths: ["backend/**", "contracts/**"]
+permissions:
+  contents: read
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TRUSTLOOP_CONTRACT_DIR: ${{ github.workspace }}/contracts/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Verify
+        working-directory: backend
+        run: mvn -B -ntp verify
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          retention-days: 14</pre>
+  </div>
+
+<div class="callout">
+  <span class="tag">Contract fixtures in CI</span>
+  <p>Pass the repository-level contract path through one environment variable, <span class="mono">TRUSTLOOP_CONTRACT_DIR</span>. Each component's test bootstrap reads it and falls back to <span class="mono">../contracts/v1</span> for local runs. Never copy fixtures into a component; copies drift.</p>
+</div>
+
+<h3>What CI must not do</h3>
+<ul>
+  <li>Do not download restricted datasets or train the full model in GitHub Actions. Data licensing, runner minutes, and reproducibility all suffer. Train locally or on a controlled machine; commit the metrics and publish the artifact as a release asset.</li>
+  <li>Do not use <span class="mono">pull_request_target</span> to run code from a fork. It grants secrets to untrusted code.</li>
+  <li>Do not echo environment variables, tokens, or request bodies. GitHub masks known secrets, but a transformed value can still leak.</li>
+  <li>Do not require a check that only runs on <span class="mono">main</span>; it will never appear on pull requests.</li>
+</ul>
+
+<h3>Nightly and manual workflows</h3>
+<ul>
+  <li><strong>Nightly contract check</strong> at 02:00 UTC: re-run the contract workflow against <span class="mono">main</span> and open an issue on failure. This catches schema drift after a merge.</li>
+  <li><strong>Manual model gate</strong> (<span class="mono">workflow_dispatch</span>): run only when the artifact is available as a release asset; verify its SHA-256, load it, run the held-out metrics, compare against <span class="mono">metrics.json</span>, and fail on mismatch. It does not retrain.</li>
+  <li><strong>Dependency review</strong> on pull requests that change lockfiles; block critical vulnerabilities with no fix.</li>
+</ul>
+
+<h2>2.11 Secrets, variables, and environments</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:46mm;">Name</th><th>Kind</th><th>Where</th></tr></thead>
+  <tbody>
+    <tr><td><span class="mono">TRUSTLOOP_SCORING_TOKEN</span></td><td>Secret</td><td>Local <span class="mono">.env</span>; GitHub environment <span class="mono">production</span> if hosted. Generated with 32 random bytes, rotated on exposure.</td></tr>
+    <tr><td><span class="mono">TRUSTLOOP_SCORING_URL</span></td><td>Variable</td><td>Local <span class="mono">http://127.0.0.1:8000</span>; private network address when hosted.</td></tr>
+    <tr><td><span class="mono">TRUSTLOOP_ALLOWED_ORIGINS</span></td><td>Variable</td><td>Comma-separated extension origins. Pin the packed extension ID for any shared environment.</td></tr>
+    <tr><td><span class="mono">SPRING_PROFILES_ACTIVE</span></td><td>Variable</td><td><span class="mono">default</span> or <span class="mono">test</span>; never <span class="mono">dev-admin</span> in a shared environment.</td></tr>
+    <tr><td><span class="mono">POSTGRES_*</span></td><td>Secrets</td><td>Phase 4 onward; local Compose uses development-only values, hosted uses environment secrets.</td></tr>
+    <tr><td><span class="mono">DEPLOY_*</span></td><td>Secrets</td><td>Phase 5; environment-scoped, with required reviewers.</td></tr>
+  </tbody>
+</table>
+
+<p>Create a GitHub <em>Environment</em> named <span class="mono">production</span> for any hosted deployment. Require a reviewer, restrict branches to <span class="mono">main</span>, and store deployment secrets there rather than at repository scope. A pull request from a fork cannot read environment secrets.</p>
+
+<div class="cmd">
+  <div class="cmd-label">Git Bash · generate a local internal token</div>
+<pre>openssl rand -hex 32</pre>
+  </div>
+
+<p>Put the result only in your local <span class="mono">.env</span> (ignored) and in the GitHub environment secret. The scoring service and backend must receive the same value. The extension never sees it.</p>
+
+<h2>2.12 Releases and versioning</h2>
+
+<p>Four version axes exist. Do not collapse them into one number.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:38mm;">Axis</th><th>Format</th><th>Rule</th></tr></thead>
+  <tbody>
+    <tr><td>Application</td><td><span class="mono">vMAJOR.MINOR.PATCH</span></td><td>SemVer for the repository release. A phase demo is a minor; a defended baseline is <span class="mono">v1.0.0</span>; an access-model change is a major.</td></tr>
+    <tr><td>Contract</td><td><span class="mono">v1</span> directory, <span class="mono">contract-v1.0.0</span> tag</td><td>A breaking change creates <span class="mono">contracts/v2/</span> and updates all consumers. Never edit v1 after freeze except to fix a documentation typo that does not change validation.</td></tr>
+    <tr><td>Model</td><td><span class="mono">tl-text-x.y.z</span></td><td>Major: label, score meaning, or band mapping. Minor: data, features, calibration, retraining. Patch: explanation copy or performance with no score change.</td></tr>
+    <tr><td>Adapter</td><td><span class="mono">amazon.reviews.v1</span></td><td>Breaking selector or extraction change increments the adapter version; the old adapter remains until retired.</td></tr>
+  </tbody>
+</table>
+
+<h3>Release procedure</h3>
+<ol>
+  <li>Confirm <span class="mono">main</span> is green and the phase evidence file is complete.</li>
+  <li>Update versions in the build files, README status, and model card. Commit as <span class="mono">chore(release): prepare vX.Y.Z</span>.</li>
+  <li>Create an annotated tag: <span class="mono">git tag -a v1.0.0 -m "TrustLoop MVP v1.0.0"</span>. Push the tag.</li>
+  <li>Create a GitHub Release from the tag. Attach: backend JAR, extension ZIP, model bundle (if not restricted), <span class="mono">metrics.json</span>, <span class="mono">SHA256SUMS</span>.</li>
+  <li>Write release notes grouped as Added, Changed, Fixed, Known limitations. State the model version and the supported languages explicitly.</li>
+  <li>Never move or re-create a published tag. A mistake gets a new patch version.</li>
+</ol>
+
+<div class="callout">
+  <span class="tag">Phase tags</span>
+  <p>Also tag phase gates: <span class="mono">phase-0-complete</span>, <span class="mono">phase-1-complete</span>, and so on. They are not releases; they are checkpoints the report can cite. Link each tag in the phase evidence file.</p>
+</div>
+
+<h2>2.13 Repository security</h2>
+
+<table class="grid">
+  <thead><tr><th style="width:40mm;">Control</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>Dependabot alerts</td><td>Enable under <em>Settings → Code security</em>. Fix critical alerts before a phase gate.</td></tr>
+    <tr><td>Dependabot updates</td><td>Weekly, grouped per ecosystem, targeting <span class="mono">main</span>; CI must pass before merge.</td></tr>
+    <tr><td>CodeQL</td><td>Default setup for Java, JavaScript/TypeScript, and Python. Review high-severity findings; do not merge around them silently.</td></tr>
+    <tr><td>Secret scanning</td><td>Enable push protection. If a secret is committed, rotate it first, then purge history; deleting the commit is not enough.</td></tr>
+    <tr><td>Private vulnerability reporting</td><td>Enable and describe the process in <span class="mono">SECURITY.md</span>.</td></tr>
+    <tr><td>Actions permissions</td><td>Default <span class="mono">GITHUB_TOKEN</span> to read-only; grant write per job only when needed. Pin third-party actions to a major version or a commit SHA.</td></tr>
+    <tr><td>Dependency review</td><td>Run on PRs that change lockfiles; fail on critical vulnerabilities with no available fix.</td></tr>
+  </tbody>
+</table>
+
+<div class="cmd">
+  <div class="cmd-label">YAML · .github/dependabot.yml</div>
+<pre>version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /backend
+    schedule: { interval: weekly }
+    groups: { backend: { patterns: ["*"] } }
+  - package-ecosystem: pip
+    directory: /scoring-service
+    schedule: { interval: weekly }
+    groups: { scoring: { patterns: ["*"] } }
+  - package-ecosystem: npm
+    directory: /extension
+    schedule: { interval: weekly }
+    groups: { extension: { patterns: ["*"] } }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }</pre>
+  </div>
+
+<h2>2.14 Team cadence</h2>
+
+<p>A five-person team can map roles to components, but every role includes review and testing. Adjust if the team is smaller; do not leave a component without an owner.</p>
+
+<table class="grid">
+  <thead><tr><th style="width:36mm;">Role</th><th>Owns</th><th>Also responsible for</th></tr></thead>
+  <tbody>
+    <tr><td>Project lead</td><td>Repository, decisions, phase gates, integration.</td><td>Contract review, risk register, demo script.</td></tr>
+    <tr><td>Backend lead</td><td>Spring API, validation, scoring client, logs.</td><td>Security baseline, contract DTOs, backend tests.</td></tr>
+    <tr><td>ML lead</td><td>Data, model, calibration, gate, explainer, artifact.</td><td>Model card, evaluation report, reproducibility.</td></tr>
+    <tr><td>Extension lead</td><td>Adapter, scanner, badge, panel, history.</td><td>Accessibility baseline, adapter fixtures, i18n strings.</td></tr>
+    <tr><td>QA and docs lead</td><td>Test plan, evidence, report, design assets.</td><td>Cross-component contract tests, accessibility audit, copy review.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Weekly rhythm.</strong> Monday: 30-minute planning, choose issues for the week, confirm the gate target. Wednesday: 20-minute integration check, run the end-to-end path, surface blockers. Friday: 30-minute demo and gate review, tag if the gate passes. Keep decisions in the register, not in chat. Chat is for coordination; the repository is the record.</p>
+
+<p><strong>Work in progress.</strong> Limit each person to two active issues. A PR waiting for review counts as active. If a review is blocked for more than a day, the reviewer hands it to another code owner rather than letting it rot.</p>
+
+<div class="callout rule">
+  <span class="tag">Pre-defense freeze</span>
+  <p>Stop feature merges 48 hours before the defense. Only <span class="mono">fix/</span> branches with a failing test are allowed. The freeze protects the demo from a last-minute dependency update or a half-merged contract change.</p>
+</div>
+
+<h2>2.15 Command sheet</h2>
+
+<div class="cmd">
+  <div class="cmd-label">Any shell · daily loop</div>
+<pre>git switch main
+git pull --ff-only
+git switch -c feat/api-analyze-endpoint
+# work, test
+git add backend/src backend/pom.xml
+git commit -m "feat(api): add analyze endpoint with batch validation"
+git push -u origin feat/api-analyze-endpoint</pre>
+  </div>
+
+<div class="cmd">
+  <div class="cmd-label">Any shell · keep a branch current without merge noise</div>
+<pre>git fetch origin
+git rebase origin/main
+git push --force-with-lease</pre>
+  </div>
+
+<div class="cmd">
+  <div class="cmd-label">Any shell · inspect and recover</div>
+<pre>git status
+git log --oneline --graph --decorate -20
+git diff --stat
+git restore --staged &lt;file&gt;      # unstage
+git restore &lt;file&gt;               # discard local changes to one file
+git revert &lt;sha&gt;                 # undo a published commit safely
+git stash push -m "wip: analyze validation"
+git stash list
+git stash apply stash@{0}</pre>
+  </div>
+
+<div class="callout warn">
+  <span class="tag">Destructive commands</span>
+  <p><span class="mono">git reset --hard</span>, <span class="mono">git clean -fd</span>, and force-pushing <span class="mono">main</span> can destroy work. On this project they are prohibited on shared branches. Recover with <span class="mono">git revert</span>; stash with a named message; never use a bare <span class="mono">git stash</span> in a shared worktree.</p>
+</div>
+
+<div class="cmd">
+  <div class="cmd-label">Any shell · release</div>
+<pre>git switch main
+git pull --ff-only
+git tag -a v1.0.0 -m "TrustLoop MVP v1.0.0"
+git push origin v1.0.0
+# then create the GitHub Release from the tag and attach assets</pre>
+  </div>
+
+<div class="footer-note">If the repository is public, verify that no dataset, token, internal URL, or reviewer data appears in the history. A secret removed in a later commit is still in the history.</div>

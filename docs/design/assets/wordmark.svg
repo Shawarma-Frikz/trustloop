@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 44" width="220" height="44" role="img" aria-labelledby="tl-wordmark-title">
+  <title id="tl-wordmark-title">TrustLoop</title>
+  <desc id="tl-wordmark-desc">Horizontal lockup: the open-loop mark followed by the word TrustLoop in IBM Plex Sans SemiBold.</desc>
+  <style>
+    .mark{color:#14524B}
+    .word{fill:#1A1D1B;font-family:'IBM Plex Sans','Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;font-weight:600;letter-spacing:-.2px}
+    @media (prefers-color-scheme: dark){
+      .mark{color:#79B3A4}
+      .word{fill:#EDE7D9}
+    }
+  </style>
+  <g class="mark" transform="translate(1 10)">
+    <path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/>
+  </g>
+  <text class="word" x="34" y="31">TrustLoop</text>
+</svg>

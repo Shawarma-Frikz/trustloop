@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TrustLoop — Graphic Charter</title>
+<meta name="author" content="TrustLoop project team">
+<meta name="description" content="Graphic charter and interface design system for TrustLoop: identity, palette, type, layout, measure, components, states, language, accessibility, tokens, and Figma build instructions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F3EA;
+    --panel:#FCFAF5;
+    --panel-2:#F3EFE5;
+    --ink:#1A1D1B;
+    --ink-2:#3E4440;
+    --muted:#686D66;
+    --faint:#8B8F86;
+    --rule:#DAD3C5;
+    --rule-strong:#BDB4A4;
+    --control:#858A81;
+    --petrol:#14524B;
+    --petrol-deep:#0E3B36;
+    --petrol-soft:#E4ECE8;
+    --rust:#A24A2C;
+    --rust-soft:#F1E3DC;
+    --brass:#8A6A32;
+    --warn:#6B4E16;
+    --warn-soft:#F3EBD9;
+    --b1:#7C3223;
+    --b2:#A05634;
+    --b3:#746C5E;
+    --b4:#6F6C3A;
+    --b5:#47664E;
+    --b6:#174F45;
+    --b1-soft:#F0E2DC;
+    --b2-soft:#F3E6DD;
+    --b3-soft:#ECE9E2;
+    --b4-soft:#EDEBDA;
+    --b5-soft:#E5ECE4;
+    --b6-soft:#DFEAE6;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+    --shadow:#E7DFD0;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:9.6pt;line-height:1.52;
+    font-variant-numeric:tabular-nums;
+  }
+  @page{size:A4;margin:15mm 15mm 16mm;background:var(--paper);}
+  @page:first{margin:0;}
+
+  p{margin:0 0 5px;}
+  a{color:var(--petrol);text-decoration:none;}
+  strong{font-weight:600;}
+  em{font-style:italic;}
+  ul,ol{margin:4px 0 7px;padding-left:16px;}
+  li{margin:2px 0;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.16;color:var(--ink);}
+  h1{font-size:31pt;margin:0 0 4mm;letter-spacing:-.015em;break-before:page;}
+  h1 .num{
+    display:block;font-family:var(--mono);font-size:8pt;letter-spacing:.16em;
+    color:var(--rust);margin-bottom:3mm;font-weight:500;
+  }
+  h2{font-size:15pt;margin:8mm 0 2.5mm;padding-top:2mm;border-top:.5pt solid var(--rule);break-after:avoid;}
+  h3{font-size:11.2pt;margin:5mm 0 1.8mm;font-family:var(--sans);font-weight:600;break-after:avoid;}
+  h4{font-size:9.8pt;margin:3.5mm 0 1mm;font-family:var(--sans);font-weight:600;break-after:avoid;}
+  .lede{font-family:var(--serif);font-size:13.2pt;line-height:1.42;color:#2F3532;margin:0 0 6mm;max-width:158mm;}
+  .kicker{font-family:var(--mono);font-size:7.4pt;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);margin-bottom:2mm;}
+  .small{font-size:8.2pt;color:var(--muted);line-height:1.45;}
+  .micro{font-family:var(--mono);font-size:7.2pt;letter-spacing:.06em;color:var(--faint);}
+  .chapter-intro{max-width:160mm;}
+
+  /* cover */
+  .cover{
+    width:210mm;height:297mm;padding:22mm 20mm 18mm;background:var(--petrol-deep);color:var(--paper);
+    display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;
+    break-after:page;
+  }
+  .cover:before{content:"";position:absolute;left:0;top:0;width:100%;height:5mm;background:var(--rust);}
+  .cover-top{display:flex;align-items:center;justify-content:space-between;}
+  .cover-brand{display:flex;align-items:center;gap:10px;}
+  .cover-brand svg{width:30px;height:30px;}
+  .cover-brand b{font-family:var(--sans);font-size:12pt;font-weight:600;letter-spacing:.0em;}
+  .cover-kicker{font-family:var(--mono);font-size:7.4pt;letter-spacing:.14em;text-transform:uppercase;color:#B9CFC6;}
+  .cover-title{font-family:var(--serif);font-size:58pt;line-height:.98;letter-spacing:-.025em;margin:0 0 8mm;max-width:150mm;color:var(--paper);}
+  .cover-sub{font-family:var(--serif);font-size:14.5pt;line-height:1.42;color:#D9E3DC;max-width:142mm;margin:0;}
+  .cover-measure{display:flex;gap:1px;height:7mm;margin:14mm 0 0;}
+  .cover-measure span{height:7mm;}
+  .cover-meta{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6mm;border-top:.6pt solid #3E5A54;padding-top:5mm;}
+  .cover-meta span{display:block;font-family:var(--mono);font-size:6.8pt;letter-spacing:.12em;text-transform:uppercase;color:#9FB9B0;margin-bottom:1.4mm;}
+  .cover-meta div{font-size:8.2pt;color:#E4ECE7;line-height:1.45;}
+  .cover-note{position:absolute;right:20mm;bottom:18mm;font-family:var(--mono);font-size:6.8pt;letter-spacing:.1em;color:#7F9B92;}
+
+  /* front matter */
+  .front{max-width:170mm;}
+  .front h1{break-before:auto;}
+  .control{width:100%;border-collapse:collapse;margin:3mm 0 7mm;font-size:8.6pt;}
+  .control td{border-top:.5pt solid var(--rule);padding:2.2mm 2mm;vertical-align:top;}
+  .control td:first-child{width:33mm;font-family:var(--mono);font-size:7.1pt;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+  .principles-mini{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin:4mm 0 6mm;}
+  .principles-mini div{border-left:2.4pt solid var(--petrol);background:var(--panel);padding:2.5mm 3.5mm;border-top:.5pt solid var(--rule);border-right:.5pt solid var(--rule);border-bottom:.5pt solid var(--rule);}
+  .principles-mini b{display:block;font-family:var(--serif);font-size:10.4pt;font-weight:500;margin-bottom:.5mm;}
+  .principles-mini span{font-size:8.2pt;color:var(--muted);}
+
+  /* toc */
+  .toc{break-before:page;break-after:page;}
+  .toc h1{break-before:auto;margin-bottom:2mm;}
+  .toc table{width:100%;border-collapse:collapse;font-size:8.8pt;}
+  .toc td{padding:1.25mm 0;vertical-align:baseline;border-bottom:.4pt dotted var(--rule);}
+  .toc td.n{width:13mm;font-family:var(--mono);font-size:7.4pt;color:var(--rust);font-weight:500;}
+  .toc td.t{font-family:var(--serif);font-size:10pt;}
+  .toc td.p{width:10mm;text-align:right;font-family:var(--mono);font-size:7.4pt;color:var(--muted);}
+  .toc tr.sub td{padding:.45mm 0 .55mm;border-bottom:0;}
+  .toc tr.sub td.n{color:transparent;}
+  .toc tr.sub td.t{padding-left:8mm;font-family:var(--sans);font-size:7.9pt;color:var(--muted);}
+  .toc tr.sub td.p{border-bottom:0;}
+  .toc .callout{margin-top:3mm;}
+
+  /* generic */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6mm;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5mm;}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;}
+  .box{border:.6pt solid var(--rule);background:var(--panel);padding:3.5mm 4mm;break-inside:avoid;}
+  .box h3,.box h4{margin-top:0;}
+  .box p:last-child,.box ul:last-child{margin-bottom:0;}
+  .box.petrol{border-top:2.5pt solid var(--petrol);}
+  .box.rust{border-top:2.5pt solid var(--rust);}
+  .box.flat{background:transparent;}
+
+  table.spec{width:100%;border-collapse:collapse;margin:3mm 0 5mm;font-size:8.2pt;}
+  table.spec th{background:var(--petrol);color:var(--paper);text-align:left;font-family:var(--mono);font-size:6.9pt;letter-spacing:.06em;text-transform:uppercase;font-weight:500;padding:2mm;border:.4pt solid var(--petrol-deep);}
+  table.spec td{padding:1.7mm 2mm;border:.5pt solid var(--rule);vertical-align:top;}
+  table.spec tbody tr:nth-child(even) td{background:#F1EDE3;}
+  table.spec thead{display:table-header-group;}
+  table.spec tr{break-inside:avoid;}
+  table.spec td.mono,.mono{font-family:var(--mono);font-size:7.4pt;}
+  table.spec.compact td{padding:1.25mm 1.8mm;font-size:7.9pt;line-height:1.38;}
+  table.spec.compact td.mono{font-size:7.1pt;}
+  table.spec.qa th{padding:1.6mm 2mm;}
+  table.spec.qa td{padding:1.05mm 1.8mm;line-height:1.34;}
+  table.spec td.c{text-align:center;}
+  .caption{font-size:7.6pt;color:var(--muted);margin:1.5mm 0 4mm;line-height:1.4;}
+  .caption b{color:var(--ink-2);font-weight:600;}
+  .callout{border-left:3pt solid var(--petrol);background:var(--petrol-soft);padding:2.8mm 3.5mm;margin:3mm 0 4mm;break-inside:avoid;}
+  .callout .tag{display:block;font-family:var(--mono);font-size:6.8pt;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--petrol);margin-bottom:1mm;}
+  .callout p{font-size:8.6pt;margin:0;}
+  .callout.rust{border-left-color:var(--rust);background:var(--rust-soft);}
+  .callout.rust .tag{color:var(--rust);}
+  .callout.warn{border-left-color:var(--brass);background:var(--warn-soft);}
+  .callout.warn .tag{color:var(--warn);}
+  .rule{height:1px;background:var(--rule);border:0;margin:5mm 0;}
+  .page-break{break-before:page;}
+  .avoid{break-inside:avoid;}
+  .nowrap{white-space:nowrap;}
+  .two-col-list{columns:2;column-gap:8mm;}
+  .two-col-list li{break-inside:avoid;}
+
+  .chapter-rule{display:flex;height:2.2mm;margin:0 0 7mm;}
+  .chapter-rule .a{flex:1;background:var(--petrol);}
+  .chapter-rule .b{width:26mm;background:var(--rust);}
+
+  /* swatches */
+  .swatch{border:.5pt solid var(--rule);background:var(--panel);margin-bottom:4mm;break-inside:avoid;}
+  .swatch .fill{height:26mm;}
+  .swatch .meta{padding:2.5mm 3mm;}
+  .swatch .name{font-family:var(--sans);font-weight:600;font-size:8.8pt;}
+  .swatch .hex{font-family:var(--mono);font-size:7.4pt;color:var(--muted);margin-top:.5mm;}
+  .swatch .use{font-size:7.6pt;color:var(--muted);margin-top:1.2mm;line-height:1.35;}
+  .band-swatch .fill{height:34mm;display:flex;align-items:flex-end;justify-content:space-between;padding:3mm;}
+  .band-swatch .fill b{font-family:var(--mono);font-size:16pt;font-weight:500;color:var(--paper);}
+  .band-swatch .fill span{font-family:var(--mono);font-size:7pt;color:var(--paper);opacity:.85;}
+  .band-swatch .bar{height:2mm;background:var(--paper);width:100%;margin-top:2mm;}
+
+  .ratio{display:flex;height:9mm;border:.5pt solid var(--rule);margin:2mm 0 2mm;}
+  .ratio span{height:100%;}
+  .ratio-legend{display:flex;gap:5mm;font-size:7.6pt;color:var(--muted);}
+  .ratio-legend i{display:inline-block;width:2.6mm;height:2.6mm;margin-right:1.2mm;vertical-align:-.3mm;}
+
+  /* type specimens */
+  .specimen{border-top:.6pt solid var(--rule-strong);border-bottom:.6pt solid var(--rule-strong);padding:5mm 0;margin:3mm 0 4mm;break-inside:avoid;}
+  .specimen .big{font-family:var(--serif);font-size:40pt;line-height:1.02;letter-spacing:-.02em;}
+  .specimen .glyphs{font-family:var(--serif);font-size:15pt;color:var(--ink-2);margin-top:2mm;letter-spacing:.02em;}
+  .specimen .ui{font-family:var(--sans);font-size:19pt;font-weight:600;}
+  .specimen .data{font-family:var(--mono);font-size:24pt;letter-spacing:-.03em;}
+
+  /* measure demo (charter scale) */
+  .mchart{margin:3mm 0 4mm;}
+  .mchart .track{display:flex;gap:1px;height:12mm;}
+  .mchart .track span{position:relative;}
+  .mchart .labels{display:grid;grid-template-columns:20fr 20fr 15fr 15fr 15fr 15fr;gap:1px;margin-top:1.5mm;font-family:var(--mono);font-size:6.5pt;color:var(--muted);}
+  .mchart .labels span{line-height:1.3;}
+  .mchart .labels b{display:block;color:var(--ink);font-weight:500;font-size:7.2pt;}
+
+  /* ============ PANEL MOCKUP ============ */
+  .mockwrap{break-inside:avoid;}
+  .tl-panel{
+    width:360px;background:var(--panel);border:1px solid var(--rule);border-radius:3px;
+    box-shadow:3px 3px 0 var(--shadow);color:var(--ink);font-family:var(--sans);
+    font-size:13px;line-height:1.45;overflow:hidden;
+  }
+  .tl-head{min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--rule);}
+  .tl-brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12.5px;letter-spacing:.005em;}
+  .tl-brand svg{width:19px;height:19px;color:var(--petrol);}
+  .tl-lang{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);}
+  .tl-lang b{color:var(--ink);font-weight:500;border-bottom:1px solid var(--ink);padding-bottom:1px;}
+  .tl-pagebar{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px 16px 8px;border-bottom:1px solid var(--rule);}
+  .tl-site{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .tl-count{font-size:11.5px;color:var(--ink-2);margin-top:2px;}
+  .tl-rescan{font-size:11px;color:var(--petrol);border-bottom:1px solid var(--petrol);white-space:nowrap;margin-top:1px;}
+  .tl-list{padding:2px 0;}
+  .tl-rev{padding:10px 16px;border-bottom:1px solid #E9E2D6;}
+  .tl-rev:last-child{border-bottom:0;}
+  .tl-row{display:grid;grid-template-columns:22px 40px 1fr 12px;gap:8px;align-items:center;}
+  .tl-idx{font-family:var(--mono);font-size:9px;color:var(--muted);}
+  .tl-score{font-family:var(--mono);font-size:23px;font-weight:500;line-height:1;letter-spacing:-.04em;text-align:right;}
+  .tl-score.none{font-size:19px;color:var(--muted);letter-spacing:0;}
+  .tl-band{font-size:12.5px;font-weight:600;line-height:1.2;}
+  .tl-ev{font-size:10px;color:var(--muted);margin-top:1px;}
+  .tl-chev{color:var(--faint);font-size:10px;line-height:1;}
+  .tl-top{grid-column:2 / 4;font-size:10.5px;color:var(--muted);margin-top:3px;}
+  .tl-low{display:inline-flex;align-items:center;gap:4px;color:var(--brass);}
+  .tl-i{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border:1px solid currentColor;border-radius:50%;font-family:var(--serif);font-size:8px;line-height:1;}
+  .tl-detail{padding-top:10px;margin-top:10px;border-top:1px dashed var(--rule-strong);}
+  .tl-measure{margin:0 0 10px;}
+  .tl-mtop{display:flex;align-items:baseline;gap:7px;margin-bottom:6px;}
+  .tl-mscore{font-family:var(--mono);font-size:28px;font-weight:500;line-height:1;letter-spacing:-.04em;}
+  .tl-mband{font-family:var(--serif);font-size:15px;font-weight:500;}
+  .tl-track{display:flex;gap:1px;height:7px;position:relative;}
+  .tl-track span{height:7px;}
+  .tl-marker{position:absolute;top:-4px;height:15px;width:2px;background:var(--ink);}
+  .tl-mscale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;color:var(--muted);margin-top:3px;}
+  .tl-qual{display:flex;align-items:center;gap:4px;font-size:9.5px;color:var(--brass);margin-top:5px;}
+  .tl-sig{padding:5px 0;border-bottom:1px solid #EEE8DC;}
+  .tl-sig:last-child{border-bottom:0;}
+  .tl-sighead{display:flex;align-items:baseline;gap:6px;}
+  .tl-siglabel{font-size:11.5px;font-weight:500;flex:1;}
+  .tl-dir{font-family:var(--mono);font-size:8px;letter-spacing:.04em;white-space:nowrap;}
+  .tl-dir.manip{color:var(--rust);}
+  .tl-dir.org{color:var(--petrol);}
+  .tl-pct{font-family:var(--mono);font-size:9px;color:var(--muted);width:26px;text-align:right;}
+  .tl-axis{position:relative;height:3px;background:#ECE6DA;margin-top:5px;}
+  .tl-axis:before{content:"";position:absolute;left:50%;top:-2px;width:1px;height:7px;background:var(--faint);}
+  .tl-bar{position:absolute;top:0;height:3px;}
+  .tl-foot{padding:8px 16px 9px;border-top:1px solid var(--rule);font-size:9px;line-height:1.4;color:var(--muted);}
+  .tl-foot b{font-family:var(--mono);font-size:8px;font-weight:400;color:var(--muted);float:right;margin-left:8px;}
+
+  .tl-panel.night{--panel:#1A1F1D;--panel-2:#222824;--ink:#EDE7D9;--ink-2:#CDD2C8;--muted:#A7ACA2;--faint:#7F857B;--rule:#333A36;--rule-strong:#48514B;--control:#7F857B;--petrol:#79B3A4;--rust:#D08A6B;--brass:#D2B273;--b1:#C97A5E;--b2:#D79A78;--b3:#B0A794;--b4:#BDB97A;--b5:#8FB39A;--b6:#6FB3A2;--shadow:#0A0D0C;background:#1A1F1D;border-color:#333A36;box-shadow:3px 3px 0 #0A0D0C;}
+  .tl-panel.night .tl-rev{border-bottom-color:#2A312D;}
+  .tl-panel.night .tl-detail{border-top-color:#48514B;}
+  .tl-panel.night .tl-sig{border-bottom-color:#2A312D;}
+  .tl-panel.night .tl-axis{background:#2E3531;}
+  .tl-panel.night .tl-track .seg-off{background:#2E3531;}
+  .tl-panel.night .tl-i{border-color:var(--brass);}
+
+  .tl-seg1{background:var(--b1);}
+  .tl-seg2{background:var(--b2);}
+  .tl-seg3{background:var(--b3);}
+  .tl-seg4{background:var(--b4);}
+  .tl-seg5{background:var(--b5);}
+  .tl-seg6{background:var(--b6);}
+
+  /* chips */
+  .chip{display:inline-flex;align-items:center;gap:5px;min-height:26px;padding:3px 7px 3px 6px;background:var(--panel);border:1px solid var(--control);border-left:3px solid var(--b3);border-radius:2px;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);line-height:1;white-space:nowrap;vertical-align:middle;}
+  .chip .ci{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border:1px solid var(--brass);border-radius:50%;font-family:var(--serif);font-size:8px;color:var(--brass);}
+  .chip.c1{border-left-color:var(--b1);}
+  .chip.c2{border-left-color:var(--b2);}
+  .chip.c3{border-left-color:var(--b3);}
+  .chip.c4{border-left-color:var(--b4);}
+  .chip.c5{border-left-color:var(--b5);}
+  .chip.c6{border-left-color:var(--b6);}
+  .chip.unknown{border-left-color:var(--rule-strong);color:var(--muted);}
+  .chip.signals{border-left-color:var(--petrol);color:var(--petrol);}
+  .chip.error{border-left-color:var(--rust);color:var(--rust);}
+  .chip.small{min-height:22px;font-size:10.5px;padding:3px 5px;}
+  .chip.dark{background:#1A1F1D;border-color:#7F857B;color:var(--paper);}
+
+  .badge-demo{display:flex;align-items:center;gap:10px;margin:2mm 0;}
+  .ext-icon{position:relative;width:32px;height:32px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+  .ext-icon svg{width:18px;height:18px;color:var(--petrol);}
+  .ext-badge{position:absolute;right:-6px;bottom:-5px;min-width:16px;height:15px;padding:0 3px;background:var(--b5);color:#fff;font-family:var(--sans);font-size:9px;font-weight:600;line-height:15px;text-align:center;border-radius:7px;border:1px solid var(--paper);}
+  .ext-badge.unk{background:var(--b3);}
+  .ext-badge.sig{background:var(--petrol);font-size:10px;}
+  .ext-badge.err{background:var(--rust);}
+
+  /* host page simulation */
+  .host{width:510px;background:#fff;border:1px solid #E1DDD4;padding:16px 18px;font-family:var(--sans);color:#222;}
+  .host-title{font-size:15px;font-weight:600;margin-bottom:2px;}
+  .host-sub{font-size:9px;color:#777;margin-bottom:12px;}
+  .host-review{border-top:1px solid #E6E2DA;padding:12px 0;position:relative;}
+  .host-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .host-label{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:#888;}
+  .host-text{font-size:11.5px;line-height:1.5;color:#333;padding-right:64px;}
+  .host-chip{position:absolute;right:0;top:11px;}
+
+  /* state cells */
+  .state-cell{border:.6pt solid var(--rule);background:var(--panel);padding:0;break-inside:avoid;}
+  .state-cell .head{padding:3mm 3.5mm;border-bottom:.5pt solid var(--rule);font-family:var(--mono);font-size:6.9pt;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .state-cell .body{padding:3mm 3.5mm;min-height:28mm;}
+
+  /* figure */
+  .figure{border:.6pt solid var(--rule);background:var(--panel);padding:5mm;margin:3mm 0 2mm;break-inside:avoid;}
+  .figlabel{font-family:var(--mono);font-size:6.8pt;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin-bottom:2.5mm;}
+
+  /* icon sheet */
+  .icons{display:grid;grid-template-columns:repeat(6,1fr);gap:4mm;margin:3mm 0;}
+  .icon-cell{border:.5pt solid var(--rule);background:var(--panel);padding:4mm 2mm;text-align:center;break-inside:avoid;}
+  .icon-cell svg{width:22px;height:22px;color:var(--ink);}
+  .icon-cell span{display:block;font-family:var(--mono);font-size:6.6pt;color:var(--muted);margin-top:2mm;}
+  .icons.tight{grid-template-columns:repeat(8,1fr);gap:2.5mm;}
+  .icons.tight .icon-cell{padding:3mm 1mm;}
+  .icons.tight .icon-cell span{font-size:5.7pt;margin-top:1.5mm;letter-spacing:0;}
+
+  .misuse-plate{height:29mm;border:.4pt solid var(--rule);background:var(--panel-2);display:flex;align-items:center;justify-content:center;margin:0 0 3mm;break-inside:avoid;}
+  .misuse-plate svg{width:19mm;height:19mm;color:var(--faint);}
+
+  .footer-note{margin-top:7mm;padding-top:2mm;border-top:.5pt solid var(--rule);font-size:7.2pt;color:var(--faint);}
+
+  /* closing */
+  .closing{break-before:page;break-inside:avoid;background:var(--petrol-deep);color:var(--paper);width:180mm;height:265mm;margin:0;padding:18mm 16mm;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;}
+  .closing .mark{display:flex;align-items:center;gap:10px;}
+  .closing .mark svg{width:28px;height:28px;}
+  .closing h2{font-family:var(--serif);font-size:34pt;line-height:1.05;color:var(--paper);border:0;margin:0 0 6mm;padding:0;max-width:130mm;}
+  .closing p{color:#D6E1D9;max-width:120mm;font-size:10.5pt;line-height:1.55;}
+  .closing .meta{border-top:.6pt solid #3E5A54;padding-top:4mm;font-family:var(--mono);font-size:7pt;color:#9FB9B0;letter-spacing:.06em;}
+
+  /* ============ MEASURE EXTRAS ============ */
+  .tl-ticks{display:inline-flex;align-items:flex-end;gap:1px;height:8px;margin-left:1px;}
+  .tl-ticks i{display:block;width:2px;height:5px;background:var(--faint);}
+  .tl-ticks i.on{height:8px;background:var(--ink);}
+  .tl-ticks.hollow i{background:var(--rule);}
+  .tl-sigscale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;letter-spacing:.04em;color:var(--muted);margin:1px 0 3px;}
+  .tl-statebox{border:1px solid var(--rule);background:var(--panel-2);padding:10px 12px;margin-top:10px;}
+  .tl-statetitle{font-family:var(--serif);font-size:15px;font-weight:500;line-height:1.2;}
+  .tl-statebody{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.45;}
+  .tl-unknownrule{height:7px;border-top:1px dashed var(--faint);margin:9px 0 3px;position:relative;}
+  .tl-unknownrule i{position:absolute;top:-2px;width:1px;height:5px;background:var(--faint);}
+  .tl-gear{display:inline-flex;align-items:center;justify-content:center;width:28px;height:44px;color:var(--muted);}
+  .tl-gear svg{width:15px;height:15px;}
+
+  /* ============ CONTROLS (document scale, 1x CSS px) ============ */
+  .ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:6px 14px;border-radius:2px;font-family:var(--sans);font-size:13px;font-weight:500;border:1px solid transparent;background:none;color:var(--ink);line-height:1.2;white-space:nowrap;}
+  .ui-btn.primary{background:var(--petrol);color:var(--paper);border-color:var(--petrol);}
+  .ui-btn.secondary{border-color:var(--control);background:var(--panel);}
+  .ui-btn.quiet{color:var(--petrol);padding:2px 1px;border-bottom:1px solid var(--petrol);border-radius:0;min-height:22px;}
+  .ui-btn.danger{color:var(--rust);border-color:var(--rust);background:var(--panel);}
+  .ui-btn.small{min-height:30px;font-size:12px;padding:4px 10px;}
+  .ui-btn.off{opacity:.38;}
+  .ui-focus{outline:2px solid var(--petrol);outline-offset:2px;}
+  .ui-switch{position:relative;display:inline-block;width:36px;height:20px;border-radius:10px;background:var(--control);flex:none;}
+  .ui-switch:after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);}
+  .ui-switch.on{background:var(--petrol);}
+  .ui-switch.on:after{left:18px;}
+  .ui-seg{display:inline-flex;border:1px solid var(--control);border-radius:2px;overflow:hidden;background:var(--panel);}
+  .ui-seg span{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:5px 9px;color:var(--muted);}
+  .ui-seg span.on{background:var(--petrol);color:var(--paper);}
+  .ui-pop{width:300px;background:var(--panel);border:1px solid var(--control);border-radius:2px;box-shadow:3px 3px 0 var(--shadow);padding:12px 14px;}
+  .ui-pop .pt{font-family:var(--serif);font-size:14px;font-weight:500;margin-bottom:5px;}
+  .ui-pop p{font-size:11px;line-height:1.45;color:var(--ink-2);margin:0 0 5px;}
+  .ui-pop .px{position:absolute;right:9px;top:9px;color:var(--faint);font-family:var(--mono);font-size:11px;}
+
+  /* options mock */
+  .opt-mock{width:520px;max-width:100%;background:var(--panel);border:1px solid var(--rule);font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink);}
+  .opt-head{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-bottom:1px solid var(--rule);}
+  .opt-brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;}
+  .opt-brand svg{width:20px;height:20px;color:var(--petrol);}
+  .opt-body{padding:4px 20px 10px;}
+  .opt-sect{padding:8px 0;border-bottom:1px solid var(--rule);}
+  .opt-sect:last-child{border-bottom:0;}
+  .opt-sect h4{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:500;}
+  .opt-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:5px 0;}
+  .opt-row .lbl{font-size:12.5px;font-weight:500;}
+  .opt-row .hint{font-size:10.5px;color:var(--muted);margin-top:1px;line-height:1.35;max-width:290px;}
+  .opt-note{font-size:10px;color:var(--faint);padding-top:8px;}
+
+  /* state blocks */
+  .tl-empty{padding:26px 20px;}
+  .tl-empty h5{font-family:var(--serif);font-size:18px;font-weight:500;line-height:1.2;margin:0 0 4px;color:var(--ink);}
+  .tl-empty p{font-size:11.5px;color:var(--muted);line-height:1.5;margin:0 0 13px;max-width:270px;}
+  .tl-empty .actions{display:flex;align-items:center;gap:12px;}
+  .tl-skel{background:var(--rule);border-radius:1px;}
+  .tl-skel.soft{background:#EDE7DB;}
+  .tl-skelrow{padding:12px 16px;border-bottom:1px solid #E9E2D6;}
+
+  /* history mock */
+  .hist-mock{width:100%;border:1px solid var(--rule);background:var(--panel);font-size:12px;}
+  .hist-row{display:grid;grid-template-columns:1fr 72px 74px;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--rule);}
+  .hist-row:last-child{border-bottom:0;}
+  .hist-host{font-family:var(--mono);font-size:10px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .hist-time{font-family:var(--mono);font-size:9.5px;color:var(--muted);text-align:right;}
+  .hist-result{font-family:var(--mono);font-size:10px;color:var(--ink-2);text-align:right;}
+  .hist-result.none{font-family:var(--sans);font-size:9.5px;color:var(--muted);}
+
+  .screen-only{display:none;}
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <div class="cover-top">
+    <div class="cover-brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.51 6.54 A8.5 8.5 0 1 0 18.51 17.46" fill="none" stroke="currentColor" stroke-width="2"/><rect x="17.24" y="10.78" width="2.5" height="2.5" fill="currentColor"/></svg>
+      <b>TrustLoop</b>
+    </div>
+    <div class="cover-kicker">Graphic charter · v1.0</div>
+  </div>
+
+  <div>
+    <h1 class="cover-title" style="break-before:auto;border:0;padding:0;">A second<br>reading.</h1>
+    <p class="cover-sub">The visual system for TrustLoop: a review-level text estimate, shown with its evidence, its limits, and its language — never as a verdict on a person.</p>
+    <div class="cover-measure" aria-hidden="true">
+      <span style="width:20%;background:#7C3223"></span>
+      <span style="width:20%;background:#A05634"></span>
+      <span style="width:15%;background:#746C5E"></span>
+      <span style="width:15%;background:#6F6C3A"></span>
+      <span style="width:15%;background:#47664E"></span>
+      <span style="width:15%;background:#174F45"></span>
+    </div>
+  </div>
+
+  <div>
+    <div class="cover-meta">
+      <div><span>Scope</span>Extension panel · inline chips · badge · history · options · report and defense</div>
+      <div><span>Baseline</span>27 October 2026<br>Version 1.0</div>
+      <div><span>Authority</span>docs/design/<br>Subordinate to product decisions</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOC CONTROL ================= -->
+<section class="front">
+  <h1><span class="num">DOCUMENT</span>What this charter fixes</h1>
+
+  <p class="lede">This is the visual source of truth for TrustLoop. It defines the identity, the six trust stops, typography, layout, components, states, bilingual behaviour, accessibility, design tokens, and the Figma build. It does not redefine the score, the labels, or the copy — those live in the product decisions and model plan.</p>
+
+  <table class="control">
+    <tr><td>Status</td><td>Baseline for the MVP and the later phases. Version 1.0, reviewed 27 October 2026.</td></tr>
+    <tr><td>Owner</td><td>Design lead, with the project lead for brand and copy decisions.</td></tr>
+    <tr><td>Authoritative for</td><td>Colour, type, spacing, shape, iconography, component anatomy, state presentation, motion, and dark theme.</td></tr>
+    <tr><td>Subordinate to</td><td><span class="mono">docs/product-decisions.md</span> (score meaning, bands, copy deck), <span class="mono">docs/model-plan.md</span> (signals, evidence, gate), <span class="mono">docs/architecture-and-data.md</span> (constants, reason codes).</td></tr>
+    <tr><td>Companion files</td><td><span class="mono">tokens.css</span>, <span class="mono">tokens.json</span>, <span class="mono">figma-prompt.md</span>, <span class="mono">assets/mark.svg</span>, <span class="mono">assets/wordmark.svg</span>.</td></tr>
+    <tr><td>Change rule</td><td>A charter revision updates this directory and the D20 row in the decision register. It never changes band boundaries or the meaning of a score.</td></tr>
+  </table>
+
+  <h2 style="margin-top:2mm;">How to use it</h2>
+  <div class="principles-mini">
+    <div><b>Designers</b><span>Build from the tokens and component anatomy, not from a screenshot. The Figma prompt in section 13 is the starting point.</span></div>
+    <div><b>Developers</b><span>Use <span class="mono">tokens.css</span> as the only colour and spacing source. Do not sample hex values from the PDF.</span></div>
+    <div><b>Reviewers</b><span>Check the state matrix, the bilingual strings, and the non-colour cues before commenting on taste.</span></div>
+    <div><b>The defense</b><span>Use section 15 for the report cover and slides. The same rules apply: evidence before decoration.</span></div>
+  </div>
+
+  <div class="callout rust">
+    <span class="tag">The one rule</span>
+    <p>If a visual choice makes the estimate look more certain than the model is, remove it. That includes a gauge with a needle, a percentage ring, a green checkmark, a page-level average, and a colour with no label.</p>
+  </div>
+
+  <p class="footer-note">TrustLoop graphic charter · v1.0 · 27 October 2026 · This document is exported from <span class="mono">docs/design/</span>. The PDF is immutable for the release; the HTML source is the working copy.</p>
+</section>
+
+<!-- ================= TOC ================= -->
+<section class="toc">
+  <h1><span class="num">CONTENTS</span>The system at a glance</h1>
+
+  <table>
+    <tr><td class="n">01</td><td class="t">The idea</td><td class="p">4</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Name · mark · wordmark · personality · what TrustLoop is not</td><td class="p"></td></tr>
+    <tr><td class="n">02</td><td class="t">Principles</td><td class="p">8</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Six rules · the AI tells we refuse · decision test</td><td class="p"></td></tr>
+    <tr><td class="n">03</td><td class="t">Colour</td><td class="p">10</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Base palette · six trust stops · ratios · contrast · night theme</td><td class="p"></td></tr>
+    <tr><td class="n">04</td><td class="t">Typography</td><td class="p">14</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Three families · scale · numerals · French and English</td><td class="p"></td></tr>
+    <tr><td class="n">05</td><td class="t">Space and layout</td><td class="p">17</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">4px base · panel anatomy · review card · inline placement</td><td class="p"></td></tr>
+    <tr><td class="n">06</td><td class="t">The measure</td><td class="p">19</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">The signature component · construction · variants · unknown</td><td class="p"></td></tr>
+    <tr><td class="n">07</td><td class="t">Components</td><td class="p">23</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Buttons · controls · panel chrome · review rows · signals · history · options</td><td class="p"></td></tr>
+    <tr><td class="n">08</td><td class="t">States and integration</td><td class="p">29</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">State matrix · failure · empty · chips on the host page</td><td class="p"></td></tr>
+    <tr><td class="n">09</td><td class="t">Language and content</td><td class="p">34</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Voice · forbidden claims · bilingual layout · reason copy</td><td class="p"></td></tr>
+    <tr><td class="n">10</td><td class="t">Accessibility</td><td class="p">38</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Contrast · focus · target size · keyboard · screen reader · zoom</td><td class="p"></td></tr>
+    <tr><td class="n">11</td><td class="t">Motion</td><td class="p">41</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Three durations · what may move · reduced motion</td><td class="p"></td></tr>
+    <tr><td class="n">12</td><td class="t">Design tokens</td><td class="p">43</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Colour · type · space · radius · motion · theming</td><td class="p"></td></tr>
+    <tr><td class="n">13</td><td class="t">Figma build</td><td class="p">46</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">File pages · styles · components · variants · prototype · QA</td><td class="p"></td></tr>
+    <tr><td class="n">14</td><td class="t">Handoff</td><td class="p">49</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">File map · export rules · design QA · definition of done</td><td class="p"></td></tr>
+    <tr><td class="n">15</td><td class="t">Documents and defense</td><td class="p">51</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">Report cover · slide master · chart rules · evidence callout</td><td class="p"></td></tr>
+    <tr><td class="n">A</td><td class="t">Copy inventory</td><td class="p">57</td></tr>
+    <tr class="sub"><td class="n"></td><td class="t">The exact English and French strings used in the interface</td><td class="p"></td></tr>
+  </table>
+
+  <div class="callout" style="margin-top:7mm;">
+    <span class="tag">How the pages are organised</span>
+    <p>Foundations (01–05) define the material. Components (06–07) assemble it. States (08) prove it survives the honest cases. Language and accessibility (09–10) are not appendices; they shape every component. Tokens and Figma (12–13) are the handoff.</p>
+  </div>
+</section>
