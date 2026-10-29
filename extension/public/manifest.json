@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TrustLoop",
+  "description": "Estimates whether review text looks organic or manipulated.",
+  "version": "0.0.1",
+  "minimum_chrome_version": "116",
+  "action": {
+    "default_title": "TrustLoop"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.amazon.com/*",
+        "https://www.amazon.fr/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage"]
+}

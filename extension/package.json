@@ -1,0 +1,19 @@
+{
+  "name": "trustloop-extension",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@types/chrome": ">=0.0.270 <1.0.0",
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.25.0",
+    "jsdom": "^25.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
