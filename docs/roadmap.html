@@ -1,0 +1,2078 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrustLoop — Complete Build Roadmap, A to Z</title>
+<meta name="description" content="The complete TrustLoop build roadmap: foundations, contract, scoring model, Spring Boot API, browser extension, evidence, authentication, deployment, and every decision in between.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F3EA;
+    --panel:#FCFAF5;
+    --panel-2:#F3EFE5;
+    --ink:#1A1D1B;
+    --ink-2:#3E4440;
+    --muted:#686D66;
+    --faint:#8B8F86;
+    --rule:#DAD3C5;
+    --rule-strong:#BDB4A4;
+    --petrol:#14524B;
+    --petrol-deep:#0E3B36;
+    --petrol-soft:#E4ECE8;
+    --rust:#A24A2C;
+    --rust-soft:#F1E3DC;
+    --brass:#8A6A32;
+    --warn-soft:#F3EBD9;
+    --b1:#7C3223;
+    --b2:#A05634;
+    --b3:#746C5E;
+    --b4:#6F6C3A;
+    --b5:#47664E;
+    --b6:#174F45;
+    --b1-soft:#F0E2DC;
+    --b2-soft:#F3E6DD;
+    --b3-soft:#ECE9E2;
+    --b4-soft:#EDEBDA;
+    --b5-soft:#E5ECE4;
+    --b6-soft:#DFEAE6;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+    --shadow:#E7DFD0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.62;
+    font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--petrol);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px}
+  p{margin:0 0 12px}
+  ul,ol{margin:8px 0 14px;padding-left:20px}
+  li{margin:4px 0}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);border:1px solid var(--rule);padding:1px 4px;border-radius:2px;color:var(--ink)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+
+  /* top bar */
+  .topbar{position:sticky;top:0;z-index:60;background:rgba(247,243,234,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+  .topbar-in{max-width:1120px;margin:0 auto;padding:0 32px;height:58px;display:flex;align-items:center;gap:12px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--ink)}
+  .brand svg{width:22px;height:22px;color:var(--petrol);flex:none}
+  .brand em{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-left:6px}
+  .topnav{margin-left:auto;display:flex;gap:24px}
+  .topnav a{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .topnav a:hover{color:var(--petrol);text-decoration:none}
+
+  /* hero */
+  .hero{background:var(--petrol-deep);color:var(--paper);border-top:6px solid var(--rust);padding:64px 56px 40px;margin:32px 0 22px;position:relative;overflow:hidden;border-radius:2px}
+  .hero:before,.hero:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(247,243,234,.13);pointer-events:none}
+  .hero:before{width:460px;height:460px;right:-150px;top:-170px}
+  .hero:after{width:280px;height:280px;right:-40px;top:-60px;border-color:rgba(247,243,234,.09)}
+  .hero .inner{position:relative;z-index:1;max-width:860px}
+  .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#D9A183;margin-bottom:18px;display:block}
+  .hero h1{font-family:var(--serif);font-weight:500;font-size:62px;line-height:.98;letter-spacing:-.025em;margin:0 0 22px;color:var(--paper);max-width:760px}
+  .hero .lede{font-family:var(--serif);font-size:19px;line-height:1.5;color:#D9E3DC;max-width:640px;margin:0}
+  .hero .lede b{color:#F0F5F2;font-weight:500}
+  .measure{display:flex;height:8px;margin:34px 0 0;max-width:520px}
+  .measure span{flex:1}
+  .hero-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;border-top:1px solid #3E5A54;margin-top:30px;padding-top:20px;position:relative;z-index:1}
+  .hero-meta span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8FA9A0;margin-bottom:5px}
+  .hero-meta b{font-size:13.5px;font-weight:500;color:#EDE7D9;line-height:1.4;display:block}
+
+  /* generic section heads */
+  .part{margin-top:74px}
+  .part-head{display:grid;grid-template-columns:112px 1fr;gap:28px;border-top:2px solid var(--ink);padding-top:22px;margin-bottom:26px}
+  .part-num{font-family:var(--serif);font-size:56px;line-height:.85;color:var(--petrol);letter-spacing:-.02em}
+  .part-num small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--rust);margin-bottom:8px;font-weight:500}
+  .part-head h2{font-family:var(--serif);font-weight:500;font-size:42px;line-height:1.04;letter-spacing:-.02em;margin:0 0 8px}
+  .part-head p{margin:0;color:var(--muted);max-width:700px;font-size:15px}
+
+  /* intro cards */
+  .card{background:var(--panel);border:1px solid var(--rule);border-radius:2px;padding:32px 36px;margin-bottom:20px;box-shadow:3px 3px 0 var(--shadow)}
+  .card h3{font-family:var(--serif);font-size:25px;font-weight:500;line-height:1.15;margin:0 0 10px;letter-spacing:-.01em}
+  .card > p:last-child{margin-bottom:0}
+  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--rule);background:var(--panel);box-shadow:3px 3px 0 var(--shadow)}
+  .how > div{padding:24px 26px;border-right:1px solid var(--rule)}
+  .how > div:last-child{border-right:0}
+  .how .tag{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);margin-bottom:8px}
+  .how b{display:block;font-family:var(--serif);font-size:19px;font-weight:500;margin-bottom:6px}
+  .how p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.55}
+
+  /* system strip */
+  .system{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:10px;margin:20px 0 10px}
+  .sysbox{border:1px solid var(--rule);border-top:3px solid var(--petrol);background:var(--panel);padding:16px 18px}
+  .sysbox .tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--rust);text-transform:uppercase;display:block;margin-bottom:5px}
+  .sysbox b{display:block;font-size:14.5px;margin-bottom:5px}
+  .sysbox p{margin:0 0 8px;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .sysbox code{font-size:10px;background:transparent;border:0;padding:0;color:var(--faint);letter-spacing:.04em}
+  .sysarrow{display:flex;align-items:center;font-family:var(--mono);color:var(--rule-strong);font-size:18px}
+  .syscontract{background:var(--petrol);color:var(--paper);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;text-align:center}
+
+  /* toc */
+  .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;margin-top:26px}
+  .toc h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);margin:0 0 10px;font-weight:500}
+  .toc a{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:13.5px;color:var(--ink-2);padding:5px 0;border-bottom:1px dotted var(--rule)}
+  .toc a:hover{color:var(--petrol);text-decoration:none}
+  .toc a span{font-family:var(--mono);font-size:9.5px;color:var(--faint);white-space:nowrap}
+
+  /* step card */
+  .step-top{display:flex;gap:18px;align-items:flex-start;margin-bottom:14px}
+  .step-num{width:54px;height:54px;flex:none;background:var(--petrol);color:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:16px;font-weight:500;border-radius:2px;letter-spacing:.02em}
+  .step-title{font-family:var(--serif);font-size:28px;font-weight:500;line-height:1.12;margin:0 0 5px;letter-spacing:-.01em}
+  .step-meta{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust)}
+  .why{color:var(--ink-2);margin:0 0 4px;max-width:840px;font-size:15px}
+
+  .label{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;display:flex;align-items:center;gap:12px;font-weight:500}
+  .label:after{content:"";height:1px;background:var(--rule);flex:1}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+  .chip{display:inline-flex;align-items:center;padding:4px 9px;background:var(--panel-2);border:1px solid var(--rule);border-left:3px solid var(--petrol);font-family:var(--mono);font-size:11.5px;color:var(--ink-2);line-height:1.35}
+  .chip.c1{border-left-color:var(--b1)} .chip.c2{border-left-color:var(--b2)}
+  .chip.c3{border-left-color:var(--b3)} .chip.c4{border-left-color:var(--b4)}
+  .chip.c5{border-left-color:var(--b5)} .chip.c6{border-left-color:var(--b6)}
+
+  .tbl{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:13.5px}
+  .tbl th{background:var(--petrol);color:var(--paper);text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;padding:9px 12px;border:1px solid var(--petrol-deep)}
+  .tbl td{padding:9px 12px;border:1px solid var(--rule);vertical-align:top;color:var(--ink-2);line-height:1.5}
+  .tbl tr:nth-child(even) td{background:#F1EDE3}
+  .tbl .n{font-weight:600;color:var(--ink)}
+  .tbl.compact{font-size:12.5px}
+  .tbl.compact td,.tbl.compact th{padding:6px 9px}
+  .tbl td.mono,.tbl th.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em}
+
+  .proof{display:flex;gap:16px;background:var(--petrol-soft);border-left:3px solid var(--petrol);padding:14px 18px;margin-top:20px;border-radius:2px}
+  .proof .tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--petrol);white-space:nowrap;padding-top:3px;font-weight:500}
+  .proof p{margin:0;font-size:14px;color:var(--ink)}
+
+  .callout{border-left:3px solid var(--brass);background:var(--warn-soft);padding:13px 17px;margin:16px 0 0;font-size:14px;color:var(--ink-2);line-height:1.55}
+  .callout.rust{border-left-color:var(--rust);background:var(--rust-soft)}
+  .callout .tag{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);margin-bottom:4px;font-weight:600}
+  .callout.rust .tag{color:var(--rust)}
+  .callout b{color:var(--ink)}
+
+  .code{background:#1A1D1B;color:#E7E1D3;font-family:var(--mono);font-size:12.5px;line-height:1.7;padding:16px 20px;overflow-x:auto;margin:14px 0 0;border-left:3px solid var(--rust);white-space:pre;border-radius:2px}
+  .code .c{color:#8B8F86}
+  .code .k{color:#9EC7BB}
+  .code .s{color:#D2B273}
+
+  /* phase header */
+  .phase{background:var(--petrol-deep);color:var(--paper);padding:38px 44px;margin:46px 0 20px;border-top:5px solid var(--rust);display:grid;grid-template-columns:140px 1fr;gap:26px;align-items:start;border-radius:2px;position:relative;overflow:hidden}
+  .phase:after{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border:1px solid rgba(247,243,234,.1);border-radius:50%}
+  .phase .pnum{font-family:var(--serif);font-size:64px;line-height:.85;color:#D9A183}
+  .phase .plabel{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#8FA9A0;display:block;margin-bottom:7px}
+  .phase h2{font-family:var(--serif);font-size:35px;font-weight:500;line-height:1.05;margin:0 0 8px;color:var(--paper);letter-spacing:-.015em;position:relative;z-index:1}
+  .phase p{color:#C9D8D2;margin:0;max-width:720px;font-size:14.5px;position:relative;z-index:1}
+  .phase .pout{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#D9A183;margin-top:12px;display:block}
+
+  /* timeline */
+  .tl{display:grid;grid-template-columns:repeat(18,1fr);gap:3px;margin:18px 0 6px}
+  .tl > div{height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:#fff;text-align:center;line-height:1.2}
+  .tl-labels{display:grid;grid-template-columns:repeat(18,1fr);gap:3px}
+  .tl-labels span{text-align:center;font-family:var(--mono);font-size:9px;color:var(--faint)}
+
+  /* week rhythm */
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}
+  .day{border:1px solid var(--rule);background:var(--panel);padding:12px 11px;border-top:3px solid var(--petrol)}
+  .day b{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--petrol);display:block}
+  .day span{display:block;font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .day.rest{border-top-color:var(--rust);background:var(--rust-soft)}
+
+  /* tools */
+  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:10px;margin-top:14px}
+  .tool{display:flex;gap:11px;align-items:center;border:1px solid var(--rule);background:var(--panel);padding:11px 12px}
+  .tool .mark{width:34px;height:34px;flex:none;background:var(--panel-2);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--petrol)}
+  .tool b{display:block;font-size:13px;line-height:1.3}
+  .tool span{font-size:11.5px;color:var(--muted);line-height:1.35}
+
+  /* sources */
+  .sources{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .source{display:flex;gap:13px;padding:14px 16px;border:1px solid var(--rule);background:var(--panel)}
+  .source .mark{width:38px;height:38px;flex:none;background:var(--petrol-soft);color:var(--petrol);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600}
+  .source b{font-size:13.5px;display:block}
+  .source p{margin:2px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45}
+
+  /* dark checklist */
+  .dark{background:var(--petrol-deep);color:var(--paper);padding:40px 44px;border-top:5px solid var(--rust);margin:28px 0;border-radius:2px}
+  .dark h2{font-family:var(--serif);font-size:34px;font-weight:500;margin:0 0 8px}
+  .dark .sub{color:#B9CFC6;margin:0 0 20px;max-width:640px;font-size:14.5px}
+  .check{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;list-style:none;padding:0;margin:0}
+  .check li{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(247,243,234,.14);font-size:13.5px;color:#E7EFEA;line-height:1.5}
+  .check i{width:16px;height:16px;border:1.5px solid #B9CFC6;flex:none;margin-top:4px;display:block}
+  .check b{color:#E8B79E;font-weight:600}
+
+  /* advice */
+  .advice{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .advice > div{border:1px solid var(--rule);background:var(--panel);padding:20px 22px;border-top:3px solid var(--rust)}
+  .advice .n{font-family:var(--mono);font-size:10px;color:var(--rust);letter-spacing:.12em}
+  .advice h4{font-family:var(--serif);font-size:20px;font-weight:500;margin:6px 0 6px;line-height:1.2}
+  .advice p{margin:0;font-size:14px;color:var(--ink-2)}
+
+  /* appendix */
+  .appendix{margin-top:76px}
+  .ap-head{border-top:2px solid var(--ink);padding-top:20px;margin-bottom:24px}
+  .ap-head .kicker{color:var(--rust);margin-bottom:10px}
+  .ap-head h2{font-family:var(--serif);font-size:40px;font-weight:500;margin:0 0 6px;letter-spacing:-.02em}
+  .ap-head p{margin:0;color:var(--muted);max-width:700px;font-size:15px}
+  .ap-title{font-family:var(--serif);font-size:25px;font-weight:500;margin:34px 0 6px;display:flex;align-items:baseline;gap:12px}
+  .ap-title span{font-family:var(--mono);font-size:11px;color:var(--rust);letter-spacing:.08em}
+  .ap-note{font-size:13px;color:var(--muted);margin:0 0 10px;max-width:760px}
+  .swatch{display:inline-block;width:32px;height:14px;vertical-align:-2px;margin-right:8px;border:1px solid rgba(0,0,0,.14)}
+
+  /* footer */
+  .footer{background:var(--petrol-deep);color:var(--paper);padding:46px 44px;margin-top:64px;border-top:6px solid var(--rust);position:relative;overflow:hidden}
+  .footer:after{content:"";position:absolute;right:-100px;bottom:-140px;width:340px;height:340px;border:1px solid rgba(247,243,234,.12);border-radius:50%}
+  .footer h2{font-family:var(--serif);font-size:34px;font-weight:500;margin:0 0 10px;position:relative;z-index:1}
+  .footer p{color:#B9CFC6;max-width:620px;margin:0;position:relative;z-index:1}
+  .footer .fine{margin-top:30px;padding-top:18px;border-top:1px solid #3E5A54;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8FA9A0;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;position:relative;z-index:1}
+
+  @media (max-width:980px){
+    .hero{padding:44px 28px 32px}
+    .hero h1{font-size:42px}
+    .hero .lede{font-size:17px}
+    .hero-meta{grid-template-columns:1fr 1fr;gap:16px}
+    .part-head{grid-template-columns:1fr;gap:10px}
+    .part-num{font-size:40px}
+    .part-head h2{font-size:34px}
+    .toc{grid-template-columns:1fr 1fr}
+    .how{grid-template-columns:1fr}
+    .how > div{border-right:0;border-bottom:1px solid var(--rule)}
+    .how > div:last-child{border-bottom:0}
+    .system{grid-template-columns:1fr}
+    .sysarrow{display:none}
+    .card{padding:24px 22px}
+    .step-title{font-size:23px}
+    .phase{grid-template-columns:1fr;gap:8px;padding:28px 24px}
+    .phase .pnum{font-size:44px}
+    .phase h2{font-size:28px}
+    .tl{display:none}
+    .tl-labels{display:none}
+    .week{grid-template-columns:repeat(2,1fr)}
+    .check,.advice,.sources{grid-template-columns:1fr}
+    .dark{padding:28px 24px}
+    .tbl{display:block;overflow-x:auto;white-space:nowrap}
+    .topnav{display:none}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 16px 56px}
+    .topbar-in{padding:0 16px}
+    .toc{grid-template-columns:1fr}
+    .hero h1{font-size:34px}
+    .step-top{gap:12px}
+    .step-num{width:44px;height:44px;font-size:14px}
+    .week{grid-template-columns:1fr}
+  }
+  @media print{
+    html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .topbar{display:none}
+    body{background:#fff;font-size:10pt}
+    .wrap{max-width:none;padding:0}
+    .hero,.phase,.dark,.footer,.card{box-shadow:none}
+    .card{padding:18px 0;border-left:0;border-right:0;border-bottom:0;break-inside:auto}
+    .step-top,.proof,.tbl th{break-after:avoid}
+    .part-head,.ap-head{break-inside:avoid;break-after:avoid}
+    .proof,.callout{break-inside:avoid}
+    .code{break-inside:auto;orphans:4;widows:4}
+    .tbl tr{break-inside:avoid}
+    a{color:var(--ink)}
+    /* keep the desktop composition when printing, instead of the narrow-screen stack */
+    .hero{padding:40px 36px 30px}
+    .hero h1{font-size:46px}
+    .hero .lede{font-size:16px}
+    .hero-meta{grid-template-columns:repeat(4,1fr)}
+    .part-head{grid-template-columns:96px 1fr}
+    .part-head h2{font-size:34px}
+    .toc{grid-template-columns:repeat(4,1fr);gap:18px}
+    .how{grid-template-columns:repeat(3,1fr)}
+    .how > div{border-right:1px solid var(--rule);border-bottom:0}
+    .how > div:last-child{border-right:0}
+    .system{grid-template-columns:1fr auto 1fr auto 1fr}
+    .sysarrow{display:flex}
+    .phase{grid-template-columns:120px 1fr;padding:28px 30px}
+    .phase .pnum{font-size:52px}
+    .phase h2{font-size:28px}
+    .tl,.tl-labels{display:grid}
+    .week{grid-template-columns:repeat(7,1fr)}
+    .check,.advice,.sources{grid-template-columns:1fr 1fr}
+    .step-title{font-size:22px}
+    .system{break-inside:avoid}
+    .sysbox{break-inside:avoid}
+    .tbl{display:table;width:100%;white-space:normal;overflow:visible;font-size:9.6pt}
+    .tbl td,.tbl th{padding:5px 7px}
+    .tbl td.mono,.tbl th.mono{font-size:8.6pt}
+    @page{size:A4;margin:14mm}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 3.5a12.5 12.5 0 1 0 10.6 19.1" stroke="currentColor" stroke-width="3.2" stroke-linecap="square"/><circle cx="26.6" cy="22.6" r="2.6" fill="currentColor"/></svg>
+      TrustLoop <em>Build roadmap v1.0</em>
+    </div>
+    <nav class="topnav">
+      <a href="#learn">Foundations</a>
+      <a href="#build">Build</a>
+      <a href="#ship">Ship &amp; defend</a>
+      <a href="#appendix">Appendix</a>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="inner">
+      <span class="kicker">Programme A to Z · v1.0 · October 2026</span>
+      <h1>The whole build,<br>end to end.</h1>
+      <p class="lede">A complete roadmap for TrustLoop: the skills to acquire, the contract to freeze, the model to validate, the three components to build, the evidence to defend, and the honest limits to keep. <b>Nothing here is optional decoration.</b></p>
+      <div class="measure" aria-hidden="true">
+        <span style="background:#7C3223"></span><span style="background:#A05634"></span><span style="background:#746C5E"></span><span style="background:#6F6C3A"></span><span style="background:#47664E"></span><span style="background:#174F45"></span>
+      </div>
+      <div class="hero-meta">
+        <div><span>Duration</span><b>18 weeks, part-time</b></div>
+        <div><span>Components</span><b>3 processes + 1 contract</b></div>
+        <div><span>Model</span><b>tl-text-1.0.0</b></div>
+        <div><span>Output</span><b>SCORED · SIGNALS_ONLY · UNKNOWN</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO READ -->
+  <div class="how">
+    <div>
+      <span class="tag">01 · Sequence</span>
+      <b>Gates, not dates.</b>
+      <p>Weeks are guidance. A phase closes only when its exit condition is met and its tests are green. Never start the next phase to escape a failing gate.</p>
+    </div>
+    <div>
+      <span class="tag">02 · Rule</span>
+      <b>Tests ship with the behaviour.</b>
+      <p>Every feature arrives with the test that proves it: controller validation, adapter fixtures, storage privacy, no-body logging, contract schemas.</p>
+    </div>
+    <div>
+      <span class="tag">03 · Evidence</span>
+      <b>Leave a trail.</b>
+      <p>Each phase writes proof into <code>docs/evidence/</code>: a spike note, a gate report, a metrics file, an audit table. The defense is assembled along the way, not the night before.</p>
+    </div>
+  </div>
+
+  <!-- SYSTEM -->
+  <div class="card">
+    <h3>The system in one glance</h3>
+    <p>Three independently runnable processes. One frozen contract between them. The browser never talks to the model directly, and the model never talks to the browser.</p>
+    <div class="system">
+      <div class="sysbox">
+        <span class="tag">01 · Browser</span>
+        <b>Chrome extension</b>
+        <p>Detects supported review cards, extracts the minimum text, deduplicates per page session, renders the badge and panel.</p>
+        <code>Manifest V3 · TypeScript</code>
+      </div>
+      <div class="sysarrow" aria-hidden="true">→</div>
+      <div class="sysbox">
+        <span class="tag">02 · Public boundary</span>
+        <b>Spring Boot API</b>
+        <p>Validates, size-checks, rate-limits, calls scoring, normalizes the response, owns every public error state.</p>
+        <code>Java · Spring Boot</code>
+      </div>
+      <div class="sysarrow" aria-hidden="true">→</div>
+      <div class="sysbox">
+        <span class="tag">03 · Internal only</span>
+        <b>Scoring service</b>
+        <p>Runs the versioned artifact on loopback and returns <code>p_organic</code>, verdict, evidence quality, and at most five signals.</p>
+        <code>Python · FastAPI</code>
+      </div>
+    </div>
+    <div class="syscontract">contracts/v1 — one request, one response, three components that must agree</div>
+  </div>
+
+  <!-- TOC -->
+  <div class="card" id="contents">
+    <h3>Roadmap overview</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:0">Four parts: learn the platforms, build the product, prove it, then defend it.</p>
+    <div class="toc">
+      <div>
+        <h3>Part I — Foundations</h3>
+        <a href="#s01">01 · Java &amp; Spring Boot <span>2–3 wk</span></a>
+        <a href="#s02">02 · The extension platform <span>4–6 d</span></a>
+        <a href="#s03">03 · TypeScript &amp; extraction <span>5–7 d</span></a>
+        <a href="#s04">04 · Python &amp; FastAPI <span>4–6 d</span></a>
+        <a href="#s05">05 · Classical NLP <span>7–10 d</span></a>
+        <a href="#s06">06 · Evaluation &amp; calibration <span>4–6 d</span></a>
+        <a href="#s07">07 · Contract-first design <span>2–3 d</span></a>
+        <a href="#s08">08 · Git, tests, CI <span>3–4 d</span></a>
+        <a href="#gate0">Foundation gate <span>check</span></a>
+      </div>
+      <div>
+        <h3>Part II — Build</h3>
+        <a href="#p0">Phase 0 · Freeze &amp; prove <span>1 wk</span></a>
+        <a href="#p1">Phase 1 · Analysis core <span>5–6 wk</span></a>
+        <a href="#p2">Phase 2 · Local completeness <span>1–2 wk</span></a>
+        <a href="#p3">Phase 3 · Evidence &amp; quality <span>2–3 wk</span></a>
+        <a href="#p4">Phase 4 · Accounts &amp; ownership <span>2–3 wk</span></a>
+        <a href="#p5">Phase 5 · Deploy &amp; expand <span>1–2 wk</span></a>
+      </div>
+      <div>
+        <h3>Part III — Ship &amp; defend</h3>
+        <a href="#timeline">Visual timeline <span>18 wk</span></a>
+        <a href="#rhythm">Daily &amp; weekly rhythm <span>loop</span></a>
+        <a href="#milestones">Milestones M0–M5 <span>gates</span></a>
+        <a href="#scope">What it will not claim <span>limits</span></a>
+        <a href="#risks">Risk register <span>14</span></a>
+        <a href="#checklist">Critical checklist <span>12</span></a>
+        <a href="#advice">Final advice <span>6</span></a>
+      </div>
+      <div>
+        <h3>Appendix</h3>
+        <a href="#apA">A · API surface <span>6</span></a>
+        <a href="#apB">B · Contract constants <span>17</span></a>
+        <a href="#apC">C · Reason codes <span>10</span></a>
+        <a href="#apD">D · Signal catalogue <span>7</span></a>
+        <a href="#apE">E · Six verdict bands <span>6</span></a>
+        <a href="#apF">F · Decision register <span>24</span></a>
+        <a href="#apG">G · Glossary <span>22</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PART I                                                       -->
+  <!-- ============================================================ -->
+  <div class="part" id="learn">
+    <div class="part-head">
+      <div class="part-num"><small>Part I</small>I</div>
+      <div>
+        <h2>Foundations: what to learn before you build</h2>
+        <p>TrustLoop touches three ecosystems and one discipline that beginners usually skip: measurement. You do not need to master all of it. You need enough of each to build the smallest honest version, and the judgement to know when a result is not trustworthy.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 01 -->
+  <div class="card" id="s01">
+    <div class="step-top">
+      <div class="step-num">01</div>
+      <div>
+        <div class="step-title">Java and Spring Boot</div>
+        <div class="step-meta">2–3 weeks · skip if you have shipped a Spring REST service</div>
+      </div>
+    </div>
+    <p class="why">The public boundary is Spring Boot, and the course fixes the package layout. This is the component an examiner will read most closely, so learn the idioms rather than copying a tutorial: constructor injection, DTOs, validation, profiles, and a single error envelope.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">Java records &amp; streams</span>
+      <span class="chip">Maven lifecycle</span>
+      <span class="chip">Dependency injection</span>
+      <span class="chip">REST controllers</span>
+      <span class="chip">Bean Validation</span>
+      <span class="chip">Configuration &amp; profiles</span>
+      <span class="chip">RestClient</span>
+      <span class="chip">Jackson DTOs</span>
+      <span class="chip">@ControllerAdvice</span>
+      <span class="chip">SLF4J / Logback</span>
+      <span class="chip c6">JUnit 5 + MockMvc</span>
+      <span class="chip c6">Actuator health</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">Spring Boot reference</td><td><a href="https://docs.spring.io/spring-boot/reference/">docs.spring.io/spring-boot</a></td><td>Read the web, validation, and external configuration chapters.</td></tr>
+      <tr><td class="n">Spring Guides</td><td><a href="https://spring.io/guides/gs/rest-service/">spring.io/guides</a></td><td>Build the REST guide, then the validation guide.</td></tr>
+      <tr><td class="n">Baeldung</td><td><a href="https://www.baeldung.com/spring-boot">baeldung.com/spring-boot</a></td><td>Practical answers for annotations and testing.</td></tr>
+      <tr><td class="n">Dev.java</td><td><a href="https://dev.java/learn/">dev.java/learn</a></td><td>Language refresh: records, sealed types, streams.</td></tr>
+    </table>
+
+    <div class="callout"><span class="tag">Course constraint</span>Use the Java and Spring versions the course approves. Do not leave <code>com.example</code> anywhere. Keep the plural package names from the supplied layout: <code>controllers</code>, <code>services</code>, <code>config</code>, <code>model</code>.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A throwaway service with one validated <code>POST</code>, a profile-specific property, a 400/404 error envelope, and a passing MockMvc test. You can explain why the DTO is not the entity.</p></div>
+  </div>
+
+  <!-- STEP 02 -->
+  <div class="card" id="s02">
+    <div class="step-top">
+      <div class="step-num">02</div>
+      <div>
+        <div class="step-title">The browser extension platform</div>
+        <div class="step-meta">4–6 days · this is the product surface</div>
+      </div>
+    </div>
+    <p class="why">Manifest V3 is not "a web page with extra permissions". The service worker sleeps, content scripts live in an isolated world, and the permission model decides what Chrome will let you ship. Learn it before writing the adapter, or you will fight the platform for a week.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">manifest.json v3</span>
+      <span class="chip">Service worker lifecycle</span>
+      <span class="chip">Content scripts</span>
+      <span class="chip">Isolated world</span>
+      <span class="chip">host_permissions</span>
+      <span class="chip">Messaging</span>
+      <span class="chip c6">chrome.storage</span>
+      <span class="chip c6">CSP rules</span>
+      <span class="chip c2">Web Store policies</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">Extension architecture</td><td><a href="https://developer.chrome.com/docs/extensions/develop/architecture">developer.chrome.com · architecture</a></td><td>Start here. Read the service worker section twice.</td></tr>
+      <tr><td class="n">Content scripts</td><td><a href="https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts">developer.chrome.com · content scripts</a></td><td>Understand what the isolated world can and cannot see.</td></tr>
+      <tr><td class="n">Message passing</td><td><a href="https://developer.chrome.com/docs/extensions/develop/concepts/messaging">developer.chrome.com · messaging</a></td><td>Async responses and the "port closed" trap.</td></tr>
+      <tr><td class="n">Chrome extension samples</td><td><a href="https://github.com/GoogleChrome/chrome-extensions-samples">github.com/GoogleChrome</a></td><td>Copy the structure, not the code.</td></tr>
+    </table>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A local unpacked extension that highlights review-like cards on a saved fixture page and reports a count in the popup. No network calls yet. You can explain why a content script cannot read a page variable from the console.</p></div>
+  </div>
+
+  <!-- STEP 03 -->
+  <div class="card" id="s03">
+    <div class="step-top">
+      <div class="step-num">03</div>
+      <div>
+        <div class="step-title">TypeScript, the DOM, and resilient extraction</div>
+        <div class="step-meta">5–7 days · the hardest 400 lines in the project</div>
+      </div>
+    </div>
+    <p class="why">Extraction looks trivial until the page hides a review with CSS, injects a duplicate, or changes its layout. The extension must decide what is eligible from a definition, not from a lucky selector. This is where most of the project's page-level risk lives.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">TypeScript strict mode</span>
+      <span class="chip">querySelectorAll</span>
+      <span class="chip">MutationObserver</span>
+      <span class="chip">Debounce &amp; throttle</span>
+      <span class="chip">Hidden-element detection</span>
+      <span class="chip">Text normalization</span>
+      <span class="chip c6">SubtleCrypto hashing</span>
+      <span class="chip c6">Vite / esbuild</span>
+      <span class="chip c2">Vitest + jsdom</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">TypeScript handbook</td><td><a href="https://www.typescriptlang.org/docs/handbook/intro.html">typescriptlang.org/docs</a></td><td>Everyday types, narrowing, generics.</td></tr>
+      <tr><td class="n">MDN DOM</td><td><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">developer.mozilla.org · DOM</a></td><td>Traversal, computed style, observables.</td></tr>
+      <tr><td class="n">Vitest</td><td><a href="https://vitest.dev/guide/">vitest.dev</a></td><td>Fast unit tests for pure extraction functions.</td></tr>
+      <tr><td class="n">Chrome DevTools</td><td><a href="https://developer.chrome.com/docs/devtools/">developer.chrome.com · DevTools</a></td><td>Learn the DOM breakpoints panel.</td></tr>
+    </table>
+
+    <div class="callout"><span class="tag">Definition, not selector</span>An eligible review is rendered and not hidden inside the adapter's container, with extractable text. Viewport intersection only schedules scanning - it never changes the eligible set. Encode that definition once and test it with fixtures.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>An extraction function that takes a saved page fixture and returns eligible review cards with normalized text. Tests cover hidden, <code>aria-hidden</code>, empty, duplicate, and nested-card cases.</p></div>
+  </div>
+
+  <!-- STEP 04 -->
+  <div class="card" id="s04">
+    <div class="step-top">
+      <div class="step-num">04</div>
+      <div>
+        <div class="step-title">Python and FastAPI</div>
+        <div class="step-meta">4–6 days · the internal scoring boundary</div>
+      </div>
+    </div>
+    <p class="why">The scoring service is small on purpose: load one artifact, validate one request, score a batch, return a contract-shaped response. FastAPI gives you typed request models, dependency injection for the internal token, and a lifespan hook for warming the model.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">venv / uv</span>
+      <span class="chip">Type hints</span>
+      <span class="chip">Pydantic models</span>
+      <span class="chip">FastAPI lifespan</span>
+      <span class="chip">Dependencies</span>
+      <span class="chip">TestClient</span>
+      <span class="chip c6">joblib loading</span>
+      <span class="chip c6">Structured logging</span>
+      <span class="chip c2">pytest fixtures</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">FastAPI tutorial</td><td><a href="https://fastapi.tiangolo.com/tutorial/">fastapi.tiangolo.com/tutorial</a></td><td>Read through testing and lifespan.</td></tr>
+      <tr><td class="n">Pydantic</td><td><a href="https://docs.pydantic.dev/latest/">docs.pydantic.dev</a></td><td>Validators and response models.</td></tr>
+      <tr><td class="n">Python tutorial</td><td><a href="https://docs.python.org/3/tutorial/">docs.python.org/3/tutorial</a></td><td>Refresh modules, typing, exceptions.</td></tr>
+      <tr><td class="n">uv</td><td><a href="https://docs.astral.sh/uv/">docs.astral.sh/uv</a></td><td>Fast, reproducible environments and lockfiles.</td></tr>
+    </table>
+
+    <div class="proof"><span class="tag">Proof of done</span><p><code>POST /score</code> returns a fixed, validated response; <code>GET /health</code> is not ready until a dummy artifact loads; the internal token is enforced; tests run without network access.</p></div>
+  </div>
+
+  <!-- STEP 05 -->
+  <div class="card" id="s05">
+    <div class="step-top">
+      <div class="step-num">05</div>
+      <div>
+        <div class="step-title">Classical NLP and scikit-learn</div>
+        <div class="step-meta">7–10 days · the model is a baseline on purpose</div>
+      </div>
+    </div>
+    <p class="why">You are not building a transformer. You are building a deterministic, CPU-only text classifier that you can explain, calibrate, and defend. TF-IDF plus logistic regression is not a compromise here; it is the design choice that makes honest attribution possible.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">Text normalization</span>
+      <span class="chip">Tokenization</span>
+      <span class="chip">Word &amp; char n-grams</span>
+      <span class="chip">TF-IDF</span>
+      <span class="chip">Logistic regression</span>
+      <span class="chip">Class weights</span>
+      <span class="chip c6">Pipelines</span>
+      <span class="chip c6">Group splits</span>
+      <span class="chip c2">Near-duplicate removal</span>
+      <span class="chip c2">joblib persistence</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">scikit-learn text tutorial</td><td><a href="https://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html">scikit-learn · working with text</a></td><td>The exact pipeline shape you need.</td></tr>
+      <tr><td class="n">Feature extraction</td><td><a href="https://scikit-learn.org/stable/modules/feature_extraction.html">scikit-learn · feature extraction</a></td><td>Word and character vectorizers.</td></tr>
+      <tr><td class="n">Model evaluation</td><td><a href="https://scikit-learn.org/stable/modules/model_evaluation.html">scikit-learn · model evaluation</a></td><td>Metrics, cross-validation, groups.</td></tr>
+      <tr><td class="n">IR book</td><td><a href="https://nlp.stanford.edu/IR-book/">nlp.stanford.edu/IR-book</a></td><td>Free chapters on tf-idf and vector space.</td></tr>
+    </table>
+
+    <div class="callout"><span class="tag">Split by source</span>Split by product/page and by dataset, never by individual review. Near-duplicates across splits leak the answer and inflate every metric you report.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A trained baseline on a licensed corpus, a held-out metrics table, a saved pipeline, and a one-paragraph explanation of why the score is not a real-world probability.</p></div>
+  </div>
+
+  <!-- STEP 06 -->
+  <div class="card" id="s06">
+    <div class="step-top">
+      <div class="step-num">06</div>
+      <div>
+        <div class="step-title">Evaluation, calibration, and honest metrics</div>
+        <div class="step-meta">4–6 days · the part that makes the project academic</div>
+      </div>
+    </div>
+    <p class="why">A model that scores 0.78 AUROC is not automatically useful, and a score of 73 is not "73% of reviews like this are fake". Calibration, confidence intervals, and subgroup reporting are the difference between a demo and a defensible result.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">AUROC / AUPRC</span>
+      <span class="chip">Precision, recall, F1</span>
+      <span class="chip">Confusion matrix</span>
+      <span class="chip">Bootstrap CIs</span>
+      <span class="chip">Reliability curves</span>
+      <span class="chip c6">ECE &amp; Brier</span>
+      <span class="chip c6">Platt / isotonic</span>
+      <span class="chip c2">Cohen's kappa</span>
+      <span class="chip c2">Class balance</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">sklearn calibration</td><td><a href="https://scikit-learn.org/stable/modules/calibration.html">scikit-learn · probability calibration</a></td><td>Platt, isotonic, reliability diagrams.</td></tr>
+      <tr><td class="n">sklearn metrics</td><td><a href="https://scikit-learn.org/stable/modules/model_evaluation.html">scikit-learn · metrics</a></td><td>ROC, PR, Brier, classification report.</td></tr>
+      <tr><td class="n">Google ML crash course</td><td><a href="https://developers.google.com/machine-learning/crash-course">developers.google.com/ml</a></td><td>Classification metrics and thresholds.</td></tr>
+      <tr><td class="n">Annotation guide</td><td><a href="https://scikit-learn.org/stable/modules/model_evaluation.html">Codebook practice</a></td><td>Two annotators, one written codebook, adjudication pass.</td></tr>
+    </table>
+
+    <div class="callout rust"><span class="tag">Never say this</span>"This review is 73% fake." The score is a calibrated text-pattern estimate on the evaluation distribution, not a prevalence claim. The model card and the UI both carry that limitation.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A script that emits <code>metrics.json</code> with confidence intervals and a reliability curve, plus a written explanation of what the number does and does not mean.</p></div>
+  </div>
+
+  <!-- STEP 07 -->
+  <div class="card" id="s07">
+    <div class="step-top">
+      <div class="step-num">07</div>
+      <div>
+        <div class="step-title">Contract-first design with JSON Schema</div>
+        <div class="step-meta">2–3 days · freeze before you integrate</div>
+      </div>
+    </div>
+    <p class="why">Three components written in three languages will drift within a week unless the contract is a file, not a conversation. The contract is the project's constitution: endpoints, constants, reason codes, statuses, engine labels, and fixtures that every component tests against.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">JSON Schema 2020-12</span>
+      <span class="chip">required / enum</span>
+      <span class="chip">additionalProperties</span>
+      <span class="chip">Versioned contracts</span>
+      <span class="chip c6">Fixture-as-test</span>
+      <span class="chip c6">OpenAPI vs schema</span>
+      <span class="chip c2">Backward compatibility</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">JSON Schema learn</td><td><a href="https://json-schema.org/learn">json-schema.org/learn</a></td><td>Read the getting-started and validation keywords.</td></tr>
+      <tr><td class="n">Understanding JSON Schema</td><td><a href="https://json-schema.org/understanding-json-schema/">json-schema.org/understanding</a></td><td>The reference you will keep open.</td></tr>
+      <tr><td class="n">jsonschema (Python)</td><td><a href="https://python-jsonschema.readthedocs.io/">python-jsonschema</a></td><td>Validate fixtures in pytest.</td></tr>
+      <tr><td class="n">Ajv</td><td><a href="https://ajv.js.org/">ajv.js.org</a></td><td>Validate the same fixtures in TypeScript.</td></tr>
+    </table>
+
+    <div class="proof"><span class="tag">Proof of done</span><p><code>contracts/v1/</code> contains request, response, and error schemas plus at least four fixtures. Java, Python, and TypeScript each validate the same files in their own test suite.</p></div>
+  </div>
+
+  <!-- STEP 08 -->
+  <div class="card" id="s08">
+    <div class="step-top">
+      <div class="step-num">08</div>
+      <div>
+        <div class="step-title">Git, testing, and CI that stays green</div>
+        <div class="step-meta">3–4 days · the habit, not the tool</div>
+      </div>
+    </div>
+    <p class="why">You are working alone, so GitHub is your reviewer. Short branches, pull requests, required checks, and tags give the project a readable history and stop "works on my machine" from becoming the submission strategy.</p>
+
+    <div class="label">What to learn</div>
+    <div class="chips">
+      <span class="chip">GitHub Flow</span>
+      <span class="chip">Branch protection</span>
+      <span class="chip">Squash merge</span>
+      <span class="chip">Path-filtered CI</span>
+      <span class="chip">Unit vs integration</span>
+      <span class="chip c6">Contract tests</span>
+      <span class="chip c6">Deterministic tests</span>
+      <span class="chip c2">Tags &amp; releases</span>
+    </div>
+
+    <div class="label">Resources</div>
+    <table class="tbl">
+      <tr><th>Resource</th><th>Link</th><th>Notes</th></tr>
+      <tr><td class="n">GitHub Skills</td><td><a href="https://skills.github.com/">skills.github.com</a></td><td>Interactive, free, fast.</td></tr>
+      <tr><td class="n">GitHub Actions</td><td><a href="https://docs.github.com/en/actions">docs.github.com/actions</a></td><td>Workflow syntax and path filters.</td></tr>
+      <tr><td class="n">Testing Trophy</td><td><a href="https://kentcdodds.com/blog/the-testing-trophy-and-testing-classification">kentcdodds.com</a></td><td>Why integration tests carry this project.</td></tr>
+      <tr><td class="n">Playwright</td><td><a href="https://playwright.dev/">playwright.dev</a></td><td>End-to-end checks for the extension later.</td></tr>
+    </table>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A fresh clone can run backend, scoring, and extension tests with one documented command each. CI is green on the skeleton before any feature exists.</p></div>
+  </div>
+
+  <!-- FOUNDATION GATE -->
+  <div class="dark" id="gate0">
+    <h2>Foundation gate</h2>
+    <p class="sub">Do not start Phase 0 until every line is true. If one is false, the missing skill will surface as a bug you cannot diagnose.</p>
+    <ul class="check">
+      <li><i></i><span>I can build a validated Spring REST endpoint with a passing MockMvc test.</span></li>
+      <li><i></i><span>I can explain content scripts, the service worker, and messaging in MV3.</span></li>
+      <li><i></i><span>I can write a typed extraction function and test it against saved markup.</span></li>
+      <li><i></i><span>I can train, persist, and reload a scikit-learn text pipeline.</span></li>
+      <li><i></i><span>I can explain AUROC, calibration, and why a score is not a prevalence.</span></li>
+      <li><i></i><span>I can write a JSON Schema and validate the same fixture in two languages.</span></li>
+      <li><i></i><span>I can open a PR, watch CI, and merge without breaking <code>main</code>.</span></li>
+      <li><i></i><span>I have read the six product decisions that cannot change without a register entry.</span></li>
+    </ul>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PART II                                                      -->
+  <!-- ============================================================ -->
+  <div class="part" id="build">
+    <div class="part-head">
+      <div class="part-num"><small>Part II</small>II</div>
+      <div>
+        <h2>Build: six phases from frozen contract to deployed demo</h2>
+        <p>The order is deliberate. Prove the page is extractable, freeze the contract, build the scoring path, then the public boundary, then the interface. Authentication comes last because it is an access feature, not a prerequisite for scoring.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 0 -->
+  <div class="phase" id="p0">
+    <div class="pnum">00</div>
+    <div>
+      <span class="plabel">Phase 0 · 1 week</span>
+      <h2>Agree, freeze, and prove</h2>
+      <p>Nothing integrates until the contract is a file and the page is demonstrably extractable. This phase produces no user-facing feature, and it is the phase that decides whether the rest is possible.</p>
+      <span class="pout">Exit: skeletons build · contract fixtures agreed · dataset licensed · spike recorded · charter attached</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">0.1</div>
+      <div>
+        <div class="step-title">Repository skeleton and governance</div>
+        <div class="step-meta">1–2 days · one monorepo, three runnable components</div>
+      </div>
+    </div>
+    <p class="why">Create the repository the rest of the roadmap assumes: <code>backend/</code>, <code>scoring-service/</code>, <code>extension/</code>, <code>contracts/v1/</code>, <code>docs/</code>, <code>docs/evidence/</code>. Add the professor-required Spring package layout now, while it is cheap to change.</p>
+
+    <div class="label">Tasks</div>
+    <ul>
+      <li>Create the private <code>trustloop</code> repository with the baseline files already drafted.</li>
+      <li>Scaffold Spring Boot with base package <code>com.trustloop.api</code> and the required sub-packages.</li>
+      <li>Scaffold the FastAPI service with a <code>/health</code> that starts unhealthy until a model loads.</li>
+      <li>Scaffold the extension with a manifest, a background service worker, and an empty content script.</li>
+      <li>Add PR template, issue templates, Dependabot, and the branch ruleset for <code>main</code>.</li>
+      <li>Write the root README: what the project is, what it is not, and the three run commands.</li>
+    </ul>
+
+    <div class="code">trustloop/
+├── backend/            <span class="c">Spring Boot public API</span>
+├── scoring-service/    <span class="c">FastAPI internal inference</span>
+├── extension/          <span class="c">Manifest V3 client</span>
+├── contracts/v1/       <span class="c">schemas + fixtures (frozen)</span>
+├── docs/
+│   ├── design/         <span class="c">graphic charter + tokens</span>
+│   └── evidence/       <span class="c">spike, gates, metrics, audits</span>
+└── .github/            <span class="c">CI, templates, dependabot</span></div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A fresh clone builds all three empty skeletons, CI is green, and the Spring package tree matches the course layout exactly.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">0.2</div>
+      <div>
+        <div class="step-title">Freeze contract v1</div>
+        <div class="step-meta">2–3 days · the most leveraged work in the project</div>
+      </div>
+    </div>
+    <p class="why">Every later bug that says "the panel shows the wrong thing" is usually a contract disagreement. Write the request, response, and error shapes, the constants, the reason codes, and the status/engine labels once, then make all three components test against the same fixtures.</p>
+
+    <div class="label">Freeze these</div>
+    <div class="chips">
+      <span class="chip">POST /api/v1/analyze</span>
+      <span class="chip">GET /api/v1/health</span>
+      <span class="chip">GET /api/v1/version</span>
+      <span class="chip c6">POST /score (internal)</span>
+      <span class="chip c2">17 constants</span>
+      <span class="chip c2">10 reason codes</span>
+      <span class="chip c3">3 statuses</span>
+      <span class="chip c3">2 engines</span>
+      <span class="chip c4">6 bands</span>
+      <span class="chip c4">7 signals</span>
+    </div>
+
+    <div class="code"><span class="c">// analyze-request.v1 - the extension sends the minimum</span>
+{
+  <span class="s">"adapterId"</span>: <span class="s">"amazon.reviews.v1"</span>,
+  <span class="s">"languageHint"</span>: <span class="s">"en"</span>,
+  <span class="s">"reviews"</span>: [
+    { <span class="s">"reviewKey"</span>: <span class="s">"r-3f9c"</span>, <span class="s">"text"</span>: <span class="s">"..."</span> }
+  ]
+}</div>
+
+    <div class="code"><span class="c">// analyze-response.v1 - one result per reviewKey, same order is not guaranteed</span>
+{
+  <span class="s">"requestId"</span>: <span class="s">"b1f4c2e8-..."</span>,
+  <span class="s">"results"</span>: [
+    {
+      <span class="s">"reviewKey"</span>: <span class="s">"r-3f9c"</span>,
+      <span class="s">"status"</span>: <span class="s">"SCORED"</span>,
+      <span class="s">"trustScore"</span>: 73,
+      <span class="s">"verdict"</span>: <span class="s">"LIKELY_ORGANIC"</span>,
+      <span class="s">"evidenceQuality"</span>: <span class="s">"ADEQUATE"</span>,
+      <span class="s">"signals"</span>: [{ <span class="s">"kind"</span>: <span class="s">"CONCRETE_DETAIL"</span>, <span class="s">"contribution"</span>: 0.18 }],
+      <span class="s">"modelVersion"</span>: <span class="s">"tl-text-1.0.0"</span>,
+      <span class="s">"engine"</span>: <span class="s">"MODEL"</span>
+    }
+  ]
+}</div>
+
+    <div class="callout rust"><span class="tag">Non-negotiable</span><code>UNKNOWN</code> never carries <code>0</code>, <code>50</code>, or <code>null</code> as a score. It carries a reason code and no verdict. If a component cannot honour that, it is not finished.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Schemas and fixtures exist in <code>contracts/v1/</code>; Java, Python, and TypeScript each validate them in tests; every constant appears in one place and nowhere else.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">0.3</div>
+      <div>
+        <div class="step-title">Put the design system into code</div>
+        <div class="step-meta">1–2 days · the charter is a dependency, not a mood board</div>
+      </div>
+    </div>
+    <p class="why">The graphic charter is the visual source of truth, and the copy deck is normative. Extract the tokens and the strings before building the panel, so the interface is assembled from the system rather than decorated after the fact.</p>
+
+    <div class="label">Deliver</div>
+    <div class="chips">
+      <span class="chip">tokens.css</span>
+      <span class="chip">en.json</span>
+      <span class="chip">fr.json</span>
+      <span class="chip">Six solid bands</span>
+      <span class="chip c6">Non-colour cues</span>
+      <span class="chip c2">No gradients</span>
+    </div>
+
+    <div class="code"><span class="c">/* the six stops, used exactly as the charter defines them */</span>
+:root{
+  --band-strong-manipulation:#7C3223;
+  --band-likely-manipulated:#A05634;
+  --band-inconclusive:#746C5E;
+  --band-mixed:#6F6C3A;
+  --band-likely-organic:#47664E;
+  --band-strong-organic:#174F45;
+}</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A static panel mock rendered from the token file and the bilingual string file, with a non-colour verdict cue and no gradient anywhere.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">0.4</div>
+      <div>
+        <div class="step-title">Dataset, codebook, and the acceptance gate</div>
+        <div class="step-meta">2–4 days · close decisions D22–D24</div>
+      </div>
+    </div>
+    <p class="why">The project's honesty depends on this phase. Choose licensed data, write the annotation codebook, define the held-out sample, and freeze the numeric gate before training. Deciding the pass mark after seeing the result is how projects become unfalsifiable.</p>
+
+    <div class="label">Tasks</div>
+    <ul>
+      <li>Confirm licences for the training corpus and record them in <code>dataset-manifest.json</code>.</li>
+      <li>Write the codebook: organic, manipulated, and <em>uncertain</em> with explicit exclusions.</li>
+      <li>Plan the held-out manual sample: 200–300 EN and 150–200 FR reviews, sampling method documented.</li>
+      <li>Two annotators, Cohen's kappa target of at least 0.60, adjudication pass for disagreements.</li>
+      <li>Freeze the EN and FR gate table (Appendix F references the model plan).</li>
+      <li>Record D22, D23, D24 outcomes in the decision register.</li>
+    </ul>
+
+    <div class="callout"><span class="tag">Rule</span>No live TrustLoop review text is ever used for training. Inference text is processed transiently and never retained.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A signed-off codebook, a dataset manifest with hashes and licences, a gate table, a sample plan, and three closed decisions.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">0.5</div>
+      <div>
+        <div class="step-title">Amazon feasibility spike</div>
+        <div class="step-meta">2–3 days · pass or pivot, with a recorded reason</div>
+      </div>
+    </div>
+    <p class="why">The adapter is the highest-risk part of the product. Before building anything around it, prove that three chosen page variants yield at least five eligible reviews each, at 90% precision against a manual count, with selectors stable across two loads.</p>
+
+    <div class="label">Pass criteria</div>
+    <table class="tbl compact">
+      <tr><th>Criterion</th><th>Target</th><th>Evidence</th></tr>
+      <tr><td class="n">Eligible reviews per page</td><td>≥ 5 on three pre-chosen variants</td><td>Count sheet + saved HTML</td></tr>
+      <tr><td class="n">Extraction precision</td><td>≥ 90% against manual count</td><td>Annotated page screenshots</td></tr>
+      <tr><td class="n">Selector stability</td><td>Same result on two consecutive loads</td><td>Two fixture snapshots</td></tr>
+      <tr><td class="n">Hidden-card handling</td><td>Hidden or collapsed cards excluded</td><td>Fixture with hidden markup</td></tr>
+    </table>
+
+    <div class="callout rust"><span class="tag">If it fails</span>Record why, then switch to saved-page fixtures for the demo while keeping the adapter architecture, or choose an alternate site with the professor's approval. A late pivot without a recorded trigger is not acceptable.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p><code>docs/evidence/spike-amazon.md</code> with the three variants, counts, precision, stability result, and either a pass or a documented fallback.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">0.6</div>
+      <div>
+        <div class="step-title">Test harness in all three components</div>
+        <div class="step-meta">1–2 days · make the green light real</div>
+      </div>
+    </div>
+    <p class="why">A test harness added later never catches up. Wire the runners now, with one trivial test per layer, so every later feature has an obvious place to land and CI never becomes a permanent red badge.</p>
+
+    <div class="code"><span class="c"># the four commands every phase must keep green</span>
+cd backend        && ./mvnw test
+cd scoring-service && pytest -q
+cd extension      && npm test
+cd contracts      && npm run validate   <span class="c"># or pytest tests/contract</span></div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Four green suites, one per component plus contract, documented in the README and executed by CI on pull requests.</p></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:26px"><span class="tag">Phase 0 exit condition</span>Skeletons build, the course package layout is present, contract fixtures are agreed, dataset access is confirmed, the spike result and fallback are recorded, the charter is attached, all four test suites run, and you can explain the data flow and the meaning of a score without notes.</div>
+
+  <!-- PHASE 1 -->
+  <div class="phase" id="p1">
+    <div class="pnum">01</div>
+    <div>
+      <span class="plabel">Phase 1 · 5–6 weeks</span>
+      <h2>The analysis core, no accounts</h2>
+      <p>The full path from a supported page to an honest score and explanation. No login, no database, no dashboard. One adapter, one model, one contract, and every failure state visible.</p>
+      <span class="pout">Exit: page or fixture scans end to end · honest unknown states · local history stores no content · tests green</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.1</div>
+      <div>
+        <div class="step-title">Data pipeline and annotation</div>
+        <div class="step-meta">4–6 days · the model is only as good as the labels</div>
+      </div>
+    </div>
+    <p class="why">Build the dataset as a reproducible pipeline, not a folder of CSVs. Normalization, deduplication, source-aware splits, and a manifest with hashes make every later metric reproducible and every licence auditable.</p>
+
+    <div class="label">Tasks</div>
+    <ul>
+      <li>Normalize text consistently: Unicode normalization, whitespace collapse, no stemming that destroys the patterns you want to detect.</li>
+      <li>Remove near-duplicates across splits with MinHash or cosine similarity before training.</li>
+      <li>Split by product/page and by source into train, dev, calibration, and test.</li>
+      <li>Keep the calibration split untouched by hyperparameter tuning.</li>
+      <li>Write <code>dataset-manifest.json</code>: sources, licences, hashes, split counts, random seeds.</li>
+      <li>Add a script that rebuilds the splits from raw data and fails if hashes do not match.</li>
+    </ul>
+
+    <div class="callout"><span class="tag">Leakage check</span>If a near-duplicate appears in both train and test, your AUROC is fiction. Run the duplicate check as a test, not a one-off notebook cell.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>One command rebuilds the splits; the manifest matches the hashes; a leakage test fails when a duplicate is injected.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.2</div>
+      <div>
+        <div class="step-title">The baseline model</div>
+        <div class="step-meta">5–7 days · TF-IDF plus logistic regression, tuned on dev only</div>
+      </div>
+    </div>
+    <p class="why">Word 1–2 grams plus character 3–5 grams, balanced class weights, regularisation tuned on dev. The linear form is chosen because its coefficients give an exact attribution, which is what makes the explanation pane truthful.</p>
+
+    <div class="code"><span class="c"># the shape of the pipeline - one artifact, one decision path</span>
+text_clf = Pipeline([
+  (<span class="s">"features"</span>, FeatureUnion([
+      (<span class="s">"word"</span>, TfidfVectorizer(ngram_range=(1,2), sublinear_tf=True)),
+      (<span class="s">"char"</span>, TfidfVectorizer(analyzer=<span class="s">"char_wb"</span>, ngram_range=(3,5))),
+  ])),
+  (<span class="s">"clf"</span>, LogisticRegression(class_weight=<span class="s">"balanced"</span>, max_iter=2000)),
+])</div>
+
+    <div class="label">Decide in this step</div>
+    <div class="chips">
+      <span class="chip">Per-language vs multilingual (D24)</span>
+      <span class="chip c6">Regularisation strength</span>
+      <span class="chip c6">Minimum token frequency</span>
+      <span class="chip c2">Language detector</span>
+    </div>
+
+    <div class="callout"><span class="tag">Baseline before ambition</span>A transformer is an optional Phase 3 candidate, not a Phase 1 requirement. It may replace the baseline only if it beats it on the manual in-domain sample, passes calibration, and keeps top-5 explanation stability above 0.80.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A trained pipeline, a dev-only tuning note, and a one-line record of the per-language model decision.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.3</div>
+      <div>
+        <div class="step-title">Calibration and explanation</div>
+        <div class="step-meta">4–6 days · from raw score to a number you can defend</div>
+      </div>
+    </div>
+    <p class="why">Calibration turns a model output into <code>p_organic</code>. Explanation turns the linear coefficients into at most five named signals with direction. Both have stability requirements, and both are tested against fixed inputs.</p>
+
+    <div class="label">Tasks</div>
+    <ul>
+      <li>Fit Platt scaling or isotonic regression on the dedicated calibration split; choose by dev reliability.</li>
+      <li>Report ECE, Brier, and a reliability curve per language.</li>
+      <li>Aggregate token contributions into the seven named signals; normalise across the full feature set.</li>
+      <li>Return the top five only, preserving original values and direction; do not renormalise the subset.</li>
+      <li>Show a numeric contribution only when the stability check passes; otherwise return the signal qualitatively.</li>
+      <li>Hash the full result and assert determinism for identical input and version.</li>
+    </ul>
+
+    <div class="code"><span class="c"># score mapping - no separate layer, no post-hoc band adjustment</span>
+p_organic  = calibrator.predict_proba(X)[:, 1]
+trustScore = clip(round_half_up(100 * p_organic), 0, 100)
+verdict    = band_for(trustScore)   <span class="c"># six fixed bands, boundaries frozen</span></div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A calibration report with ECE and Brier, a deterministic explanation function, and a top-5 Jaccard score across three runs.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.4</div>
+      <div>
+        <div class="step-title">Artifact bundle and model card</div>
+        <div class="step-meta">2–3 days · every result carries its provenance</div>
+      </div>
+    </div>
+    <p class="why">The artifact is a self-contained release, not a file copied onto a server. The backend is configured with an expected <code>modelVersion</code>; a mismatch or a failed hash is <code>SCORING_UNAVAILABLE</code>, never a plausible-looking score.</p>
+
+    <div class="code">scoring-service/artifacts/tl-text-1.0.0/
+  model.joblib            <span class="c"># trained pipeline</span>
+  calibration.json        <span class="c"># method + parameters</span>
+  metrics.json            <span class="c"># gate results + confidence intervals</span>
+  model-card.md           <span class="c"># intended use, limits, languages</span>
+  dataset-manifest.json   <span class="c"># sources, licences, hashes</span>
+  requirements.lock       <span class="c"># pinned runtime</span>
+  artifact.sha256         <span class="c"># bundle hash, checked at boot</span></div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A versioned bundle that loads offline, a filled model card, and a boot-time hash check that refuses a corrupted artifact.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.5</div>
+      <div>
+        <div class="step-title">The scoring service</div>
+        <div class="step-meta">4–6 days · internal, loopback, token-gated</div>
+      </div>
+    </div>
+    <p class="why">This service never sees browser traffic. It binds to loopback, requires <code>X-Internal-Token</code>, forwards the request ID, warms the model before reporting healthy, and returns exactly the contract shape.</p>
+
+    <div class="label">Endpoints</div>
+    <table class="tbl compact">
+      <tr><th>Method</th><th>Path</th><th>Behaviour</th></tr>
+      <tr><td class="mono">POST</td><td class="mono">/score</td><td>Batch inference; validates the token; returns results keyed by <code>reviewKey</code>.</td></tr>
+      <tr><td class="mono">GET</td><td class="mono">/health</td><td>Ready only after the artifact is loaded and warmed.</td></tr>
+      <tr><td class="mono">GET</td><td class="mono">/version</td><td>Service, artifact, engine, and contract versions.</td></tr>
+    </table>
+
+    <div class="label">Rules</div>
+    <div class="chips">
+      <span class="chip">No request bodies in logs</span>
+      <span class="chip c6">No persistence</span>
+      <span class="chip c6">One attempt, no retry</span>
+      <span class="chip c2">Contract-validated responses</span>
+      <span class="chip c2">Warm at boot</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Integration tests prove the token is required, the response validates against the schema, and a log capture contains no review text.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.6</div>
+      <div>
+        <div class="step-title">The Spring Boot public API</div>
+        <div class="step-meta">6–8 days · the boundary an examiner will read</div>
+      </div>
+    </div>
+    <p class="why">The backend is the only public surface. It validates shape and size, enforces the local rate limit, validates the request ID, calls scoring, checks the service response for consistency, and returns one documented error envelope for every request-level failure.</p>
+
+    <div class="label">Endpoints</div>
+    <table class="tbl compact">
+      <tr><th>Method</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td class="mono">POST</td><td class="mono">/api/v1/analyze</td><td>Analyze a batch of 1–10 reviews from one adapter.</td></tr>
+      <tr><td class="mono">GET</td><td class="mono">/api/v1/health</td><td>Liveness and readiness; <code>503</code> until scoring is ready.</td></tr>
+      <tr><td class="mono">GET</td><td class="mono">/api/v1/version</td><td>Backend, contract, expected model, engine.</td></tr>
+    </table>
+
+    <div class="label">Must be enforced here</div>
+    <div class="chips">
+      <span class="chip">Bean Validation</span>
+      <span class="chip">MAX_REQUEST_BYTES</span>
+      <span class="chip">MAX_REVIEWS_PER_REQUEST</span>
+      <span class="chip c6">X-Request-Id validation</span>
+      <span class="chip c6">Rate limit</span>
+      <span class="chip c2">CORS origin</span>
+      <span class="chip c2">Safe error envelope</span>
+      <span class="chip c3">Score/band consistency</span>
+    </div>
+
+    <div class="code"><span class="c">// request-level failure - never a stack trace, never an internal detail</span>
+{
+  <span class="s">"requestId"</span>: <span class="s">"b1f4c2e8-..."</span>,
+  <span class="s">"error"</span>: { <span class="s">"code"</span>: <span class="s">"INVALID_REQUEST"</span>, <span class="s">"message"</span>: <span class="s">"Request rejected"</span> }
+}</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Controller tests cover valid, malformed, oversized, empty, and rate-limited requests. Every error returns the envelope and a request ID.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.7</div>
+      <div>
+        <div class="step-title">Scoring client and failure semantics</div>
+        <div class="step-meta">3–4 days · failures are a feature, not an accident</div>
+      </div>
+    </div>
+    <p class="why">A timeout must not become a low score. The scoring call is atomic for the batch: one timeout, malformed body, non-2xx response, or version mismatch marks every review <code>UNKNOWN</code> with the right reason. The extension then offers a manual retry.</p>
+
+    <div class="code"><span class="c">// one attempt, atomic batch</span>
+try:
+  response = client.post(SCORING_URL, json=batch, timeout=3000, headers={
+      <span class="s">"X-Internal-Token"</span>: token,
+      <span class="s">"X-Request-Id"</span>: requestId,
+  })
+  validate_against_contract(response)
+  validate_expected_model_version(response)
+  <span class="k">return</span> response
+except Timeout:
+  <span class="k">return</span> unknown_all(batch, <span class="s">"SCORING_TIMEOUT"</span>)
+except (ConnectionError, ContractError, VersionMismatch):
+  <span class="k">return</span> unknown_all(batch, <span class="s">"SCORING_UNAVAILABLE"</span>)</div>
+
+    <div class="callout rust"><span class="tag">No silent fallback</span>Do not substitute a heuristic when the model is down. <code>SIGNALS_ONLY</code> is the only approved fallback, it has no score, and it is chosen per language and per adapter before runtime - not guessed at request time.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Tests simulate timeout, connection refused, malformed JSON, wrong model version, and 500; each yields the correct unknown state for every review.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.8</div>
+      <div>
+        <div class="step-title">Extension shell and the first adapter</div>
+        <div class="step-meta">5–7 days · the product becomes visible</div>
+      </div>
+    </div>
+    <p class="why">The adapter owns selectors, eligibility, and page-specific rules. It extracts only eligible review text, keys each review with a session-scoped salted hash, batches up to ten, and never computes a score.</p>
+
+    <div class="label">Build order</div>
+    <ul>
+      <li>Manifest, service worker, content script, popup, and storage wrapper.</li>
+      <li>Adapter manifest: ID, supported-page description, selectors, fixture paths.</li>
+      <li>Eligibility: rendered, not hidden, non-zero box, not <code>aria-hidden</code>, extractable text.</li>
+      <li>Session dedup: adapter card ID when stable, otherwise salted normalized-text hash; memory only.</li>
+      <li>MutationObserver with 750 ms debounce and a 2 s minimum rescan interval.</li>
+      <li>Batch up to ten unscored eligible reviews into one analyze request.</li>
+    </ul>
+
+    <div class="code"><span class="c">// batching and dedup - the loop that must not spam the API</span>
+onMutation → debounce(750ms) → scan()
+  eligible = cards.filter(isEligible)
+  fresh    = eligible.filter(c =&gt; !seen.has(keyFor(c)))
+  batch    = fresh.slice(0, 10)
+  send(batch) → seen.add(...) → render(results)</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>On a saved fixture, the adapter extracts the expected reviews once, survives DOM churn without resubmitting, and produces an explicit <code>UNSUPPORTED_PAGE</code> on an unsupported fixture.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.9</div>
+      <div>
+        <div class="step-title">Badge, panel, and every visible state</div>
+        <div class="step-meta">5–7 days · the interface is the argument</div>
+      </div>
+    </div>
+    <p class="why">The badge must be understandable without colour, keyboard-operable, and honest about evidence. A low-evidence score keeps its number and band but carries the "Indicative - limited text" qualifier. An unknown result has no number at all.</p>
+
+    <div class="label">States to design and test</div>
+    <table class="tbl compact">
+      <tr><th>State</th><th>What the user sees</th><th>What must not happen</th></tr>
+      <tr><td class="n">SCORED · ADEQUATE</td><td>Score, band label, evidence, signals</td><td>No "verified" or "true" wording</td></tr>
+      <tr><td class="n">SCORED · LOW</td><td>Score + "Indicative - limited text"</td><td>Score is not hidden or exaggerated</td></tr>
+      <tr><td class="n">SIGNALS_ONLY</td><td>"Descriptive signals only - no score"</td><td>No number, no verdict</td></tr>
+      <tr><td class="n">UNKNOWN</td><td>"No estimate" + reason + retry where useful</td><td>No 0, no 50, no placeholder</td></tr>
+      <tr><td class="n">Unsupported page</td><td>"This page is not supported yet."</td><td>No generic page scrape</td></tr>
+      <tr><td class="n">Unavailable</td><td>"Analysis is unavailable. Try again."</td><td>No heuristic fallback</td></tr>
+    </table>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Every state is reachable in a fixture or test, the panel passes keyboard and visible-focus checks, and screen-reader labels include score, verdict, evidence, and engine.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.10</div>
+      <div>
+        <div class="step-title">Local history and storage privacy</div>
+        <div class="step-meta">2–3 days · off by default, metadata only</div>
+      </div>
+    </div>
+    <p class="why">History is a convenience feature with a privacy cost, so it is opt-in and minimal. It stores timestamps, hostname, adapter, status, score, verdict, evidence, engine, model version, and reason code. It never stores review text, keys, URLs, or a persistent fingerprint.</p>
+
+    <div class="code"><span class="c">// allowed history record - nothing else may be added without a privacy review</span>
+{
+  <span class="s">"timestamp"</span>: <span class="s">"2026-11-04T10:22:00Z"</span>,
+  <span class="s">"hostname"</span>: <span class="s">"www.amazon.fr"</span>,
+  <span class="s">"adapterId"</span>: <span class="s">"amazon.reviews.v1"</span>,
+  <span class="s">"status"</span>: <span class="s">"SCORED"</span>,
+  <span class="s">"trustScore"</span>: 73,
+  <span class="s">"verdict"</span>: <span class="s">"LIKELY_ORGANIC"</span>,
+  <span class="s">"evidenceQuality"</span>: <span class="s">"ADEQUATE"</span>,
+  <span class="s">"engine"</span>: <span class="s">"MODEL"</span>,
+  <span class="s">"modelVersion"</span>: <span class="s">"tl-text-1.0.0"</span>
+}</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Tests prove history is off by default, capped at 100 entries or 30 days, clearable, and contains no text, key, full URL, or fingerprint.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">1.11</div>
+      <div>
+        <div class="step-title">Integration and contract tests</div>
+        <div class="step-meta">3–5 days · prove the seams, not just the parts</div>
+      </div>
+    </div>
+    <p class="why">Each component can pass its own tests while the system fails at a seam. The integration suite runs a fixture page through the adapter, the API, and a stubbed or real scoring service, then asserts that the panel shows exactly what the contract returned.</p>
+
+    <div class="label">Cover</div>
+    <div class="chips">
+      <span class="chip">Fixture → badge</span>
+      <span class="chip">Batch atomicity</span>
+      <span class="chip">Request ID propagation</span>
+      <span class="chip c6">Contract schemas</span>
+      <span class="chip c6">No-body logging</span>
+      <span class="chip c2">Unknown reasons</span>
+      <span class="chip c2">Version mismatch</span>
+    </div>
+
+    <div class="callout"><span class="tag">Log-capture test</span>Run a real scan, capture every log line, and assert that no review text, review key, URL, or hostname appears. This test is the privacy guarantee; it must run in CI.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>One end-to-end test from saved markup to rendered panel passes in CI with a stubbed model, and the same run asserts a content-free log.</p></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:26px"><span class="tag">Phase 1 exit condition</span>A supported fixture scans end to end; score, label, evidence, and explanation match the API; each language meets its gate or visibly uses <code>SIGNALS_ONLY</code>/<code>UNKNOWN</code>; every failure state is honest; local history stores no content; tests are green; warm latency is within target.</div>
+
+  <!-- PHASE 2 -->
+  <div class="phase" id="p2">
+    <div class="pnum">02</div>
+    <div>
+      <span class="plabel">Phase 2 · 1–2 weeks</span>
+      <h2>Local completeness, no accounts</h2>
+      <p>Finish the non-authenticated product: adapter discipline, a local inspection surface, strict profile isolation, and content-free operational counters. Still no database, still no login.</p>
+      <span class="pout">Exit: all non-auth flows demonstrable · admin absent by default · adapter files versioned · no persistence added</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">2.1</div>
+      <div>
+        <div class="step-title">Adapter discipline</div>
+        <div class="step-meta">3–5 days · breadth only with proof</div>
+      </div>
+    </div>
+    <p class="why">A second adapter is allowed only if it brings a manifest, a supported-page description, fixtures, and an explicit unsupported state. A generic fallback scraper is forbidden: it would turn "we could not find a review" into "we analyzed the page", which is a false claim.</p>
+
+    <div class="label">Each adapter ships with</div>
+    <div class="chips">
+      <span class="chip">ID + version</span>
+      <span class="chip">Supported-page description</span>
+      <span class="chip">Selectors</span>
+      <span class="chip c6">Eligibility rules</span>
+      <span class="chip c6">Pass + fail fixtures</span>
+      <span class="chip c2">Unsupported state</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Every bundled adapter passes its fixtures and returns an explicit miss on a deliberately wrong page.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">2.2</div>
+      <div>
+        <div class="step-title">Local inspection surface</div>
+        <div class="step-meta">3–4 days · <code>dev-admin</code> only</div>
+      </div>
+    </div>
+    <p class="why">You need to inspect bundled adapters, view fixtures and supported pages, toggle adapters locally, and read in-memory metrics during development. That surface is a local tool, not a product feature, and it must be impossible to reach by accident.</p>
+
+    <div class="label">Scope</div>
+    <ul>
+      <li>List bundled adapters with version and supported-page description.</li>
+      <li>Inspect fixtures and the unsupported state for each adapter.</li>
+      <li>Local enable/disable toggles held in memory; no file writes.</li>
+      <li>In-memory metrics: request counts, status counts, latency buckets.</li>
+      <li>No persistence, no accounts, no runtime adapter authoring.</li>
+    </ul>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>The surface works locally, writes nothing to disk, and is documented as a development-only tool.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">2.3</div>
+      <div>
+        <div class="step-title">Profile isolation and the boot guard</div>
+        <div class="step-meta">2 days · "local-only" enforced, not promised</div>
+      </div>
+    </div>
+    <p class="why">The default profile returns <code>404</code> for every admin path. The <code>dev-admin</code> profile binds to <code>127.0.0.1</code> and refuses to start if the bind address is not loopback. A verbal promise is not a security control; a boot failure is.</p>
+
+    <div class="code"><span class="c"># default profile: no admin beans, no admin routes</span>
+GET /api/v1/admin/adapters        → 404
+
+<span class="c"># dev-admin: loopback only, or the application refuses to start</span>
+server.address=127.0.0.1
+app.admin.local-only=true</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Tests assert 404 in the default profile, loopback binding in <code>dev-admin</code>, and a startup failure when a non-loopback address is configured.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">2.4</div>
+      <div>
+        <div class="step-title">Content-free operational metrics</div>
+        <div class="step-meta">2 days · observe without collecting</div>
+      </div>
+    </div>
+    <p class="why">You need to know whether the system is healthy without learning anything about the reviews. Counters by status, reason code, engine, model version, and latency are enough; anything per-review is a privacy incident waiting to happen.</p>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A metrics endpoint or log summary reports counts and latency only, and a test proves no content-derived field can enter it.</p></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:26px"><span class="tag">Phase 2 exit condition</span>All agreed non-auth flows work locally; the default profile exposes no admin surface; the development surface is documented as local-only; adapter files are versioned; no database was introduced; tests are green.</div>
+
+  <!-- PHASE 3 -->
+  <div class="phase" id="p3">
+    <div class="pnum">03</div>
+    <div>
+      <span class="plabel">Phase 3 · 2–3 weeks</span>
+      <h2>Quality, evidence, accessibility</h2>
+      <p>This is where the project becomes defensible. Evaluate on held-out data, test stability, audit accessibility, measure latency, verify privacy, and assemble the report pack. Fix defects rather than hiding them in the write-up.</p>
+      <span class="pout">Exit: evaluation report + model card complete · accessibility passes · performance confirmed · evidence pack ready</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">3.1</div>
+      <div>
+        <div class="step-title">Held-out evaluation</div>
+        <div class="step-meta">5–7 days · the number that decides the claim</div>
+      </div>
+    </div>
+    <p class="why">Evaluate on the manual in-domain sample, never on the training distribution. Report AUROC, AUPRC, F1 at the operating point, ECE, Brier, confidence intervals, and per-language gate decisions. Cross-dataset transfer is reported separately as transfer evidence, not as the gate.</p>
+
+    <table class="tbl compact">
+      <tr><th>Metric</th><th>EN target</th><th>FR target</th><th>Decision it drives</th></tr>
+      <tr><td class="n">AUROC</td><td>≥ 0.75</td><td>≥ 0.70</td><td>Overall separability</td></tr>
+      <tr><td class="n">AUPRC (manipulated)</td><td>≥ 0.70</td><td>≥ 0.65</td><td>Usefulness under imbalance</td></tr>
+      <tr><td class="n">F1 at p=0.50</td><td>≥ 0.70</td><td>≥ 0.65</td><td>Operating point</td></tr>
+      <tr><td class="n">ECE</td><td>≤ 0.10</td><td>≤ 0.15</td><td>Whether a score may ship</td></tr>
+      <tr><td class="n">Brier</td><td>≤ 0.20</td><td>≤ 0.25</td><td>Probability quality</td></tr>
+      <tr><td class="n">Explanation Jaccard</td><td>≥ 0.80</td><td>≥ 0.80</td><td>Numeric contributions allowed</td></tr>
+      <tr><td class="n">p95 latency, 10 reviews</td><td>≤ 1.5 s</td><td>≤ 1.5 s</td><td>Timeout hierarchy holds</td></tr>
+    </table>
+
+    <div class="callout rust"><span class="tag">Gate failure is a valid outcome</span>If French fails, French returns <code>UNKNOWN</code> or <code>SIGNALS_ONLY</code>. Do not force a passing English model onto French text, and do not lower the gate after seeing the result.</div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p><code>metrics.json</code> with confidence intervals, a reliability curve, per-language results, and a written gate decision per language.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">3.2</div>
+      <div>
+        <div class="step-title">Stability, determinism, and the model card</div>
+        <div class="step-meta">3–4 days · the explanation must not wobble</div>
+      </div>
+    </div>
+    <p class="why">An explanation that changes between runs is not an explanation. Run the same fixed inputs three times, compare the top-five signal sets, and require Jaccard of at least 0.80. Hash the full output and assert identical results for identical input and version.</p>
+
+    <div class="label">Model card sections</div>
+    <div class="chips">
+      <span class="chip">Intended use</span>
+      <span class="chip">Out-of-scope use</span>
+      <span class="chip">Data &amp; licences</span>
+      <span class="chip c6">Metrics + CIs</span>
+      <span class="chip c6">Signal taxonomy</span>
+      <span class="chip c2">Known limitations</span>
+      <span class="chip c2">Version + decisions</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A final model card, a stability report, and a determinism test that fails if two identical requests differ.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">3.3</div>
+      <div>
+        <div class="step-title">Accessibility audit</div>
+        <div class="step-meta">3–4 days · keyboard first, colour last</div>
+      </div>
+    </div>
+    <p class="why">The verdict must be readable without colour and operable without a mouse. The badge is a real control, the panel is reachable by keyboard, focus is visible, text survives 200% zoom, and screen readers hear the score, verdict, evidence, and engine.</p>
+
+    <div class="label">Checks</div>
+    <table class="tbl compact">
+      <tr><th>Check</th><th>Pass condition</th></tr>
+      <tr><td class="n">Keyboard</td><td>Badge and panel fully operable; no trap; Escape closes.</td></tr>
+      <tr><td class="n">Focus</td><td>Visible focus on every interactive element, including injected ones.</td></tr>
+      <tr><td class="n">Non-colour cue</td><td>Band label and score are present; colour is redundant.</td></tr>
+      <tr><td class="n">Zoom</td><td>Readable and usable at 200% without horizontal scrolling.</td></tr>
+      <tr><td class="n">Screen reader</td><td>Accessible name includes score, verdict, evidence, and engine.</td></tr>
+      <tr><td class="n">Language</td><td>EN/FR strings from the copy deck; no stronger claim in one language.</td></tr>
+    </table>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A short audit table with each check, the method, the result, and the fix for anything that failed.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">3.4</div>
+      <div>
+        <div class="step-title">Performance and the timeout hierarchy</div>
+        <div class="step-meta">2–3 days · measure on the reference environment</div>
+      </div>
+    </div>
+    <p class="why">The timeouts only make sense in order: scoring 3 s, backend 4 s, extension 6 s. If a cold start takes longer than 3 s, the first scan of a demo fails. Warm the model before reporting healthy and measure a ten-review batch on 4 vCPU and 8 GB, CPU only.</p>
+
+    <div class="code"><span class="c"># the hierarchy is a design constraint, not three unrelated numbers</span>
+scoring service   3000 ms   <span class="c"># one attempt, no retry</span>
+backend           4000 ms   <span class="c"># must exceed scoring</span>
+extension         6000 ms   <span class="c"># must exceed backend</span></div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A benchmark note with p50/p95 for cold and warm starts, plus a test that a hung scoring service produces <code>SCORING_TIMEOUT</code> within the backend budget.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">3.5</div>
+      <div>
+        <div class="step-title">Security and privacy audit</div>
+        <div class="step-meta">3–4 days · no accounts does not mean no security</div>
+      </div>
+    </div>
+    <p class="why">Validate input, cap size, rate-limit, restrict origins, protect the internal token, use HTTPS when hosted, and prove that logs are content-free. Re-run the log-capture test and the storage inspection after every change that touches logging or history.</p>
+
+    <div class="label">Audit list</div>
+    <ul>
+      <li>Secret scan of the repository and git history; <code>.env</code> is untracked and no token is in code.</li>
+      <li>Log capture contains no review text, key, URL, hostname, or identifier.</li>
+      <li>History inspection contains no text, key, URL, or fingerprint.</li>
+      <li>Oversized and malformed bodies rejected with the documented envelope.</li>
+      <li>Rate limit verified; origin restriction verified as a browser control, not authentication.</li>
+      <li>Dependency scan and pinned versions recorded.</li>
+    </ul>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A security and privacy checklist with evidence for each line, signed off in <code>docs/evidence/</code>.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">3.6</div>
+      <div>
+        <div class="step-title">Evidence pack for the report and defense</div>
+        <div class="step-meta">3–4 days · assemble it now, not the night before</div>
+      </div>
+    </div>
+    <p class="why">The course will ask why the score means what it says, how you know the model works, what happens when it fails, and why the data handling is acceptable. Each answer should already exist as a document with a number or a test behind it.</p>
+
+    <div class="label">Pack contents</div>
+    <div class="chips">
+      <span class="chip">Architecture diagram</span>
+      <span class="chip">API reference</span>
+      <span class="chip">Persistence decision</span>
+      <span class="chip c6">Evaluation report</span>
+      <span class="chip c6">Model card</span>
+      <span class="chip c2">Privacy evidence</span>
+      <span class="chip c2">Risk register</span>
+      <span class="chip c3">Demo script</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A folder a stranger can read in order: what it is, how it works, what it measured, what it cannot do, and how to reproduce the demo.</p></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:26px"><span class="tag">Phase 3 exit condition</span>You can reproduce the demo and explain a supported result, an uncertain result, a service failure, and the access rules without notes. The evaluation report and model card are complete, accessibility checks pass, and tests are green with no known regressions.</div>
+
+  <!-- PHASE 4 -->
+  <div class="phase" id="p4">
+    <div class="pnum">04</div>
+    <div>
+      <span class="plabel">Phase 4 · 2–3 weeks</span>
+      <h2>Authentication and ownership</h2>
+      <p>Only now do accounts make sense. The core scanner works without them, so this phase adds access, ownership, and durable history without changing the meaning of a score.</p>
+      <span class="pout">Exit: access matrix tested · admin authenticated · history ownership enforced · no raw review text stored · migrations reproduce</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">4.1</div>
+      <div>
+        <div class="step-title">Decide before you build</div>
+        <div class="step-meta">2–3 days · retention is a design input</div>
+      </div>
+    </div>
+    <p class="why">Before a single table exists, define what history stores, how long it lives, how a user deletes it, and which endpoint requires which role. Retrofitting raw review-text storage as a shortcut is the one mistake this project cannot recover from.</p>
+
+    <div class="label">Write down</div>
+    <div class="chips">
+      <span class="chip">Access matrix</span>
+      <span class="chip">Retention periods</span>
+      <span class="chip">Deletion flow</span>
+      <span class="chip c6">What history stores</span>
+      <span class="chip c6">Role definitions</span>
+      <span class="chip c2">What is never stored</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A one-page decision note and an access matrix that the tests will later encode row by row.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">4.2</div>
+      <div>
+        <div class="step-title">Registration, login, and tokens</div>
+        <div class="step-meta">5–7 days · separate, testable increments</div>
+      </div>
+    </div>
+    <p class="why">Add authentication in small pieces: password hashing, registration, login, token issuance, token validation, and roles. Password reset is included only if the course requires it. Each piece gets its own tests before the next one starts.</p>
+
+    <div class="label">Increments</div>
+    <ul>
+      <li>Argon2 or bcrypt hashing with a documented cost parameter.</li>
+      <li>Registration with validation and duplicate handling.</li>
+      <li>Login returning a short-lived access token; refresh only if required.</li>
+      <li>Token validation middleware and a current-user dependency.</li>
+      <li>Role enforcement for admin paths.</li>
+      <li>Generic authentication errors that do not enumerate accounts.</li>
+    </ul>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Tests cover valid login, wrong password, unknown account, expired token, malformed token, and role denial.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">4.3</div>
+      <div>
+        <div class="step-title">PostgreSQL and migrations</div>
+        <div class="step-meta">4–6 days · persistence earns its place</div>
+      </div>
+    </div>
+    <p class="why">The database exists only because accounts and account-owned history need it. Introduce it with migrations, keep DTOs separate from entities, and prove that an empty database reproduces the full schema.</p>
+
+    <div class="label">Rules</div>
+    <div class="chips">
+      <span class="chip">Flyway migrations</span>
+      <span class="chip">DTO ≠ entity</span>
+      <span class="chip">Ownership column</span>
+      <span class="chip c6">Retention job</span>
+      <span class="chip c6">Delete cascade</span>
+      <span class="chip c2">No text column</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Migrations run from empty to current; a schema review confirms there is no column capable of holding review text, review keys, or full URLs.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">4.4</div>
+      <div>
+        <div class="step-title">Account-owned history and admin protection</div>
+        <div class="step-meta">4–6 days · ownership is a testable property</div>
+      </div>
+    </div>
+    <p class="why">Server-side history is optional and opt-in. If built, it stores the same metadata-only record as local history, scoped to the owner, deletable, and subject to retention. Admin functions require authentication before any shared or hosted use.</p>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>Ownership isolation tests, deletion tests, retention tests, and admin access tests all pass. No raw review text exists anywhere in the schema.</p></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:26px"><span class="tag">Phase 4 exit condition</span>The access matrix is verified by tests; admin functions require authentication; history ownership and retention are enforced; no raw review text is stored; migrations reproduce from an empty database; tests are green.</div>
+
+  <!-- PHASE 5 -->
+  <div class="phase" id="p5">
+    <div class="pnum">05</div>
+    <div>
+      <span class="plabel">Phase 5 · 1–2 weeks</span>
+      <h2>Deployment and expansion</h2>
+      <p>A hosted demo is optional, not an MVP requirement. If you attempt it, it needs the controls listed here. Expansion happens only through the same gates and the same honesty.</p>
+      <span class="pout">Exit: hosted demo (if any) reproduces local behaviour · monitoring and rollback documented · every expansion has fixtures and a gate</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">5.1</div>
+      <div>
+        <div class="step-title">Hosting decision and controls</div>
+        <div class="step-meta">3–5 days · optional, and gated</div>
+      </div>
+    </div>
+    <p class="why">Exposing an unauthenticated scoring API requires an explicit risk decision. If you host, put authentication, quotas, edge rate limiting, HTTPS, secret management, private networking for the scoring service, and a retention policy in place before the URL is shared.</p>
+
+    <div class="label">Required if hosted</div>
+    <div class="chips">
+      <span class="chip">HTTPS</span>
+      <span class="chip">Authentication</span>
+      <span class="chip">Quotas</span>
+      <span class="chip c6">Edge rate limit</span>
+      <span class="chip c6">Secret manager</span>
+      <span class="chip c2">Private scoring network</span>
+      <span class="chip c2">Retention policy</span>
+      <span class="chip c3">Monitoring</span>
+    </div>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A deployment note that lists each control, where it is enforced, and how it was verified. If you choose not to host, a recorded decision with the reason.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">5.2</div>
+      <div>
+        <div class="step-title">Runbook and monitoring</div>
+        <div class="step-meta">2–3 days · know what to do when it breaks</div>
+      </div>
+    </div>
+    <p class="why">A demo fails in predictable ways: the model is not warm, the token is missing, the port is taken, the adapter missed. Write the checks and the recovery steps before the defense, when you are calm.</p>
+
+    <div class="label">Runbook</div>
+    <ul>
+      <li>Start order: scoring service, wait for healthy, backend, extension reload.</li>
+      <li>Health checks and the expected version strings.</li>
+      <li>Common failures and the exact fix for each.</li>
+      <li>Log locations and the fields that are safe to inspect.</li>
+      <li>Rollback step for a bad model artifact.</li>
+    </ul>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A runbook someone else could follow, tested once by restarting the whole stack from scratch.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">5.3</div>
+      <div>
+        <div class="step-title">Demo environment and script</div>
+        <div class="step-meta">2–3 days · rehearse the honest path</div>
+      </div>
+    </div>
+    <p class="why">The demo should show a supported result, a low-evidence result, an unknown result, and a service failure. Those four minutes prove more than a perfect scan, because they show the system knows what it does not know.</p>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>A rehearsed five-minute script with four states, a saved fixture fallback, and a recorded video that matches the current build.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-top">
+      <div class="step-num">5.4</div>
+      <div>
+        <div class="step-title">Expansion gates</div>
+        <div class="step-meta">ongoing · never silently reuse the model</div>
+      </div>
+    </div>
+    <p class="why">A new site or language is a new claim. It needs fixtures, a supported-page description, its own gate evaluation, and a model version. The MVP model is not assumed to transfer, and the UI being translated is not evidence of model coverage.</p>
+
+    <div class="proof"><span class="tag">Proof of done</span><p>An expansion checklist that blocks a new adapter or language until its evidence exists.</p></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:26px"><span class="tag">Phase 5 exit condition</span>Any hosted demo has the controls above and reproduces local behaviour; every expansion item has fixtures, tests, a gate, and an honest unsupported state.</div>
+
+  <!-- ============================================================ -->
+  <!-- PART III                                                     -->
+  <!-- ============================================================ -->
+  <div class="part" id="ship">
+    <div class="part-head">
+      <div class="part-num"><small>Part III</small>III</div>
+      <div>
+        <h2>Ship, prove, defend</h2>
+        <p>A calendar, a rhythm, six milestone gates, the claims you refuse to make, the risks that can break the project, and the checklist that keeps the honest path cheaper than the shortcut.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="card" id="timeline">
+    <h3>Visual timeline</h3>
+    <p style="color:var(--muted);font-size:14px">Eighteen weeks, part-time. One buffer week is deliberate: it absorbs the spike failure, a gate miss, or a course deadline. It is not extra scope.</p>
+    <div class="tl">
+      <div style="background:#746C5E;grid-column:span 1">P0</div>
+      <div style="background:#174F45;grid-column:span 6">PHASE 1 · ANALYSIS CORE</div>
+      <div style="background:#47664E;grid-column:span 2">P2</div>
+      <div style="background:#6F6C3A;grid-column:span 3">PHASE 3 · EVIDENCE</div>
+      <div style="background:#A05634;grid-column:span 3">PHASE 4 · AUTH</div>
+      <div style="background:#7C3223;grid-column:span 2">P5</div>
+      <div style="background:#3E4440;grid-column:span 1">BUF</div>
+    </div>
+    <div class="tl-labels">
+      <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span><span>W10</span><span>W11</span><span>W12</span><span>W13</span><span>W14</span><span>W15</span><span>W16</span><span>W17</span><span>W18</span>
+    </div>
+    <div class="callout" style="margin-top:18px"><span class="tag">If time runs out</span>Cut in this order: deployment polish, admin surface, extra adapters, authentication. Never cut tests, the gate, or the honesty of an unknown state. A smaller true system beats a larger unverifiable one.</div>
+  </div>
+
+  <!-- RHYTHM -->
+  <div class="card" id="rhythm">
+    <h3>Daily and weekly rhythm</h3>
+    <p style="color:var(--muted);font-size:14px">The project is long because the model work is sequential. Protect one deep block a day and one review block a week; everything else is negotiable.</p>
+
+    <div class="label">A workable day</div>
+    <table class="tbl compact">
+      <tr><th>Block</th><th>Focus</th><th>Rule</th></tr>
+      <tr><td class="n">90 min</td><td>Hard build: model, API, or adapter</td><td>No notifications, no tutorial tab open.</td></tr>
+      <tr><td class="n">60 min</td><td>Second build block or test writing</td><td>If you cannot test it yet, write the test first.</td></tr>
+      <tr><td class="n">30 min</td><td>Commit, push, update the issue</td><td>One branch, one purpose.</td></tr>
+      <tr><td class="n">20 min</td><td>Read docs or the evidence folder</td><td>Reference, not another course.</td></tr>
+    </table>
+
+    <div class="label">The week</div>
+    <div class="week">
+      <div class="day"><b>MON</b><span>Plan the week, open issues, pick the gate</span></div>
+      <div class="day"><b>TUE</b><span>Deep build</span></div>
+      <div class="day"><b>WED</b><span>Deep build</span></div>
+      <div class="day"><b>THU</b><span>Deep build, integrate early</span></div>
+      <div class="day"><b>FRI</b><span>Tests, review, fix, merge</span></div>
+      <div class="day"><b>SAT</b><span>Evidence, writing, learning gap</span></div>
+      <div class="day rest"><b>SUN</b><span>Off. Burnout is a project risk.</span></div>
+    </div>
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="card" id="milestones">
+    <h3>Milestones and gates</h3>
+    <p style="color:var(--muted);font-size:14px">Each milestone is a demonstration, not a date. If the demo cannot be given, the milestone is not reached.</p>
+    <table class="tbl">
+      <tr><th>Milestone</th><th>Gate</th><th>Evidence</th><th>Demo</th></tr>
+      <tr><td class="n">M0 · Foundations</td><td>Foundation gate complete</td><td>Four green suites</td><td>Build and test from a fresh clone</td></tr>
+      <tr><td class="n">M1 · Frozen</td><td>Phase 0 exit</td><td>Contract fixtures, spike note, dataset manifest</td><td>Show schemas and spike result</td></tr>
+      <tr><td class="n">M2 · Scanned</td><td>Phase 1 exit</td><td>End-to-end fixture test, gate report</td><td>Scan a supported page, open a panel</td></tr>
+      <tr><td class="n">M3 · Complete</td><td>Phase 2 exit</td><td>Profile tests, adapter fixtures</td><td>Show a local unsupported state and admin lockout</td></tr>
+      <tr><td class="n">M4 · Proven</td><td>Phase 3 exit</td><td>Evaluation, model card, audit tables</td><td>Explain a score, a low-evidence result, and a failure</td></tr>
+      <tr><td class="n">M5 · Owned</td><td>Phase 4 exit</td><td>Access matrix, migration test</td><td>Register, log in, isolated history, protected admin</td></tr>
+    </table>
+  </div>
+
+  <!-- SCOPE -->
+  <div class="card" id="scope">
+    <h3>What TrustLoop will not claim</h3>
+    <p style="color:var(--muted);font-size:14px">These are not limitations to apologise for. They are the boundary that makes every other claim credible.</p>
+    <div class="chips" style="gap:8px">
+      <span class="chip c1">Not proof that a review is fake</span>
+      <span class="chip c1">Not a bot or spam-account detector</span>
+      <span class="chip c2">Not reviewer identification</span>
+      <span class="chip c2">Not purchase verification</span>
+      <span class="chip c3">Not a product-quality score</span>
+      <span class="chip c3">Not a page or product aggregate</span>
+      <span class="chip c4">Not a real-world prevalence estimate</span>
+      <span class="chip c4">Not a generic page scraper</span>
+      <span class="chip c5">Not an external AI provider</span>
+      <span class="chip c5">Not a silent heuristic fallback</span>
+      <span class="chip c6">Not a claim that French is supported without its gate</span>
+      <span class="chip c6">Not a truth verdict</span>
+    </div>
+    <div class="callout rust" style="margin-top:18px"><span class="tag">The sentence to keep</span>TrustLoop estimates whether review text looks organic or manipulated, from text patterns alone. It does not verify the reviewer, the purchase, or the truth of the review.</div>
+  </div>
+
+  <!-- RISKS -->
+  <div class="card" id="risks">
+    <h3>Risk register</h3>
+    <p style="color:var(--muted);font-size:14px">Reviewed at every phase gate. The early trigger is the part that matters: it tells you when to act, not after the damage.</p>
+    <table class="tbl compact">
+      <tr><th>ID</th><th>Risk</th><th>Impact</th><th>Mitigation</th><th>Early trigger</th></tr>
+      <tr><td class="n">R-01</td><td>DOM or terms change breaks extraction</td><td>High</td><td>Narrow adapter, fixtures, spike, unsupported state</td><td>Spike fails or selectors break</td></tr>
+      <tr><td class="n">R-02</td><td>Dataset or licence unavailable</td><td>High</td><td>Confirm in Phase 0; approved alternatives</td><td>No licensed corpus at exit</td></tr>
+      <tr><td class="n">R-03</td><td>Hotel/Yelp to Amazon domain shift</td><td>Medium</td><td>In-domain manual evaluation, gate, model card</td><td>EN gate fails</td></tr>
+      <tr><td class="n">R-04</td><td>French data gap</td><td>Medium</td><td>FR conditional on its own gate; unknown fallback</td><td>FR gate fails or sample too small</td></tr>
+      <tr><td class="n">R-05</td><td>Calibration read as real prevalence</td><td>High</td><td>State calibration scope; copy review</td><td>Any UI or report implies prevalence</td></tr>
+      <tr><td class="n">R-06</td><td>Explanation instability</td><td>Medium</td><td>Linear baseline, stability gate, qualitative fallback</td><td>Top-5 Jaccard below 0.80</td></tr>
+      <tr><td class="n">R-07</td><td>Admin surface exposed</td><td>High</td><td>dev-admin only, loopback, boot guard, 404 default</td><td>Any non-loopback bind</td></tr>
+      <tr><td class="n">R-08</td><td>Privacy leak in logs or history</td><td>High</td><td>No-body logging, metadata-only history, capture tests</td><td>Text, key, or URL appears</td></tr>
+      <tr><td class="n">R-09</td><td>Scope and time overrun</td><td>High</td><td>Narrow MVP, cut order, per-phase tests</td><td>A phase exit slips</td></tr>
+      <tr><td class="n">R-10</td><td>Cold start or latency</td><td>Medium</td><td>Warm at boot, CPU baseline, batch cap</td><td>p95 above 1.5 s or a timeout</td></tr>
+      <tr><td class="n">R-11</td><td>Public API abuse if hosted</td><td>Medium</td><td>Local default, auth, quotas, edge limits</td><td>Any unauthenticated hosted exposure</td></tr>
+      <tr><td class="n">R-12</td><td>Contract drift across components</td><td>High</td><td>Shared fixtures, contract tests, versioned changes</td><td>One component accepts an unknown field</td></tr>
+      <tr><td class="n">R-13</td><td>Accessibility found too late</td><td>Medium</td><td>Keyboard and focus in Phase 1; full audit in Phase 3</td><td>Focus or zoom failures at exit</td></tr>
+      <tr><td class="n">R-14</td><td>UI copy overclaims</td><td>High</td><td>Normative copy deck, string test, bilingual review</td><td>One language says "true" or "proven"</td></tr>
+    </table>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="dark" id="checklist">
+    <h2>Critical success checklist</h2>
+    <p class="sub">Revisit every two weeks. If more than two answers are "no", stop building and fix the foundation.</p>
+    <ul class="check">
+      <li><i></i><span><b>Is the contract still frozen?</b> Any local edit to a shape is a version change, not a shortcut.</span></li>
+      <li><i></i><span><b>Does every unknown state have a reason code?</b> No number, no verdict, no placeholder.</span></li>
+      <li><i></i><span><b>Is the model gated per language?</b> English passing does not make French supported.</span></li>
+      <li><i></i><span><b>Can I reproduce the demo from a fresh clone?</b> If not, the README is lying.</span></li>
+      <li><i></i><span><b>Is there review text anywhere it should not be?</b> Logs, history, database, screenshots.</span></li>
+      <li><i></i><span><b>Are the tests still green?</b> A skipped test is a decision to ship a known unknown.</span></li>
+      <li><i></i><span><b>Is the admin surface still local?</b> Loopback bind, 404 by default.</span></li>
+      <li><i></i><span><b>Does the UI use the copy deck?</b> Both languages, same claim strength.</span></li>
+      <li><i></i><span><b>Is the score explained without causation?</b> Signals contributed; they do not prove.</span></li>
+      <li><i></i><span><b>Is the evidence folder current?</b> A gate without a document is a rumour.</span></li>
+      <li><i></i><span><b>Did I take a rest day?</b> Burnout is R-09 wearing a different mask.</span></li>
+      <li><i></i><span><b>Would I still defend this score under questioning?</b> If not, fix the claim before the demo.</span></li>
+    </ul>
+  </div>
+
+  <!-- ADVICE -->
+  <div class="card" id="advice">
+    <h3>Final advice</h3>
+    <p style="color:var(--muted);font-size:14px">Six things that will decide whether this project is impressive or merely finished.</p>
+    <div class="advice">
+      <div>
+        <div class="n">01</div>
+        <h4>Freeze before you build.</h4>
+        <p>The contract, the gate, and the copy deck are cheaper to argue about now than to reconcile across three languages later.</p>
+      </div>
+      <div>
+        <div class="n">02</div>
+        <h4>Prove the page first.</h4>
+        <p>If the adapter cannot extract five honest reviews from three variants, no amount of model work will save the demo. Run the spike before falling in love with the architecture.</p>
+      </div>
+      <div>
+        <div class="n">03</div>
+        <h4>Keep the baseline.</h4>
+        <p>A calibrated linear model with stable attributions is more defensible than a transformer you cannot explain. Upgrade only when the evidence beats it.</p>
+      </div>
+      <div>
+        <div class="n">04</div>
+        <h4>Make unknown a first-class result.</h4>
+        <p>The most credible moment in the demo is the system refusing to score. Design that state with the same care as the badge.</p>
+      </div>
+      <div>
+        <div class="n">05</div>
+        <h4>Write the evidence as you go.</h4>
+        <p>Every gate produces a document. By Phase 3 the report is assembled; by the defense it is just reading.</p>
+      </div>
+      <div>
+        <div class="n">06</div>
+        <h4>Cut breadth, never honesty.</h4>
+        <p>One site, one model, one contract, fully demonstrated, beats six half-adapters and a score nobody can justify.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- APPENDIX                                                     -->
+  <!-- ============================================================ -->
+  <div class="appendix" id="appendix">
+    <div class="ap-head">
+      <span class="kicker">Appendix · the frozen reference</span>
+      <h2>Everything that must not drift</h2>
+      <p>These tables are the quick-reference version of the contract and the decision register. If code and this appendix disagree, one of them is a bug.</p>
+    </div>
+
+    <!-- A -->
+    <h3 class="ap-title" id="apA"><span>A</span> API surface</h3>
+    <p class="ap-note">Three public endpoints, three internal endpoints. Admin paths are reserved and return <code>404</code> outside the <code>dev-admin</code> profile.</p>
+    <table class="tbl compact">
+      <tr><th>Boundary</th><th>Method</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td class="n">Public</td><td class="mono">POST</td><td class="mono">/api/v1/analyze</td><td>Analyze 1–10 reviews from one adapter.</td></tr>
+      <tr><td class="n">Public</td><td class="mono">GET</td><td class="mono">/api/v1/health</td><td>Liveness/readiness; <code>503</code> until scoring is ready.</td></tr>
+      <tr><td class="n">Public</td><td class="mono">GET</td><td class="mono">/api/v1/version</td><td>Backend, contract, expected model, engine.</td></tr>
+      <tr><td class="n">Internal</td><td class="mono">POST</td><td class="mono">/score</td><td>Batch inference; requires <code>X-Internal-Token</code>.</td></tr>
+      <tr><td class="n">Internal</td><td class="mono">GET</td><td class="mono">/health</td><td>Ready only after artifact load and warm-up.</td></tr>
+      <tr><td class="n">Internal</td><td class="mono">GET</td><td class="mono">/version</td><td>Service, artifact, engine version.</td></tr>
+    </table>
+
+    <!-- B -->
+    <h3 class="ap-title" id="apB"><span>B</span> Contract constants</h3>
+    <p class="ap-note">Changing any value is a contract change, not a local edit. The timeouts are ordered by design.</p>
+    <table class="tbl compact">
+      <tr><th>Constant</th><th>Value</th><th>Why it exists</th></tr>
+      <tr><td class="mono">MAX_REVIEW_CHARS</td><td class="mono">2,000</td><td>Unicode code points after normalization; extension truncates.</td></tr>
+      <tr><td class="mono">MAX_REVIEWS_PER_REQUEST</td><td class="mono">10</td><td>One adapter per request.</td></tr>
+      <tr><td class="mono">MAX_REQUEST_BYTES</td><td class="mono">131,072</td><td>Ten maximum-size reviews plus JSON envelope.</td></tr>
+      <tr><td class="mono">MIN_REVIEW_WORDS</td><td class="mono">20</td><td>Below this: <code>UNKNOWN</code> / <code>INSUFFICIENT_TEXT</code>.</td></tr>
+      <tr><td class="mono">ADEQUATE_REVIEW_WORDS</td><td class="mono">50</td><td>20–49 words is <code>LOW</code>; 50+ is <code>ADEQUATE</code>.</td></tr>
+      <tr><td class="mono">LANGUAGE_CONFIDENCE_MIN</td><td class="mono">0.80</td><td>Below this: <code>UNSUPPORTED_LANGUAGE</code>.</td></tr>
+      <tr><td class="mono">MAX_SIGNALS</td><td class="mono">5</td><td>Per result; never renormalise the subset.</td></tr>
+      <tr><td class="mono">SCORING_TIMEOUT_MS</td><td class="mono">3,000</td><td>Backend to scoring; one attempt, no retry.</td></tr>
+      <tr><td class="mono">BACKEND_TIMEOUT_MS</td><td class="mono">4,000</td><td>Extension to backend; must exceed scoring.</td></tr>
+      <tr><td class="mono">EXTENSION_TIMEOUT_MS</td><td class="mono">6,000</td><td>Must exceed the backend timeout.</td></tr>
+      <tr><td class="mono">SCAN_DEBOUNCE_MS</td><td class="mono">750</td><td>Wait after DOM mutations before scanning.</td></tr>
+      <tr><td class="mono">MIN_RESCAN_INTERVAL_MS</td><td class="mono">2,000</td><td>Rate-limits rescans; avoids scan loops.</td></tr>
+      <tr><td class="mono">LOCAL_HISTORY_MAX_ENTRIES</td><td class="mono">100</td><td>Entry cap, whichever limit is hit first.</td></tr>
+      <tr><td class="mono">LOCAL_HISTORY_MAX_AGE_DAYS</td><td class="mono">30</td><td>Age cap.</td></tr>
+      <tr><td class="mono">RATE_LIMIT_PER_MINUTE</td><td class="mono">60</td><td>Local per client IP; hosting needs edge limits.</td></tr>
+      <tr><td class="mono">REQUEST_ID_HEADER</td><td class="mono">X-Request-Id</td><td>1–64 chars, <code>[A-Za-z0-9-]</code>.</td></tr>
+      <tr><td class="mono">MODEL_VERSION_FORMAT</td><td class="mono">^tl-text-\d+\.\d+\.\d+$</td><td>Backend validates the expected version.</td></tr>
+    </table>
+
+    <!-- C -->
+    <h3 class="ap-title" id="apC"><span>C</span> Unknown reason codes</h3>
+    <p class="ap-note">Every state that has no score still has a precise explanation. Internal exception text never crosses the public boundary.</p>
+    <table class="tbl compact">
+      <tr><th>Code</th><th>Scope</th><th>Meaning</th></tr>
+      <tr><td class="mono">UNSUPPORTED_PAGE</td><td>Extension</td><td>The adapter does not claim this page or layout.</td></tr>
+      <tr><td class="mono">NO_REVIEWS_FOUND</td><td>Extension</td><td>The adapter found no eligible review card.</td></tr>
+      <tr><td class="mono">INSUFFICIENT_TEXT</td><td>Result</td><td>Fewer than 20 normalized words.</td></tr>
+      <tr><td class="mono">UNSUPPORTED_LANGUAGE</td><td>Result</td><td>Unsupported language or confidence below 0.80.</td></tr>
+      <tr><td class="mono">SCORING_TIMEOUT</td><td>Result</td><td>The scoring call exceeded 3,000 ms.</td></tr>
+      <tr><td class="mono">SCORING_UNAVAILABLE</td><td>Result</td><td>Connection failure, malformed response, version mismatch, internal error.</td></tr>
+      <tr><td class="mono">INVALID_REQUEST</td><td>400</td><td>Malformed JSON, empty batch, too many reviews, invalid field.</td></tr>
+      <tr><td class="mono">PAYLOAD_TOO_LARGE</td><td>413</td><td>Body exceeds <code>MAX_REQUEST_BYTES</code>.</td></tr>
+      <tr><td class="mono">RATE_LIMITED</td><td>429</td><td>Client exceeded the local rate limit.</td></tr>
+      <tr><td class="mono">INTERNAL_ERROR</td><td>500</td><td>Unexpected backend failure; safe message only.</td></tr>
+    </table>
+
+    <!-- D -->
+    <h3 class="ap-title" id="apD"><span>D</span> Signal catalogue</h3>
+    <p class="ap-note">Signals describe text patterns that contributed to the output. They never prove deception, causation, or identity.</p>
+    <table class="tbl compact">
+      <tr><th>Code</th><th>Direction</th><th>Definition and limit</th></tr>
+      <tr><td class="mono">REPEATED_PHRASING</td><td>Manipulative</td><td>Repeated n-grams or sentence templates. Repetition also occurs in authentic reviews.</td></tr>
+      <tr><td class="mono">CROSS_REVIEW_DUPLICATE</td><td>Manipulative</td><td>Shared wording within the request batch (max 10), not the whole page.</td></tr>
+      <tr><td class="mono">GENERIC_WORDING</td><td>Manipulative</td><td>Low specificity, high generic-lexicon density. Not proof of intent.</td></tr>
+      <tr><td class="mono">PROMOTIONAL_TONE</td><td>Manipulative</td><td>Promotional lexicon and calls to action. Advertising is not deception.</td></tr>
+      <tr><td class="mono">EXTREME_CLAIMS</td><td>Manipulative</td><td>Superlatives and absolute assertions. Many genuine reviews do this.</td></tr>
+      <tr><td class="mono">CONCRETE_DETAIL</td><td>Organic</td><td>Use case, duration, comparison. Detail can be fabricated.</td></tr>
+      <tr><td class="mono">LEXICAL_VARIETY</td><td>Organic</td><td>Type-token ratio and diversity. Unstable on short texts.</td></tr>
+    </table>
+
+    <!-- E -->
+    <h3 class="ap-title" id="apE"><span>E</span> Six verdict bands</h3>
+    <p class="ap-note">Fixed boundaries, solid fills, and a label that never depends on colour. Fifty sits inside the inconclusive band, not on a decision line.</p>
+    <table class="tbl compact">
+      <tr><th>Score</th><th>Code</th><th>English</th><th>French</th></tr>
+      <tr><td><span class="swatch" style="background:#7C3223"></span><span class="mono">0–19</span></td><td class="mono">STRONG_MANIPULATION_SIGNALS</td><td>Strong manipulation signals</td><td>Signaux forts de manipulation</td></tr>
+      <tr><td><span class="swatch" style="background:#A05634"></span><span class="mono">20–39</span></td><td class="mono">LIKELY_MANIPULATED</td><td>Likely manipulated</td><td>Probablement manipulé</td></tr>
+      <tr><td><span class="swatch" style="background:#746C5E"></span><span class="mono">40–54</span></td><td class="mono">INCONCLUSIVE</td><td>Inconclusive</td><td>Non concluant</td></tr>
+      <tr><td><span class="swatch" style="background:#6F6C3A"></span><span class="mono">55–69</span></td><td class="mono">MIXED_SIGNALS</td><td>Mixed signals</td><td>Signaux mitigés</td></tr>
+      <tr><td><span class="swatch" style="background:#47664E"></span><span class="mono">70–84</span></td><td class="mono">LIKELY_ORGANIC</td><td>Likely organic</td><td>Probablement authentique</td></tr>
+      <tr><td><span class="swatch" style="background:#174F45"></span><span class="mono">85–100</span></td><td class="mono">STRONG_ORGANIC_SIGNALS</td><td>Strong organic signals</td><td>Signaux forts d'authenticité</td></tr>
+    </table>
+
+    <!-- F -->
+    <h3 class="ap-title" id="apF"><span>F</span> Decision register</h3>
+    <p class="ap-note">Accepted means baseline. Provisional holds until its gate. Open must be closed before the phase that needs it.</p>
+    <table class="tbl compact">
+      <tr><th>ID</th><th>Decision</th><th>Status</th><th>Revisit trigger</th></tr>
+      <tr><td class="mono">D01</td><td>Text patterns only; no identity, purchase, truth, or product-quality claim.</td><td>Accepted</td><td>Non-text input proposal</td></tr>
+      <tr><td class="mono">D02</td><td><code>trustScore = 100 × p_organic</code>, six fixed bands, no post-hoc adjustment.</td><td>Accepted</td><td>Band meaning change</td></tr>
+      <tr><td class="mono">D03</td><td><code>UNKNOWN</code> is never numeric and carries an enumerated reason code.</td><td>Accepted</td><td>New failure mode</td></tr>
+      <tr><td class="mono">D04</td><td>Evidence quality is <code>LOW</code>/<code>ADEQUATE</code> from sufficiency, not confidence.</td><td>Accepted</td><td>Threshold validation failure</td></tr>
+      <tr><td class="mono">D05</td><td>Authentication postponed; security baseline is not.</td><td>Accepted</td><td>Any shared deployment</td></tr>
+      <tr><td class="mono">D06</td><td>Amazon first adapter, narrow scope, fixtures, spike criteria.</td><td>Accepted</td><td>Spike failure</td></tr>
+      <tr><td class="mono">D07</td><td>One monorepo, three components, <code>docs/</code>, <code>contracts/v1/</code>.</td><td>Accepted</td><td>Independent release cadence</td></tr>
+      <tr><td class="mono">D08</td><td>Build the non-auth analysis path first; cut breadth before meaning.</td><td>Accepted</td><td>Deadline or scope change</td></tr>
+      <tr><td class="mono">D09</td><td>History opt-in, metadata-only, capped, never text/URL/key/fingerprint.</td><td>Accepted</td><td>Cross-session requirement</td></tr>
+      <tr><td class="mono">D10</td><td>Live review text never goes to an external hosted AI provider.</td><td>Accepted</td><td>Hosted model proposal</td></tr>
+      <tr><td class="mono">D11</td><td>Explanations describe signals, never proof; numeric only when validated.</td><td>Accepted</td><td>New explainer method</td></tr>
+      <tr><td class="mono">D12</td><td>Model v1 supports English; French conditional on the FR gate.</td><td>Provisional</td><td>Phase 1 FR evaluation</td></tr>
+      <tr><td class="mono">D13</td><td>Gate is per language; a failing language never gets an unvalidated score.</td><td>Accepted</td><td>Gate failure</td></tr>
+      <tr><td class="mono">D14</td><td>Freeze endpoints, constants, reason codes, fixtures before integration.</td><td>Accepted</td><td>Contract change</td></tr>
+      <tr><td class="mono">D15</td><td>Admin exists only in <code>dev-admin</code>, loopback, absent by default.</td><td>Accepted</td><td>Remote admin need</td></tr>
+      <tr><td class="mono">D16</td><td>Adapter config in versioned files; PostgreSQL only for a defined feature.</td><td>Accepted</td><td>Runtime authoring or accounts</td></tr>
+      <tr><td class="mono">D17</td><td>Eligible review is rendered and not hidden; viewport only schedules scans.</td><td>Accepted</td><td>Page type breaks definition</td></tr>
+      <tr><td class="mono">D18</td><td>Every request carries <code>X-Request-Id</code>; logs are content-free.</td><td>Accepted</td><td>Hosted monitoring</td></tr>
+      <tr><td class="mono">D19</td><td>Versioned artifact bundles with model cards; backend checks the version.</td><td>Accepted</td><td>Distribution change</td></tr>
+      <tr><td class="mono">D20</td><td>Charter in <code>docs/design/</code>; copy deck is normative.</td><td>Accepted</td><td>Charter revision</td></tr>
+      <tr><td class="mono">D21</td><td>Tests are part of every phase exit, not a final phase.</td><td>Accepted</td><td>None</td></tr>
+      <tr><td class="mono">D22</td><td>Final dataset selection and licensing.</td><td>Open</td><td>Phase 0 exit</td></tr>
+      <tr><td class="mono">D23</td><td>French model support go/no-go.</td><td>Open</td><td>Phase 1 gate</td></tr>
+      <tr><td class="mono">D24</td><td>Single multilingual vs per-language models.</td><td>Open</td><td>Phase 1 training</td></tr>
+    </table>
+
+    <!-- G -->
+    <h3 class="ap-title" id="apG"><span>G</span> Glossary</h3>
+    <p class="ap-note">The words that carry meaning in this project. Use them exactly; a synonym is usually a claim change.</p>
+    <table class="tbl compact">
+      <tr><th>Term</th><th>Meaning</th></tr>
+      <tr><td class="n">Organic</td><td>Text patterns consistent with a spontaneous review. Not a claim that it is true or verified.</td></tr>
+      <tr><td class="n">Manipulated</td><td>Text patterns consistent with manipulation. Not proof of intent or identity.</td></tr>
+      <tr><td class="n">p_organic</td><td>Calibrated probability that the text is organic, on the evaluation distribution.</td></tr>
+      <tr><td class="n">Trust score</td><td>Integer 0–100 equal to <code>100 × p_organic</code>, rounded half up.</td></tr>
+      <tr><td class="n">Verdict band</td><td>One of six fixed score ranges. Band names describe model output, not a person.</td></tr>
+      <tr><td class="n">Evidence quality</td><td><code>LOW</code> or <code>ADEQUATE</code> input sufficiency, not model confidence.</td></tr>
+      <tr><td class="n">Signal</td><td>A named text pattern that contributed to the model output.</td></tr>
+      <tr><td class="n">Contribution</td><td>Signed, normalized attribution; shown only when the explainer is stable.</td></tr>
+      <tr><td class="n">Engine</td><td><code>MODEL</code> or <code>SIGNALS_ONLY</code>; identifies what produced the result.</td></tr>
+      <tr><td class="n">Status</td><td><code>SCORED</code>, <code>SIGNALS_ONLY</code>, or <code>UNKNOWN</code>.</td></tr>
+      <tr><td class="n">Unknown</td><td>No estimate can be produced; carries a reason code and never a number.</td></tr>
+      <tr><td class="n">Reason code</td><td>Enumerated cause of an unknown result or request error.</td></tr>
+      <tr><td class="n">Adapter</td><td>Page-specific extraction module with manifest, selectors, description, fixtures.</td></tr>
+      <tr><td class="n">Eligible review</td><td>Rendered, not hidden, inside the adapter container, with extractable text.</td></tr>
+      <tr><td class="n">Batch</td><td>Up to ten reviews in one analyze request.</td></tr>
+      <tr><td class="n">Model version</td><td><code>tl-text-&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code>.</td></tr>
+      <tr><td class="n">Calibration</td><td>Mapping from raw model output to <code>p_organic</code>, evaluated with ECE.</td></tr>
+      <tr><td class="n">Session dedup key</td><td>Salted page-session identifier used to avoid resubmission; never persisted.</td></tr>
+      <tr><td class="n">Signal-only mode</td><td>Validated descriptive patterns without a score or probability.</td></tr>
+      <tr><td class="n">Contract v1</td><td>The frozen request, response, error, constants, and fixtures in <code>contracts/v1/</code>.</td></tr>
+      <tr><td class="n">Copy deck</td><td>The normative English and French strings in the product decisions.</td></tr>
+      <tr><td class="n">Gate</td><td>The numeric acceptance table a model must pass per language before its score ships.</td></tr>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <h2>Build the smallest true thing.</h2>
+    <p>One supported page, one calibrated model, one frozen contract, one honest unknown state. Everything else in this roadmap exists to protect those four things.</p>
+    <div class="fine">
+      <span>TrustLoop · Build roadmap v1.0</span>
+      <span>October 2026 · 18 weeks · 3 components · 1 contract</span>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+</body>
+</html>
+
+
+
+
