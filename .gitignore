@@ -1,0 +1,36 @@
+# Build outputs
+backend/target/
+scoring-service/.venv/
+scoring-service/__pycache__/
+extension/node_modules/
+extension/dist/
+**/*.class
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Data and model binaries
+data/
+scoring-service/data/
+scoring-service/artifacts/*/model.joblib
+*.joblib
+*.pkl
+
+# Logs and OS noise
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Design build scratch
+docs/design/.preview/
+docs/design/draft.pdf

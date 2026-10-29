@@ -1,0 +1,15 @@
+TrustLoop
+Copyright (c) 2026 Idris Foudhaili
+
+Documentation in this repository is licensed under CC BY 4.0 unless stated
+otherwise. Source code is licensed under the MIT License in LICENSE.
+
+Newsreader, IBM Plex Sans, and IBM Plex Mono are licensed under the
+SIL Open Font License 1.1. License files ship with the self-hosted fonts.
+
+Third-party review datasets are not redistributed by this repository.
+Only manifests, download instructions, aggregate metrics, and model cards
+are committed. Each dataset keeps its own license and terms of use.
+
+TrustLoop estimates text patterns. It does not verify identity, purchase,
+or truth, and no output in this repository should be read as such a claim.
