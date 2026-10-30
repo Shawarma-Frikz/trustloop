@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TrustLoop · panel mock · v1.0</title>
+  <link rel="stylesheet" href="../src/styles/tokens.css">
+  <link rel="stylesheet" href="mock.css">
+</head>
+<body>
+  <div class="mock-bar">
+    <div class="mock-bar-title">
+      <span class="mock-dot" aria-hidden="true"></span>
+      TrustLoop panel mock · rendered from <code>src/styles/tokens.css</code> + <code>src/i18n/&lt;lang&gt;.json</code>
+    </div>
+    <div class="mock-lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" class="on">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="fr">FR</button>
+    </div>
+  </div>
+  <main id="mock-root" class="mock-stage">
+    <p class="mock-loading">Loading…</p>
+  </main>
+  <script type="module" src="mock.js"></script>
+</body>
+</html>

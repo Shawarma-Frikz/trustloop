@@ -1,0 +1,79 @@
+{
+  "brandName": "TrustLoop",
+  "band": {
+    "STRONG_MANIPULATION_SIGNALS": "Signaux forts de manipulation",
+    "LIKELY_MANIPULATED": "Probablement manipulé",
+    "INCONCLUSIVE": "Non concluant",
+    "MIXED_SIGNALS": "Signaux mitigés",
+    "LIKELY_ORGANIC": "Probablement authentique",
+    "STRONG_ORGANIC_SIGNALS": "Signaux forts d'authenticité"
+  },
+  "ui": {
+    "estimateDisclaimer": "Estimation fondée sur des motifs textuels. Ne vérifie ni l'achat, ni l'identité, ni la véracité.",
+    "lowEvidence": "Indicatif — texte limité",
+    "unknownHeading": "Aucune estimation",
+    "unsupportedPage": "Cette page n'est pas encore prise en charge.",
+    "noReviewsFound": "Aucun avis à analyser.",
+    "insufficientText": "Texte insuffisant pour une estimation.",
+    "unsupportedLanguage": "Cette langue n'est pas encore prise en charge.",
+    "timeout": "L'analyse a expiré. Réessayez.",
+    "unavailable": "L'analyse est indisponible. Réessayez.",
+    "signalOnlyMode": "Signaux descriptifs seulement — aucun score",
+    "detailsAction": "Détails",
+    "retryAction": "Réessayer",
+    "reloadAction": "Recharger",
+    "historyLabel": "Historique",
+    "clearHistoryAction": "Effacer l'historique"
+  },
+  "signal": {
+    "REPEATED_PHRASING": "Répète les mêmes formulations",
+    "CROSS_REVIEW_DUPLICATE": "Partage des formulations avec d'autres avis visibles",
+    "GENERIC_WORDING": "Utilise des formulations génériques avec peu de détails concrets",
+    "PROMOTIONAL_TONE": "Ressemble à un texte promotionnel",
+    "EXTREME_CLAIMS": "Formule des affirmations extrêmes ou invérifiables",
+    "CONCRETE_DETAIL": "Inclut un détail concret d'utilisation",
+    "LEXICAL_VARIETY": "Montre une formulation variée et naturelle",
+    "contributionsNote": "Les contributions sont normalisées sur l'ensemble des caractéristiques; les cinq principales ne totalisent pas 100 %.",
+    "adequateEvidence": "Texte suffisant"
+  },
+  "page": {
+    "bandPosition": "Bande {n} sur 6",
+    "rescanAction": "Relancer l'analyse",
+    "readingReviews": "Lecture des avis…",
+    "rescanning": "Nouvelle analyse…",
+    "reviewsFound": {
+      "one": "{count} avis trouvé",
+      "other": "{count} avis trouvés"
+    },
+    "reviewCount": {
+      "one": "{count} avis",
+      "other": "{count} avis"
+    }
+  },
+  "chip": {
+    "signalsOnly": "Signaux seulement",
+    "unavailable": "Indisponible",
+    "openInPanel": "Ouvrir dans TrustLoop."
+  },
+  "history": {
+    "noScans": "Aucun scan pour l'instant.",
+    "emptyGuidance": "Ouvrez une page produit prise en charge pour commencer."
+  },
+  "action": {
+    "supportedPages": "Voir les pages prises en charge",
+    "howThisWorks": "Comment ça marche",
+    "whatIsSent": "Quelles données ?"
+  },
+  "control": {
+    "settings": "Réglages"
+  },
+  "notice": {
+    "refreshFailure": "Impossible d'actualiser. Dernier résultat affiché."
+  },
+  "transport": {
+    "INVALID_REQUEST": { "message": "La requête n'a pas pu être lue." },
+    "PAYLOAD_TOO_LARGE": { "message": "Le texte d'avis de cette page est trop long pour être analysé." },
+    "RATE_LIMITED": { "message": "Trop de requêtes. Réessayez dans un instant." },
+    "INTERNAL_ERROR": { "message": "Une erreur est survenue. Réessayez." }
+  }
+}

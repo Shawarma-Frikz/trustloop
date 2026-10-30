@@ -1,0 +1,79 @@
+{
+  "brandName": "TrustLoop",
+  "band": {
+    "STRONG_MANIPULATION_SIGNALS": "Strong manipulation signals",
+    "LIKELY_MANIPULATED": "Likely manipulated",
+    "INCONCLUSIVE": "Inconclusive",
+    "MIXED_SIGNALS": "Mixed signals",
+    "LIKELY_ORGANIC": "Likely organic",
+    "STRONG_ORGANIC_SIGNALS": "Strong organic signals"
+  },
+  "ui": {
+    "estimateDisclaimer": "Estimated from text patterns. Does not verify purchase, identity, or truth.",
+    "lowEvidence": "Indicative — limited text",
+    "unknownHeading": "No estimate",
+    "unsupportedPage": "This page is not supported yet.",
+    "noReviewsFound": "No reviews found to analyze.",
+    "insufficientText": "Not enough text to estimate.",
+    "unsupportedLanguage": "This language is not supported yet.",
+    "timeout": "Analysis timed out. Try again.",
+    "unavailable": "Analysis is unavailable right now. Try again.",
+    "signalOnlyMode": "Descriptive signals only — no score",
+    "detailsAction": "Details",
+    "retryAction": "Retry",
+    "reloadAction": "Reload",
+    "historyLabel": "History",
+    "clearHistoryAction": "Clear history"
+  },
+  "signal": {
+    "REPEATED_PHRASING": "Repeats the same phrasing",
+    "CROSS_REVIEW_DUPLICATE": "Shares wording with other visible reviews",
+    "GENERIC_WORDING": "Uses generic wording with few concrete details",
+    "PROMOTIONAL_TONE": "Reads like promotional copy",
+    "EXTREME_CLAIMS": "Makes extreme or unverifiable claims",
+    "CONCRETE_DETAIL": "Includes a concrete usage detail",
+    "LEXICAL_VARIETY": "Shows varied, natural wording",
+    "contributionsNote": "Contributions are normalized over all features; the top five do not add to 100%.",
+    "adequateEvidence": "Adequate evidence"
+  },
+  "page": {
+    "bandPosition": "Band {n} of 6",
+    "rescanAction": "Rescan",
+    "readingReviews": "Reading reviews…",
+    "rescanning": "Rescanning…",
+    "reviewsFound": {
+      "one": "{count} review found",
+      "other": "{count} reviews found"
+    },
+    "reviewCount": {
+      "one": "{count} review",
+      "other": "{count} reviews"
+    }
+  },
+  "chip": {
+    "signalsOnly": "Signals only",
+    "unavailable": "Unavailable",
+    "openInPanel": "Open in TrustLoop."
+  },
+  "history": {
+    "noScans": "No scans yet.",
+    "emptyGuidance": "Open a supported product page to start."
+  },
+  "action": {
+    "supportedPages": "See supported pages",
+    "howThisWorks": "How this works",
+    "whatIsSent": "What is sent?"
+  },
+  "control": {
+    "settings": "Settings"
+  },
+  "notice": {
+    "refreshFailure": "Couldn't refresh. Showing the last result."
+  },
+  "transport": {
+    "INVALID_REQUEST": { "message": "The request could not be read." },
+    "PAYLOAD_TOO_LARGE": { "message": "This page's review text is too large to analyze." },
+    "RATE_LIMITED": { "message": "Too many requests. Try again in a moment." },
+    "INTERNAL_ERROR": { "message": "Something went wrong. Try again." }
+  }
+}
