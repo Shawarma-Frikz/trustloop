@@ -20,7 +20,7 @@ npm run build
 
 After a rebuild, press Reload on the extension card.
 
-`src/content.ts` only checks the host is supported and pings the service worker. Extraction starts in Phase 1.
+`src/content.ts` only checks the host is supported and pings the service worker. The live Amazon spike failed in an unsigned session; Phase 0.5's synthetic fallback fixtures are under `mock/fixtures/amazon/`. They validate fixture shape only and do not establish live Amazon selectors or extraction precision. Extraction starts in Phase 1.
 
 ## Test
 

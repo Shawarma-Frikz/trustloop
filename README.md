@@ -25,7 +25,7 @@ It does not verify purchases, identify reviewers, prove fraud, or rate products.
 
 ## Status
 
-Phase 0.4 planning artifacts are drafted. Human calibration sign-off and dataset acquisition hashes remain pending; see [dataset closeout](docs/dataset/README.md) and the [delivery plan](docs/delivery-plan.md).
+Phase 0.4 artifacts are drafted. The live Phase 0.5 Amazon spike failed in the unsigned session; synthetic page fixtures are the recorded demo fallback. See [spike evidence](docs/evidence/spike-amazon.md), [dataset closeout](docs/dataset/README.md), and the [delivery plan](docs/delivery-plan.md).
 
 ## Documentation
 
