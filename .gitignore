@@ -1,7 +1,8 @@
 # Build outputs
 backend/target/
 scoring-service/.venv/
-scoring-service/__pycache__/
+__pycache__/
+*.py[cod]
 extension/node_modules/
 extension/dist/
 **/*.class
