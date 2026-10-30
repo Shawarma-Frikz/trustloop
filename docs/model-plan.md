@@ -69,10 +69,10 @@ Two labels are used for training and evaluation:
 
 | Source | Role | Language | Label basis | Main risk / action |
 |---|---|---|---|---|
-| Ott et al. (2011), Deceptive Opinion Spam Corpus | Training/dev | EN | Crowdsourced deceptive vs truthful hotel reviews | Hotel domain, not Amazon; confirm research license |
-| Ott et al. (2013), Negative Deceptive Opinion Spam | Training/dev | EN | Negative deceptive vs truthful hotel reviews | Same domain shift; confirm license |
-| YelpChi (Rayana & Akoglu, 2015) | Optional cross-domain evaluation | EN | Yelp's review filter | Filter label is a platform signal, not ground truth; metadata leakage; text-only evaluation only |
-| Amazon review dataset distributed with GraphConsis (Dou et al., 2020) | Optional adaptation/evaluation | EN | Platform-derived fake labels | Verify whether labels are review-level or reviewer-level; do not treat reviewer-level labels as review labels; confirm license |
+| Ott et al. (2011), Deceptive Opinion Spam Corpus | Candidate training/dev | EN | Crowdsourced deceptive vs truthful hotel reviews | Only source currently marked verified in the manifest; recheck distribution terms at acquisition |
+| Ott et al. (2013), Negative Deceptive Opinion Spam | Blocked candidate | EN | Negative deceptive vs truthful hotel reviews | Do not acquire or use until written use terms are recorded in the manifest |
+| YelpChi (Rayana & Akoglu, 2015) | Blocked optional cross-domain evaluation | EN | Yelp's review filter | Do not acquire/use until written terms; filter label is a platform signal, not ground truth; metadata leakage; text-only if cleared |
+| Amazon review dataset distributed with GraphConsis (Dou et al., 2020) | Blocked optional candidate | EN | Platform-derived fake labels | Do not acquire/use until terms and label granularity are verified; reviewer-level labels must not become review labels |
 | In-domain manual sample: 200–300 EN reviews; 150–200 FR reviews | Primary held-out evaluation | EN/FR | Manual codebook (§3) | Small sample; report confidence intervals and sampling method |
 | EN→FR translation augmentation of training data | Training augmentation only | FR | Inherited | Translation artifacts; FR evaluation must use manual labels only |
 
@@ -82,9 +82,9 @@ Two labels are used for training and evaluation:
 - Store datasets outside version control when their license forbids redistribution; commit a download script and `dataset-manifest.json` with hashes instead.
 - Do not use live TrustLoop review text for training in the MVP. Inference text is processed transiently and never retained.
 - If translation is used for training augmentation, use a local or licensed tool. The "no external AI provider" rule applies to live review text at inference; public training text still needs a documented processing note.
-- Final dataset selection and licensing are open until Phase 0 exit (D22).
+- D22 closes the source-selection policy: Ott 2011 is the sole currently verified training candidate; all other candidates remain blocked until terms are recorded and verified. Check each source's terms at acquisition before use.
 
-If part of the manual sample is used for adaptation or threshold tuning, the gate in §9 is computed only on the untouched held-out portion; report both the adaptation and held-out results.
+The manual sample is never used for adaptation, feature selection, threshold tuning, or calibration. Any future adaptation source is separate and documented before use; it does not change this held-out gate.
 
 ## 5. Language coverage
 
@@ -117,7 +117,7 @@ No off-the-shelf "fake review detector" is trusted without in-domain validation.
 - Fix random seeds. Record library versions, split manifests, and dataset hashes.
 - Tune hyperparameters on dev only. Touch the test split once per candidate model and report the result even if it is disappointing.
 - Report class balance and sampling method. Public datasets are often class-balanced by construction; do not read their base rate as real-world prevalence.
-- Decide single multilingual vs per-language models in Phase 1 (D24). Default preference is one model per supported language when each has enough labelled data; otherwise one multilingual model with language as a reported subgroup.
+- D24 fixes one model per supported language for MVP. English training may use only sources whose use terms are verified before acquisition; Ott 2011 is the sole currently verified candidate. Do not use Ott 2013, YelpChi, or GraphConsis until their stated terms and use restrictions are resolved.
 
 ## 8. Calibration
 
@@ -214,7 +214,7 @@ The evaluation script writes `metrics.json` from the pinned artifact and split m
 
 | Phase | Model deliverables |
 |---|---|
-| 0 | Confirm dataset access and licenses; define the annotation codebook and sample; freeze the §9 gate; record open decisions D22–D24 |
+| 0 | Confirm candidate dataset terms; define the annotation codebook and sample; freeze the §9 gate; close D22–D25 |
 | 1 | Baseline training and calibration; manual evaluation sample; per-language gate result; model card draft; artifact bundle; `MODEL`, `SIGNALS_ONLY`, or `UNKNOWN` decision per language |
 | 2 | No model changes unless a new adapter exposes a validated input gap; any change is a new MINOR version |
 | 3 | Full held-out evaluation, calibration and stability report, confirmation of the per-language go/no-go, final model card, report evidence |
@@ -243,4 +243,4 @@ These are mirrored in the [delivery plan](delivery-plan.md#risk-register) risk r
 |---|---|---|---|
 | D22 | Final dataset selection and licensing — **closed 2026-10-30** (Accepted); see decision register and `docs/dataset/dataset-manifest.json` | Phase 0 exit | Do not start training on an unlicensed corpus |
 | D23 | French model support go/no-go — **criterion closed 2026-10-30** (Accepted); frozen FR gate in `scoring-service/evaluation/gate-v1.json`, mechanical application at Phase 1 | Phase 1 gate | French returns `UNKNOWN` |
-| D24 | Single multilingual model vs per-language models — **closed 2026-10-30** (Accepted): one model per language, no multilingual model at MVP; FR via documented translation augmentation only, still FR-gated | Phase 1 training | Per-language if each has enough data; otherwise a single model with language subgroup reporting |
+| D24 | Single multilingual model vs per-language models — **closed 2026-10-30** (Accepted): one model per language, no multilingual model at MVP; FR via documented translation augmentation only, still FR-gated | Phase 1 training | French remains `UNKNOWN` if independent data and gate conditions are not met |

@@ -1,6 +1,6 @@
 # TrustLoop project documents
 
-This folder is the decision baseline for starting TrustLoop from an empty repository. The documents below agree on the product meaning, first release, model evidence, data handling, system boundaries, and delivery order.
+This folder contains TrustLoop's product baseline and delivery plan. Phase 0.4's plans and gate are versioned; annotator sign-off and dataset acquisition remain explicit pre-Phase-1 work in [dataset closeout](dataset/README.md).
 
 ## Read in this order
 

@@ -9,27 +9,32 @@ decision-register entry and a new version.
 
 | File | Role |
 |---|---|
-| [codebook.md](codebook.md) | Annotation codebook v1.0: `organic` / `manipulated` / `uncertain`, manipulation-pattern checklist, explicit exclusions, worked invented examples, kappa + adjudication protocol. |
-| [sample-plan.md](sample-plan.md) | Held-out manual evaluation sample plan: 250 EN (range 200–300) and 175 FR (range 150–200), systematic sampling over pre-chosen Amazon pages, eligibility floor, stratification check, collection hygiene, timeline. |
-| [dataset-manifest.json](dataset-manifest.json) | Sources, roles, languages, licence terms, verification status, hash policy. Raw data stays outside version control; hashes are recorded at download and enforced by the Phase 1 pipeline. |
+| [codebook.md](codebook.md) | Annotation codebook v1.1: `organic` / `manipulated` / `uncertain`, manipulation-pattern checklist, explicit exclusions, kappa + adjudication protocol. |
+| [calibration-batch-v1.md](calibration-batch-v1.md) | Thirty original invented texts in each language for blind, independent codebook calibration. |
+| [sample-plan.md](sample-plan.md) | Held-out manual evaluation plan v1.1: 250 EN and 175 FR targets, deterministic selection, eligibility floor, page-cluster confidence intervals, collection hygiene. |
+| [dataset-manifest.json](dataset-manifest.json) | Sources, roles, languages, licence terms, verification status, and acquisition-time hash policy. Raw data stays outside version control. |
 | `../../scoring-service/evaluation/gate-v1.json` | The frozen EN/FR acceptance gate transcribed from model plan §9, with its anti-tamper test. |
 
-## Sign-off checklist
+## Closeout status
 
-- [x] Codebook written (v1.0) — awaits annotator calibration-batch sign-off (§9).
-- [x] Sample plan frozen (v1.0) — sizes, frame, method, hygiene.
-- [x] Dataset manifest written; Ott 2011 licence verified (CC BY-NC-SA 4.0), Ott 2013 / YelpChi on-request terms flagged, GraphConsis pending.
-- [x] Gate table frozen with tests pinning it to model plan §9 (`test_gate_and_manifest.py`).
-- [x] D22, D23, D24 recorded in the decision register (all Accepted).
+- [x] Codebook v1.1 and calibration procedure written.
+- [x] Invented English and French calibration batches prepared; no labels or answer key included.
+- [ ] Independent calibration by two annotators (at least 30 items), kappa ≥ 0.60, and adjudication records.
+- [x] Sample plan v1.1 pre-registered; label-dependent redraw and adaptation use removed.
+- [x] Manifest records the verified Ott 2011 candidate and blocks sources with unresolved terms.
+- [x] EN/FR gate frozen and pinned to model plan §9 by `test_gate_and_manifest.py`.
+- [x] D22–D24 outcomes recorded; D25 records the sample-plan correction.
+- [ ] Acquire only approved data and add real file hashes before the dataset is used in Phase 1.
 
 ## What is deliberately not here yet
 
-- **Hashes of raw files** — recorded at download time (Phase 1, step 1.1); the
-  manifest's `files[]` entries are empty until then and the test suite enforces
-  the policy that listed files must match their recorded hashes.
+- **Dataset hashes** — no dataset files are present in the workspace. Hashes are
+  recorded at acquisition in Phase 1; empty `files[]` means not acquired, never a
+  fabricated hash.
 - **The annotated sample itself** — collection and double annotation are scheduled
   in [sample-plan.md](sample-plan.md) §7; review text never enters this repository.
-- **Kappa numbers** — computed during annotation; reported as counts only.
+- **Kappa numbers** — require two independent human annotations; report aggregate
+  counts only after the calibration is performed.
 
 ## Hard rule
 

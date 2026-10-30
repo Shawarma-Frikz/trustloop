@@ -1,7 +1,7 @@
-# TrustLoop annotation codebook · v1.0
+# TrustLoop annotation codebook · v1.1
 
-**Status:** proposed for sign-off, 2026-10-30. Applies to the held-out manual
-evaluation sample (see [sample-plan.md](sample-plan.md)). Derives from the label
+**Status:** ready for independent calibration, sign-off pending, 2026-10-30.
+Applies to the held-out manual evaluation sample (see [sample-plan.md](sample-plan.md)). Derives from the label
 definition in [model plan](../model-plan.md) §3; a change to this codebook is a
 model-plan change and requires a decision-register entry (D02, D04, D12).
 
@@ -60,9 +60,11 @@ The following are **never sufficient** for `manipulated` on their own:
 - Star rating, reviewer name, avatar, verified-purchase badge, or any metadata —
   **annotations use review text only**.
 
-Mark `uncertain` when: the text is under ~20 words; translation artefacts dominate;
-the review is a question, complaint about delivery, or non-evaluation; or M-pattern
-evidence and authenticating elements balance with nothing to break the tie.
+For the held-out sample, texts under 20 whitespace-delimited words are ineligible
+and are not annotated. Among eligible texts, mark `uncertain` when translation
+artefacts dominate; the review is a question, complaint about delivery, or
+non-evaluation; or M-pattern evidence and authenticating elements balance with
+nothing to break the tie.
 
 ## 5. Annotation procedure
 
@@ -132,9 +134,18 @@ never merged silently ([model plan](../model-plan.md) §3):
 > dominating the text with no use context; brochure structure. Label:
 > `manipulated`; pattern M4.
 
-## 9. Sign-off
+## 9. Calibration and sign-off
 
-The codebook is signed off when both annotators have labelled the calibration batch
-(≥ 30 items, invented or public-corpus texts, never live reviews), kappa on that
-batch is ≥ 0.60, and each remaining disagreement has a written resolution rule that
-is added to this document as a numbered addendum.
+Before collection, two named annotators independently label at least 30 invented
+or properly licensed items in each language that will be evaluated. They must not
+see each other's labels or any answer key while labelling. Compute Cohen's kappa
+separately by language on all three labels. Sign-off requires kappa ≥ 0.60 for
+each evaluated language and a written resolution rule for
+every disagreement that affects a rule; record the date, annotator identifiers,
+item count, kappa, and adjudication completion in the project evidence log. If
+kappa is lower, revise the codebook, prepare a fresh batch, and repeat. Do not
+claim sign-off until those records exist.
+
+The batch may contain only invented or properly licensed text, never live TrustLoop
+reviews. Keep text and individual annotations offline. Commit aggregate counts and
+the final kappa only; do not commit annotator rationales containing text.

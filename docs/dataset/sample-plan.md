@@ -1,9 +1,10 @@
-# Held-out manual evaluation sample · plan v1.0
+# Held-out manual evaluation sample · plan v1.1
 
-**Status:** frozen with the acceptance gate, 2026-10-30. The gate
+**Status:** pre-registered before collection, 2026-10-30. This v1.1 resolves
+label-dependent resampling and adaptation ambiguities in v1.0. The gate
 ([gate-v1.json](../../scoring-service/evaluation/gate-v1.json)) is evaluated on this
-sample only. Changing the sample method after seeing results invalidates the gate;
-any change here is a new version of this document plus a decision-register entry.
+sample only. Later changes require a decision-register entry and a new gate version
+before evaluation results are seen.
 
 ## 1. Purpose and rule
 
@@ -11,20 +12,23 @@ This sample is the **primary held-out evaluation** for the per-language acceptan
 gate ([model plan](../model-plan.md) §9). It is labelled by hand under the
 [codebook](codebook.md). Live TrustLoop review text is never used for training;
 this sample is evaluation-only and doubly so — no part of it may feed training,
-feature selection, threshold tuning, or calibration. If adaptation is ever needed,
-a separate adaptation split is carved out **before** labelling and the gate is
-computed only on the untouched remainder (both results are then reported).
+feature selection, threshold tuning, or calibration. There is no adaptation split
+within this sample. Any future adaptation data must be separately sourced and
+documented before use; this sample and gate remain untouched.
 
 ## 2. Size and language
 
 | Language | Target size | Hard range | Rationale |
 |---|---|---|---|
-| English | 250 | 200–300 | Enough for AUROC CI width ≈ ±0.05 at worst-case variance; matches the model plan. |
-| French | 175 | 150–200 | Matches the model plan; FR gate targets are relaxed accordingly. |
+| English | 250 | 200–300 | Matches the predeclared EN plan and gate. |
+| French | 175 | 150–200 | Matches the predeclared FR plan and gate. |
 
-`uncertain` items count toward the sample size but are excluded from primary
-metrics; the plan therefore over-samples by ~15% so that the labelled
-organic/manipulated pools still meet the range after exclusions.
+The target and range refer to all selected, eligible items, including items later
+labelled `uncertain`. `uncertain` is excluded from binary gate metrics. Report the
+uncertain count and rate and the resulting binary metric denominators. Do not add
+items, change the seed, or resample based on labels or model results. If fewer than
+200 EN or 150 FR items receive an adjudicated binary label, that language's gate is
+inconclusive and the model does not ship for that language.
 
 ## 3. Sampling frame and method
 
@@ -35,25 +39,25 @@ the page list is fixed in advance and archived with the sample.
 
 **Method (documented, reproducible):**
 
-1. From each chosen page, take all reviews rendered on first load, in page order.
+1. From each chosen page, enumerate reviews rendered on first load, in page order.
 2. **Eligibility:** visible review text of at least 20 whitespace-delimited words,
    in the target language. The 20-word floor mirrors the product's evidence gate so
    the evaluation set matches production inputs.
-3. **Selection:** deterministic systematic sample — every *k*-th eligible review,
-   where *k* is chosen per page so the page contributes proportionally to the
-   frame, seed recorded. No cherry-picking: the person collecting cannot read the
-   full text before selection, only confirm eligibility.
-4. **Stratification:** the final sample is checked so that neither label class
-   (after annotation) dominates beyond 70/30. The *check* is reported; if violated,
-   the sampling is rerun with a different seed — never by hand-picking individual
-   reviews.
+3. **Selection:** use one recorded random seed to select eligible review positions
+   systematically within each page, with the random start in `1..k`. Fix page
+   allocation, *k*, and seed before reading selected review text. The collector
+   may inspect text only to apply the eligibility rule.
+4. **Class balance:** report adjudicated class counts and proportions. Do not
+   stratify, rerun, or change the seed based on labels. Retain natural imbalance
+   and report it with AUPRC.
 5. **Cap per page:** at most 25% of the final sample from any single page, to
    bound page-level correlation.
 
-**Why systematic rather than "interesting" sampling:** the gate must measure the
-model on the population it will see — ordinary rendered reviews — not on examples
-chosen because they look manipulated. Convenience sampling is the main way a gate
-like this lies.
+**Scope of inference:** pages are a predeclared, purposively selected frame, not a
+probability sample of all Amazon reviews. The gate supports claims only about this
+documented frame and language-specific sample. Do not describe results as
+representative of all Amazon reviews. Confidence intervals must account for page
+clustering by resampling pages, then reviews within pages.
 
 ## 4. Collection hygiene
 
@@ -75,8 +79,9 @@ Exactly as defined in [codebook](codebook.md) §5–§6:
   the sample is usable.
 - Third-pass adjudication of every disagreement; adjudicated label is the
   evaluation label.
-- Calibration batch first: ≥ 30 items (invented or public-corpus text), labelled
-  before the real sample, to sign off the codebook.
+- Calibration batches first: ≥ 30 items per evaluated language (invented or
+  licensed text), labelled before the real sample; calculate kappa separately by
+  language.
 
 ## 6. Deliverables of the annotation effort
 
@@ -106,5 +111,7 @@ Exactly as defined in [codebook](codebook.md) §5–§6:
   Do not "average" labels.
 - **Frame too small** (page yields fewer eligible reviews than needed): add pages
   from the pre-agreed reserve list (same categories), document the addition.
-- **Label class imbalance beyond 70/30 after annotation:** rerun sampling with a
-  new recorded seed; never relabel by hand to force balance.
+- **Label class imbalance:** keep the sample, report its balance, and interpret
+  AUPRC against that balance. Never redraw to change class proportions.
+- **Too few adjudicated binary labels:** report the gate as inconclusive and keep
+  the language unsupported; do not supplement based on observed labels.

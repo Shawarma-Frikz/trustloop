@@ -1,7 +1,7 @@
 {
   "gateVersion": "v1",
   "frozenAt": "2026-10-30",
-  "frozenBy": "roadmap step 0.4; decisions D22-D24",
+  "frozenBy": "roadmap step 0.4; decisions D22-D25; sample plan v1.1",
   "sourceOfTruth": "docs/model-plan.md section 9 (Evaluation and acceptance gate)",
   "rule": "This table is frozen before training. Changing any threshold after seeing evaluation results is forbidden; a change requires a new gate version, a decision-register entry, and a fresh evaluation.",
   "evaluatedOn": "held-out manual in-domain sample only (docs/dataset/sample-plan.md); public-dataset results are reported separately as transfer evidence, never as the gate",
@@ -43,6 +43,6 @@
     "F1 at p_organic = 0.50 is an operating point, not a deployed threshold.",
     "A reliability curve is shown in the report alongside ECE.",
     "English may pass while French fails; languages are gated independently (D13).",
-    "If part of the manual sample is used for adaptation or threshold tuning, the gate is computed only on the untouched held-out portion and both results are reported."
+    "The manual sample is never used for adaptation, feature selection, threshold tuning, or calibration."
   ]
 }

@@ -25,7 +25,7 @@ It does not verify purchases, identify reviewers, prove fraud, or rate products.
 
 ## Status
 
-Phase 0 — contract and feasibility.
+Phase 0.4 planning artifacts are drafted. Human calibration sign-off and dataset acquisition hashes remain pending; see [dataset closeout](docs/dataset/README.md) and the [delivery plan](docs/delivery-plan.md).
 
 ## Documentation
 

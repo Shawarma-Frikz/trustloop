@@ -1,17 +1,18 @@
 {
-  "manifestVersion": "1.0",
+  "manifestVersion": "1.1",
   "frozenAt": "2026-10-30",
-  "rule": "No live TrustLoop review text is ever used for training. Inference text is processed transiently and never retained. Raw datasets stay outside version control; this manifest records sources, licences, verification status, and (at download time) hashes.",
+  "rule": "No live TrustLoop review text is ever used for training. Inference text is processed transiently and never retained. Raw datasets stay outside version control; this manifest records sources, licences, verification status, and hashes when files are acquired.",
   "verificationStates": {
     "verified": "licence terms read and recorded from the distribution point during Phase 0",
     "on-request": "distribution requires contacting the author; terms confirmed in writing before first use",
-    "pending": "listed by the model plan; must be verified before it is used for anything"
+    "pending": "candidate listed; terms or rights basis are unresolved; do not acquire or use",
+    "planned": "future collection not yet performed; no files or hashes exist"
   },
   "sources": [
     {
       "id": "ott-2011-positive",
       "name": "Deceptive Opinion Spam Corpus (Ott et al., 2011)",
-      "role": "training-dev",
+      "role": "training-dev candidate",
       "language": "en",
       "labelBasis": "crowdsourced deceptive vs truthful hotel reviews",
       "distributionPoint": "Kaggle mirror by Rachael Tatman (rtatman/deceptive-opinion-spam-corpus); canonical copy by the authors",
@@ -28,7 +29,7 @@
     {
       "id": "ott-2013-negative",
       "name": "Negative Deceptive Opinion Spam (Ott et al., 2013)",
-      "role": "training-dev",
+      "role": "blocked training-dev candidate; verify terms before acquisition",
       "language": "en",
       "labelBasis": "crowdsourced negative deceptive vs truthful hotel reviews",
       "distributionPoint": "Stanford Social Media Lab page for the 2013 corpus",
@@ -81,12 +82,12 @@
       "name": "In-domain manual held-out sample, English",
       "role": "primary held-out evaluation (gate)",
       "language": "en",
-      "labelBasis": "manual codebook v1.0 (docs/dataset/codebook.md)",
+      "labelBasis": "manual codebook v1.1 (docs/dataset/codebook.md)",
       "distributionPoint": "collected per docs/dataset/sample-plan.md; stored offline",
       "license": "project-internal; evaluation-only; never used for training",
       "licenseUrl": null,
-      "verification": "verified",
-      "verificationNote": "Sampling method, eligibility floor, and annotation protocol frozen in sample-plan v1.0. Review text, page URLs, and annotation rationales are never committed.",
+      "verification": "planned",
+      "verificationNote": "Collection has not occurred. The v1.1 sampling method and annotation protocol are pre-registered. Review text, page URLs, and annotation rationales are never committed.",
       "reviewerData": "never collected: no names, avatars, ratings, or profile links recorded",
       "redistribution": "never",
       "localPath": "data/eval/manual-heldout-en/",
@@ -98,12 +99,12 @@
       "name": "In-domain manual held-out sample, French",
       "role": "primary held-out evaluation (gate), French go/no-go input (D23)",
       "language": "fr",
-      "labelBasis": "manual codebook v1.0 (docs/dataset/codebook.md)",
+      "labelBasis": "manual codebook v1.1 (docs/dataset/codebook.md)",
       "distributionPoint": "collected per docs/dataset/sample-plan.md; stored offline",
       "license": "project-internal; evaluation-only; never used for training",
       "licenseUrl": null,
-      "verification": "verified",
-      "verificationNote": "Same protocol as manual-heldout-en. French evaluation uses manual labels only; translated training data is augmentation and never evaluation input.",
+      "verification": "planned",
+      "verificationNote": "Collection has not occurred. The v1.1 sampling method and annotation protocol are pre-registered. French evaluation uses manual labels only; translated training data is augmentation and never evaluation input.",
       "reviewerData": "never collected",
       "redistribution": "never",
       "localPath": "data/eval/manual-heldout-fr/",
@@ -118,6 +119,6 @@
     "labelBasis": "inherited from English source rows",
     "rule": "Local or licensed translation tool only; documented processing note in the model card; FR evaluation still uses manual labels only (model plan section 4)."
   },
-  "hashPolicy": "At download time each raw file's SHA-256 is recorded in its source entry's files[] as {path, sha256, bytes}. The Phase 1 pipeline (roadmap step 1.1) fails the build if any present file's hash does not match this manifest. A file that is absent must have an empty files[] and verification not 'verified'.",
+  "hashPolicy": "At acquisition time each dataset file's SHA-256 is recorded in its source entry's files[] as {path, sha256, bytes}; files[] stays empty until acquisition. The Phase 1 pipeline fails if a listed file is absent or its hash/byte count differs. A verified licence/source may have no files before acquisition; use verification=planned for manual samples not yet collected. Never create placeholder hashes.",
   "splitPolicy": "Split by product/page and by source, not by individual review. Near-duplicates removed across splits before training. Train / dev / calibration / test; calibration split never used for hyperparameter tuning. Random seeds recorded (model plan section 7)."
 }
