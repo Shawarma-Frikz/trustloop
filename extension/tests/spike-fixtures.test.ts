@@ -12,7 +12,7 @@ describe("Phase 0.5 synthetic fallback fixtures", () => {
     const document = new JSDOM(html).window.document;
 
     expect(document.body.dataset.fixtureSource).toBe("synthetic");
-    const cards = [...document.querySelectorAll<HTMLElement>("[data-review-card]")];
+    const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-review-card]"));
     const visible = cards.filter((card) => !card.hidden && card.getAttribute("aria-hidden") !== "true");
     const eligible = visible.filter((card) => {
       const text = card.querySelector("[data-review-body]")?.textContent ?? "";
@@ -25,7 +25,7 @@ describe("Phase 0.5 synthetic fallback fixtures", () => {
   it("excludes the collapsed card even when its text remains in the markup", () => {
     const html = readFileSync(join(FIXTURES, "collapsed.html"), "utf8");
     const document = new JSDOM(html).window.document;
-    const cards = [...document.querySelectorAll<HTMLElement>("[data-review-card]")];
+    const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-review-card]"));
     const hidden = cards.filter((card) => card.hidden || card.getAttribute("aria-hidden") === "true");
 
     expect(cards).toHaveLength(6);

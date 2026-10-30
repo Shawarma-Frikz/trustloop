@@ -32,7 +32,15 @@ JSON Schema draft 2020-12. Status-dependent field rules (e.g. `UNKNOWN` never ca
 
 ## Validation
 
-Each component validates the same files in its own test suite:
+The standalone contract suite validates every example against its matching schema:
+
+```bat
+cd contracts
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+The backend and extension also run contract assertions in their own test suites:
 
 - Backend: `ContractValidationTest` (Maven `verify`)
 - Scoring service: `tests/test_contract.py` (pytest)

@@ -11,6 +11,8 @@ Two rules apply to every phase:
 
 ## Phase 0 — Agree, freeze the contract, prove feasibility
 
+Current gate status: **open**. See the [Phase 0 closeout checklist](evidence/phase-0-closeout.md) for item-by-item evidence and pending human sign-offs.
+
 - Keep this document set as the initial product baseline and add/confirm the decision register.
 - Create one `trustloop` monorepo with `backend/`, `scoring-service/`, `extension/`, `docs/`, and `contracts/v1/`.
 - Create the Spring Boot project using the course-approved Java/Spring versions and the package names in [architecture and data](architecture-and-data.md#professor-required-spring-boot-package-layout).
