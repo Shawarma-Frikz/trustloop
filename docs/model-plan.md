@@ -241,6 +241,6 @@ These are mirrored in the [delivery plan](delivery-plan.md#risk-register) risk r
 
 | ID | Decision | Needed by | Default if unresolved |
 |---|---|---|---|
-| D22 | Final dataset selection and licensing | Phase 0 exit | Do not start training on an unlicensed corpus |
-| D23 | French model support go/no-go | Phase 1 gate | French returns `UNKNOWN` |
-| D24 | Single multilingual model vs per-language models | Phase 1 training | Per-language if each has enough data; otherwise a single model with language subgroup reporting |
+| D22 | Final dataset selection and licensing — **closed 2026-10-30** (Accepted); see decision register and `docs/dataset/dataset-manifest.json` | Phase 0 exit | Do not start training on an unlicensed corpus |
+| D23 | French model support go/no-go — **criterion closed 2026-10-30** (Accepted); frozen FR gate in `scoring-service/evaluation/gate-v1.json`, mechanical application at Phase 1 | Phase 1 gate | French returns `UNKNOWN` |
+| D24 | Single multilingual model vs per-language models — **closed 2026-10-30** (Accepted): one model per language, no multilingual model at MVP; FR via documented translation augmentation only, still FR-gated | Phase 1 training | Per-language if each has enough data; otherwise a single model with language subgroup reporting |

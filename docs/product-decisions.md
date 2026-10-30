@@ -138,9 +138,9 @@ Status values: **Accepted** (baseline), **Provisional** (valid until the stated 
 | D19 | Model artifacts are versioned bundles with a model card; the backend checks the expected version. | Model plan §2, §14 | Accepted | Artifact distribution change |
 | D20 | The graphic charter and Figma prompt are stored in `docs/design/`; the copy deck above is normative. | §Design consistency; §Copy deck | Accepted | Charter revision |
 | D21 | Tests are part of every phase exit, not a final phase. | Delivery plan exit conditions; MVP §Traceability | Accepted | None |
-| D22 | Final training dataset selection and licensing. | Model plan §4 | Open | Phase 0 exit |
-| D23 | French model support go/no-go. | Model plan §5, §9 | Open | Phase 1 gate |
-| D24 | Single multilingual model vs per-language models. | Model plan §7 | Open | Phase 1 training |
+| D22 | Final training dataset selection and licensing: fixed in `docs/dataset/dataset-manifest.json` — Ott 2011 (CC BY-NC-SA 4.0, verified), Ott 2013 and YelpChi (research-use terms to be recorded at download; YelpChi evaluation-only, never training), GraphConsis Amazon (pending verification, unused until verified). Raw data stays outside version control; hashes recorded at download. | Model plan §4; manifest | Accepted | A source fails its stated verification |
+| D23 | French go/no-go criterion frozen: FR ships `MODEL` only if the frozen FR gate in `scoring-service/evaluation/gate-v1.json` passes on the manual FR sample; otherwise `SIGNALS_ONLY` or `UNKNOWN` per the ladder. The criterion leaves no discretion at Phase 1; only its mechanical application remains. | Model plan §5, §9, §12; gate-v1.json | Accepted | FR gate evaluation (outcome applies automatically) |
+| D24 | One model per supported language; no single multilingual model at MVP. EN trains on the verified Ott corpora. FR training data, if pursued, comes only through documented translation augmentation and the FR model is still gated on the manual FR labels; if either fails, French returns `UNKNOWN` per D23. Translation augmentation never expands the language claim. | Model plan §6, §7 | Accepted | FR data sufficiency at Phase 1 training |
 
 ## Glossary
 
