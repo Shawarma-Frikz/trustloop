@@ -1,0 +1,30 @@
+{
+  "requestId": "b1f4c2e8-3a6d-4f2b-9c1e-7d5a0b3c8e21",
+  "results": [
+    {
+      "reviewKey": "r-3f9c",
+      "status": "SCORED",
+      "trustScore": 73,
+      "verdict": "LIKELY_ORGANIC",
+      "evidenceQuality": "ADEQUATE",
+      "signals": [
+        {
+          "kind": "CONCRETE_DETAIL",
+          "summary": "Includes a concrete usage detail",
+          "contribution": 0.18
+        }
+      ],
+      "modelVersion": "tl-text-1.0.0",
+      "engine": "MODEL"
+    },
+    {
+      "reviewKey": "r-4a2d",
+      "status": "UNKNOWN",
+      "reasonCode": "INSUFFICIENT_TEXT",
+      "evidenceQuality": "LOW",
+      "signals": [],
+      "modelVersion": "tl-text-1.0.0",
+      "engine": "MODEL"
+    }
+  ]
+}

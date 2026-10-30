@@ -1,0 +1,14 @@
+{
+  "adapterId": "amazon.reviews.v1",
+  "languageHint": "en",
+  "reviews": [
+    {
+      "reviewKey": "r-3f9c",
+      "text": "Bought this for my sister's birthday after comparing three similar models in the same price range. Setup took about ten minutes and the battery has held up well for two weeks of daily use on my commute."
+    },
+    {
+      "reviewKey": "r-4a2d",
+      "text": "Great product, highly recommend, five stars, best purchase ever, amazing quality, buy it now, you will not regret this choice at all, totally worth the money."
+    }
+  ]
+}

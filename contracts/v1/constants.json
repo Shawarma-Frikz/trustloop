@@ -1,0 +1,54 @@
+{
+  "contractVersion": "v1",
+  "constants": {
+    "MAX_REVIEW_CHARS": 2000,
+    "MAX_REVIEWS_PER_REQUEST": 10,
+    "MAX_REQUEST_BYTES": 131072,
+    "MIN_REVIEW_WORDS": 20,
+    "ADEQUATE_REVIEW_WORDS": 50,
+    "LANGUAGE_CONFIDENCE_MIN": 0.8,
+    "MAX_SIGNALS": 5,
+    "SCORING_TIMEOUT_MS": 3000,
+    "BACKEND_TIMEOUT_MS": 4000,
+    "EXTENSION_TIMEOUT_MS": 6000,
+    "SCAN_DEBOUNCE_MS": 750,
+    "MIN_RESCAN_INTERVAL_MS": 2000,
+    "LOCAL_HISTORY_MAX_ENTRIES": 100,
+    "LOCAL_HISTORY_MAX_AGE_DAYS": 30,
+    "RATE_LIMIT_PER_MINUTE": 60,
+    "REQUEST_ID_HEADER": "X-Request-Id",
+    "MODEL_VERSION_FORMAT": "^tl-text-\\d+\\.\\d+\\.\\d+$"
+  },
+  "statuses": ["SCORED", "SIGNALS_ONLY", "UNKNOWN"],
+  "engines": ["MODEL", "SIGNALS_ONLY"],
+  "evidenceQualityLevels": ["LOW", "ADEQUATE"],
+  "reasonCodes": [
+    { "code": "UNSUPPORTED_PAGE", "scope": "extension_state" },
+    { "code": "NO_REVIEWS_FOUND", "scope": "extension_state" },
+    { "code": "INSUFFICIENT_TEXT", "scope": "result" },
+    { "code": "UNSUPPORTED_LANGUAGE", "scope": "result" },
+    { "code": "SCORING_TIMEOUT", "scope": "result" },
+    { "code": "SCORING_UNAVAILABLE", "scope": "result" },
+    { "code": "INVALID_REQUEST", "scope": "request_error" },
+    { "code": "PAYLOAD_TOO_LARGE", "scope": "request_error" },
+    { "code": "RATE_LIMITED", "scope": "request_error" },
+    { "code": "INTERNAL_ERROR", "scope": "request_error" }
+  ],
+  "bands": [
+    { "name": "STRONG_MANIPULATION_SIGNALS", "min": 0, "max": 19 },
+    { "name": "LIKELY_MANIPULATED", "min": 20, "max": 39 },
+    { "name": "INCONCLUSIVE", "min": 40, "max": 54 },
+    { "name": "MIXED_SIGNALS", "min": 55, "max": 69 },
+    { "name": "LIKELY_ORGANIC", "min": 70, "max": 84 },
+    { "name": "STRONG_ORGANIC_SIGNALS", "min": 85, "max": 100 }
+  ],
+  "signals": [
+    { "kind": "REPEATED_PHRASING", "direction": "manipulative" },
+    { "kind": "CROSS_REVIEW_DUPLICATE", "direction": "manipulative" },
+    { "kind": "GENERIC_WORDING", "direction": "manipulative" },
+    { "kind": "PROMOTIONAL_TONE", "direction": "manipulative" },
+    { "kind": "EXTREME_CLAIMS", "direction": "manipulative" },
+    { "kind": "CONCRETE_DETAIL", "direction": "organic" },
+    { "kind": "LEXICAL_VARIETY", "direction": "organic" }
+  ]
+}

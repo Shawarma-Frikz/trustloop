@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "reviewKey": "r-3f9c",
+      "status": "SCORED",
+      "trustScore": 73,
+      "pOrganic": 0.731,
+      "verdict": "LIKELY_ORGANIC",
+      "evidenceQuality": "ADEQUATE",
+      "signals": [
+        {
+          "kind": "CONCRETE_DETAIL",
+          "summary": "Includes a concrete usage detail",
+          "contribution": 0.18
+        }
+      ],
+      "modelVersion": "tl-text-1.0.0",
+      "engine": "MODEL"
+    },
+    {
+      "reviewKey": "r-8c2b",
+      "status": "UNKNOWN",
+      "reasonCode": "UNSUPPORTED_LANGUAGE",
+      "signals": [],
+      "modelVersion": "tl-text-1.0.0",
+      "engine": "MODEL"
+    }
+  ]
+}

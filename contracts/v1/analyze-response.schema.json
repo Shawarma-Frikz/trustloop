@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "analyze-response.v1",
+  "type": "object",
+  "required": ["requestId", "results"],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9-]+$"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/result" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "result": {
+      "type": "object",
+      "required": ["reviewKey", "status", "signals", "engine"],
+      "properties": {
+        "reviewKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "status": { "enum": ["SCORED", "SIGNALS_ONLY", "UNKNOWN"] },
+        "trustScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "verdict": {
+          "enum": [
+            "STRONG_MANIPULATION_SIGNALS",
+            "LIKELY_MANIPULATED",
+            "INCONCLUSIVE",
+            "MIXED_SIGNALS",
+            "LIKELY_ORGANIC",
+            "STRONG_ORGANIC_SIGNALS"
+          ]
+        },
+        "evidenceQuality": { "enum": ["LOW", "ADEQUATE"] },
+        "reasonCode": {
+          "enum": [
+            "INSUFFICIENT_TEXT",
+            "UNSUPPORTED_LANGUAGE",
+            "SCORING_TIMEOUT",
+            "SCORING_UNAVAILABLE"
+          ]
+        },
+        "signals": {
+          "type": "array",
+          "maxItems": 5,
+          "items": { "$ref": "#/$defs/signal" }
+        },
+        "modelVersion": {
+          "type": "string",
+          "pattern": "^tl-text-\\d+\\.\\d+\\.\\d+$"
+        },
+        "engine": { "enum": ["MODEL", "SIGNALS_ONLY"] }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "SCORED" } }, "required": ["status"] },
+          "then": {
+            "required": ["trustScore", "verdict", "modelVersion"],
+            "properties": { "engine": { "const": "MODEL" } }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "SIGNALS_ONLY" } }, "required": ["status"] },
+          "then": {
+            "required": ["evidenceQuality"],
+            "properties": { "engine": { "const": "SIGNALS_ONLY" } },
+            "not": {
+              "anyOf": [
+                { "required": ["trustScore"] },
+                { "required": ["verdict"] },
+                { "required": ["modelVersion"] },
+                {
+                  "type": "object",
+                  "properties": {
+                    "signals": { "type": "array", "items": { "type": "object", "required": ["contribution"] } }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "UNKNOWN" } }, "required": ["status"] },
+          "then": {
+            "required": ["reasonCode"],
+            "not": {
+              "anyOf": [
+                { "required": ["trustScore"] },
+                { "required": ["verdict"] }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "signal": {
+      "type": "object",
+      "required": ["kind", "summary"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "REPEATED_PHRASING",
+            "CROSS_REVIEW_DUPLICATE",
+            "GENERIC_WORDING",
+            "PROMOTIONAL_TONE",
+            "EXTREME_CLAIMS",
+            "CONCRETE_DETAIL",
+            "LEXICAL_VARIETY"
+          ]
+        },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "contribution": { "type": "number", "minimum": -1, "maximum": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

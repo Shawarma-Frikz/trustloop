@@ -1,0 +1,16 @@
+{
+  "adapterId": "amazon.reviews.v1",
+  "reviews": [
+    { "reviewKey": "r-01", "text": "Sample review text number one for contract fixture purposes only." },
+    { "reviewKey": "r-02", "text": "Sample review text number two for contract fixture purposes only." },
+    { "reviewKey": "r-03", "text": "Sample review text number three for contract fixture purposes only." },
+    { "reviewKey": "r-04", "text": "Sample review text number four for contract fixture purposes only." },
+    { "reviewKey": "r-05", "text": "Sample review text number five for contract fixture purposes only." },
+    { "reviewKey": "r-06", "text": "Sample review text number six for contract fixture purposes only." },
+    { "reviewKey": "r-07", "text": "Sample review text number seven for contract fixture purposes only." },
+    { "reviewKey": "r-08", "text": "Sample review text number eight for contract fixture purposes only." },
+    { "reviewKey": "r-09", "text": "Sample review text number nine for contract fixture purposes only." },
+    { "reviewKey": "r-10", "text": "Sample review text number ten for contract fixture purposes only." },
+    { "reviewKey": "r-11", "text": "Sample review text number eleven for contract fixture purposes only." }
+  ]
+}

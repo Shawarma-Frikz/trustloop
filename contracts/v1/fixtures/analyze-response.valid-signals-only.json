@@ -1,0 +1,21 @@
+{
+  "requestId": "9d2b17f4-0c8e-4a63-b9d2-3e5f6a7b8c9d",
+  "results": [
+    {
+      "reviewKey": "r-7b1e",
+      "status": "SIGNALS_ONLY",
+      "evidenceQuality": "LOW",
+      "signals": [
+        {
+          "kind": "GENERIC_WORDING",
+          "summary": "Uses generic wording with few concrete details"
+        },
+        {
+          "kind": "PROMOTIONAL_TONE",
+          "summary": "Reads like promotional copy"
+        }
+      ],
+      "engine": "SIGNALS_ONLY"
+    }
+  ]
+}

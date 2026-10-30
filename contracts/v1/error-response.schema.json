@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "error-response.v1",
+  "type": "object",
+  "required": ["requestId", "error"],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9-]+$"
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "enum": ["INVALID_REQUEST", "PAYLOAD_TOO_LARGE", "RATE_LIMITED", "INTERNAL_ERROR"]
+        },
+        "message": { "type": "string", "minLength": 1, "maxLength": 200 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

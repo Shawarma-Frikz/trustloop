@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "analyze-request.v1",
+  "type": "object",
+  "required": ["adapterId", "reviews"],
+  "properties": {
+    "adapterId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$"
+    },
+    "languageHint": {
+      "type": "string",
+      "enum": ["en", "fr"]
+    },
+    "reviews": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["reviewKey", "text"],
+        "properties": {
+          "reviewKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

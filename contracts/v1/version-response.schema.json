@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "version-response.v1",
+  "type": "object",
+  "required": ["service", "version", "contractVersion", "expectedModelVersion", "engine"],
+  "properties": {
+    "service": { "const": "trustloop-api" },
+    "version": { "type": "string", "minLength": 1 },
+    "contractVersion": { "const": "v1" },
+    "expectedModelVersion": {
+      "type": "string",
+      "pattern": "^tl-text-\\d+\\.\\d+\\.\\d+$"
+    },
+    "engine": { "enum": ["MODEL", "SIGNALS_ONLY"] }
+  },
+  "additionalProperties": false
+}

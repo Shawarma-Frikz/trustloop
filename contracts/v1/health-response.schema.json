@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "health-response.v1",
+  "type": "object",
+  "required": ["status"],
+  "properties": {
+    "status": { "enum": ["ready", "not_ready"] }
+  },
+  "additionalProperties": false
+}

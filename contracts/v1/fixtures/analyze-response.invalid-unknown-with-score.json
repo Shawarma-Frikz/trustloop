@@ -1,0 +1,14 @@
+{
+  "requestId": "b1f4c2e8-3a6d-4f2b-9c1e-7d5a0b3c8e21",
+  "results": [
+    {
+      "reviewKey": "r-3f9c",
+      "status": "UNKNOWN",
+      "reasonCode": "SCORING_TIMEOUT",
+      "trustScore": 50,
+      "verdict": "INCONCLUSIVE",
+      "signals": [],
+      "engine": "MODEL"
+    }
+  ]
+}

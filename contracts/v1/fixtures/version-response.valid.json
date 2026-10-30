@@ -1,0 +1,7 @@
+{
+  "service": "trustloop-api",
+  "version": "0.0.1",
+  "contractVersion": "v1",
+  "expectedModelVersion": "tl-text-1.0.0",
+  "engine": "MODEL"
+}
