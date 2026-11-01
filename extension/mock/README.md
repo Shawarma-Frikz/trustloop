@@ -9,7 +9,7 @@ The mock loads `src/i18n/*.json` with `fetch`, so it needs HTTP — opening the 
 file directly (`file://`) is blocked by the browser. From the `extension/` folder:
 
 ```powershell
-..\.venv\Scripts\python.exe -m http.server 8123
+..\scoring-service\.venv\Scripts\python.exe -m http.server 8123
 ```
 
 Then open <http://localhost:8123/mock/panel-mock.html>.

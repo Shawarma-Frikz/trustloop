@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "1.1",
+  "manifestVersion": "1.2",
   "frozenAt": "2026-10-30",
   "rule": "No live TrustLoop review text is ever used for training. Inference text is processed transiently and never retained. Raw datasets stay outside version control; this manifest records sources, licences, verification status, and hashes when files are acquired.",
   "verificationStates": {
@@ -7,6 +7,33 @@
     "on-request": "distribution requires contacting the author; terms confirmed in writing before first use",
     "pending": "candidate listed; terms or rights basis are unresolved; do not acquire or use",
     "planned": "future collection not yet performed; no files or hashes exist"
+  },
+  "pipeline": {
+    "version": "1.0",
+    "seed": 20261030,
+    "splitFractions": {
+      "train": 0.7,
+      "dev": 0.1,
+      "calibration": 0.1,
+      "test": 0.1
+    },
+    "normalization": "Unicode NFKC; collapse all whitespace to one ASCII space; preserve case; no stemming",
+    "nearDuplicate": {
+      "method": "cosine-character-3-5-grams",
+      "cosineThreshold": 0.92,
+      "action": "drop duplicate rows before splitting; conflicting labels fail for manual review"
+    },
+    "grouping": "group by source_id, language, and product_id (or page_id when product_id is empty); groups never cross splits",
+    "inputColumns": {
+      "recordId": "record_id",
+      "text": "text",
+      "label": "label",
+      "language": "language",
+      "pageId": "page_id",
+      "productId": "product_id"
+    },
+    "calibrationRule": "calibration split is held out from hyperparameter tuning; held-out manual evaluation sources remain separate and are never admitted to training splits",
+    "splitCounts": "generated in data/processed/splits/split-manifest.json after hash-pinned inputs are acquired"
   },
   "sources": [
     {
@@ -24,7 +51,10 @@
       "redistribution": "forbidden by project rule; raw files stay out of version control",
       "localPath": "data/raw/ott-2011/",
       "files": [],
-      "labelMapping": "truthful -> organic proxy; deceptive -> manipulated proxy (codebook section 7)"
+      "labelMapping": {
+        "truthful": "organic",
+        "deceptive": "manipulated"
+      }
     },
     {
       "id": "ott-2013-negative",
