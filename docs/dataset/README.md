@@ -14,7 +14,7 @@ decision-register entry and a new version.
 | [sample-plan.md](sample-plan.md) | Held-out manual evaluation plan v1.1: 250 EN and 175 FR targets, deterministic selection, eligibility floor, page-cluster confidence intervals, collection hygiene. |
 | [dataset-manifest.json](dataset-manifest.json) | Sources, roles, languages, licence terms, verification status, and acquisition-time hash policy. Raw data stays outside version control. |
 | `../../scoring-service/evaluation/gate-v1.json` | The frozen EN/FR acceptance gate transcribed from model plan §9, with its anti-tamper test. |
-| [data pipeline](../../scoring-service/app/data_pipeline.py) | Hash-checks canonical CSV inputs, normalizes text, removes near-duplicates, groups by source/product-or-page, and deterministically writes train/dev/calibration/test splits plus an aggregate build manifest. |
+| [data pipeline](../../scoring-service/app/data_pipeline.py) | Hash-checks canonical CSV or manifest-declared ZIP-member CSV inputs, normalizes text, removes near-duplicates, groups by source/product-or-page, and deterministically writes train/dev/calibration/test splits plus an aggregate build manifest. |
 
 ## Closeout status
 
@@ -24,15 +24,15 @@ decision-register entry and a new version.
 - [x] Sample plan v1.1 pre-registered; label-dependent redraw and adaptation use removed.
 - [x] Manifest records the verified Ott 2011 candidate and blocks sources with unresolved terms.
 - [x] EN/FR gate frozen and pinned to model plan §9 by `test_gate_and_manifest.py`.
-- [x] Reproducible split pipeline and injected-duplicate leakage test implemented; actual source split counts remain unavailable until an approved dataset file is acquired and hash-pinned.
+- [x] Reproducible split pipeline and injected-duplicate leakage test implemented; the approved Ott 2011 archive has been acquired and hash-pinned. Run the pipeline to generate the actual split counts.
 - [x] D22–D24 outcomes recorded; D25 records the sample-plan correction.
-- [ ] Acquire only approved data and add real file hashes before the dataset is used in Phase 1.
+- [x] Acquire only the approved Ott 2011 corpus and record its real archive SHA-256 and byte count; the source filter excludes the later negative-polarity corpus.
 
 ## What is deliberately not here yet
 
-- **Dataset hashes** — no dataset files are present in the workspace. Hashes are
-  recorded at acquisition in Phase 1; empty `files[]` means not acquired, never a
-  fabricated hash.
+- **Dataset hashes** — the local Ott archive is ignored by Git; its real SHA-256
+  and byte count are recorded in `dataset-manifest.json`. Other sources remain
+  unacquired until their terms are verified.
 - **The annotated sample itself** — collection and double annotation are scheduled
   in [sample-plan.md](sample-plan.md) §7; review text never enters this repository.
 - **Kappa numbers** — require two independent human annotations; report aggregate
@@ -45,12 +45,14 @@ processed transiently and never retained.
 
 ## Rebuild training-development splits
 
-The raw CSV must remain under `data/raw/<source-id>/`, outside version control,
-and use the canonical columns `record_id,text,label,language,page_id,product_id`.
-Add each acquired file's real relative path, SHA-256, and byte count to that
-source's `files[]` in the manifest. The pipeline accepts only verified sources
-with matching hashes and a declared label map. Do not add held-out manual samples
-to these training-development inputs.
+Raw data must remain under `data/raw/<source-id>/`, outside version control.
+Inputs can be canonical CSV files or a manifest-declared CSV member inside a ZIP
+archive. The Ott archive is read without extraction; its manifest entry filters
+`polarity=positive`, maps truthful/deceptive to organic/manipulated, and groups by
+hotel. The negative-polarity rows from the later Ott collection are excluded.
+The pipeline verifies the archive hash and byte count before reading it. Future
+sources need an explicit schema, license verification, label mapping, and filter
+where required. Held-out manual samples must not be included in these splits.
 
 From the repository root, run:
 
@@ -61,9 +63,9 @@ Pop-Location
 ```
 
 Outputs are written under the ignored `data/processed/splits/` directory. Its
-`split-manifest.json` records input hashes, seed, split fractions, per-split and
-per-source counts, and removed near-duplicates. Split groups stay within one
+`split-manifest.json` records source and generated split-file hashes, seed, split
+fractions, per-split and per-source counts, and removed near-duplicates. Split groups stay within one
 source, language, and product (or page when product is absent). The calibration
 split is separate from held-out manual evaluation and is not for hyperparameter
-tuning. The command intentionally fails until the manifest lists acquired,
-hash-pinned files; it never invents counts or hashes.
+tuning. The command fails if the manifest lists no acquired files or if any
+recorded hash/byte count differs; it never invents counts or hashes.

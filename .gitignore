@@ -18,6 +18,7 @@ extension/dist/
 data/
 scoring-service/data/
 scoring-service/artifacts/*/model.joblib
+scoring-service/artifacts/candidates/
 *.joblib
 *.pkl
 

@@ -33,6 +33,23 @@ deduplicated train/dev/calibration/test files and a hash/count manifest under
 ignored `data/processed/splits/`. See `docs/dataset/README.md` for the canonical
 CSV schema and leakage policy.
 
+## Baseline candidate (Phase 1.2)
+
+After rebuilding the splits, fit an experimental candidate with train/dev only:
+
+```powershell
+Push-Location scoring-service
+.\.venv\Scripts\python.exe -m app.train_baseline
+Pop-Location
+```
+
+The frozen `evaluation/training-v1.json` controls TF-IDF ranges, `min_df`, the
+dev-only regularization search, and language-detector decision. The script checks
+the split hashes, tunes on dev, refits on train+dev, and does not load the
+calibration or test CSVs. Candidate artifacts are ignored by Git and are not
+loaded for serving. The per-language `UNKNOWN` decisions remain until the frozen
+manual in-domain gates pass.
+
 ## Test
 
 ```bat

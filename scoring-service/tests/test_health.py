@@ -1,12 +1,6 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-client = TestClient(app)
-
+from app.main import health
 
 def test_health_is_unhealthy_without_a_model():
-    response = client.get("/health")
-
+    response = health()
     assert response.status_code == 503
-    assert response.json() == {"status": "unhealthy", "modelLoaded": False}
+    assert response.body == b'{"status":"unhealthy","modelLoaded":false}'

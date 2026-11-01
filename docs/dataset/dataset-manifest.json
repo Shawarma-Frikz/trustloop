@@ -19,21 +19,41 @@
     },
     "normalization": "Unicode NFKC; collapse all whitespace to one ASCII space; preserve case; no stemming",
     "nearDuplicate": {
-      "method": "cosine-character-3-5-grams",
+      "method": "cosine-char_wb-3-5-grams-binary",
       "cosineThreshold": 0.92,
       "action": "drop duplicate rows before splitting; conflicting labels fail for manual review"
     },
-    "grouping": "group by source_id, language, and product_id (or page_id when product_id is empty); groups never cross splits",
+    "grouping": "group by dataset source, source_group when present, language, and product_id (or page_id when product_id is empty); groups never cross splits",
     "inputColumns": {
       "recordId": "record_id",
       "text": "text",
       "label": "label",
       "language": "language",
       "pageId": "page_id",
-      "productId": "product_id"
+      "productId": "product_id",
+      "sourceGroup": null
     },
     "calibrationRule": "calibration split is held out from hyperparameter tuning; held-out manual evaluation sources remain separate and are never admitted to training splits",
-    "splitCounts": "generated in data/processed/splits/split-manifest.json after hash-pinned inputs are acquired"
+    "splitCounts": {
+      "recordedAt": "2026-11-01",
+      "selectedInputRows": 800,
+      "deduplicatedRows": 800,
+      "droppedNearDuplicates": 0,
+      "sourceRows": {
+        "readFromArchive": 1600,
+        "positiveSelected": 800,
+        "negativeFiltered": 800
+      },
+      "bySplit": {
+        "train": {"en": 560, "sourceGroups": {"MTurk": 280, "TripAdvisor": 280}},
+        "dev": {"en": 80, "sourceGroups": {"MTurk": 40, "TripAdvisor": 40}},
+        "calibration": {"en": 80, "sourceGroups": {"MTurk": 40, "TripAdvisor": 40}},
+        "test": {"en": 80, "sourceGroups": {"MTurk": 40, "TripAdvisor": 40}}
+      },
+      "sourceArchiveSha256": "f93674ef50e365886aeef5e651ac8990e8430d36e439ae1ca5fa6962a76a0a8e",
+      "seed": 20261030,
+      "buildManifest": "data/processed/splits/split-manifest.json"
+    }
   },
   "sources": [
     {
@@ -50,7 +70,30 @@
       "reviewerData": "none collected; text-only",
       "redistribution": "forbidden by project rule; raw files stay out of version control",
       "localPath": "data/raw/ott-2011/",
-      "files": [],
+      "files": [
+        {
+          "path": "kaggle-download.zip",
+          "format": "zip-member-csv",
+          "member": "deceptive-opinion.csv",
+          "sha256": "f93674ef50e365886aeef5e651ac8990e8430d36e439ae1ca5fa6962a76a0a8e",
+          "bytes": 467397
+        }
+      ],
+      "inputColumns": {
+        "recordId": null,
+        "text": "text",
+        "label": "deceptive",
+        "language": null,
+        "pageId": "hotel",
+        "productId": "hotel",
+        "sourceGroup": "source"
+      },
+      "rowIdFields": ["hotel", "source", "deceptive"],
+      "rowFilter": {
+        "field": "polarity",
+        "equals": "positive",
+        "reason": "The verified Ott 2011 candidate is the positive corpus; exclude negative-polarity material from the later Ott 2013 collection."
+      },
       "labelMapping": {
         "truthful": "organic",
         "deceptive": "manipulated"
@@ -149,6 +192,6 @@
     "labelBasis": "inherited from English source rows",
     "rule": "Local or licensed translation tool only; documented processing note in the model card; FR evaluation still uses manual labels only (model plan section 4)."
   },
-  "hashPolicy": "At acquisition time each dataset file's SHA-256 is recorded in its source entry's files[] as {path, sha256, bytes}; files[] stays empty until acquisition. The Phase 1 pipeline fails if a listed file is absent or its hash/byte count differs. A verified licence/source may have no files before acquisition; use verification=planned for manual samples not yet collected. Never create placeholder hashes.",
+  "hashPolicy": "At acquisition time each dataset file's SHA-256 is recorded in its source entry's files[] as {path, sha256, bytes}, with format/member metadata for archives. The Phase 1 pipeline fails if a listed file is absent or its hash/byte count differs. A verified licence/source may have no files before acquisition; use verification=planned for manual samples not yet collected. Never create placeholder hashes.",
   "splitPolicy": "Split by product/page and by source, not by individual review. Near-duplicates removed across splits before training. Train / dev / calibration / test; calibration split never used for hyperparameter tuning. Random seeds recorded (model plan section 7)."
 }

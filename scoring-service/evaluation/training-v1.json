@@ -1,0 +1,24 @@
+{
+  "trainingVersion": "v1",
+  "modelFamily": "word-and-character-tfidf-logistic-regression",
+  "languages": ["en", "fr"],
+  "wordNgramRange": [1, 2],
+  "charNgramRange": [3, 5],
+  "sublinearTf": true,
+  "minimumDocumentFrequency": 2,
+  "classWeight": "balanced",
+  "solver": "liblinear",
+  "maxIterations": 2000,
+  "randomSeed": 20261030,
+  "regularizationCGrid": [0.01, 0.1, 1.0, 10.0],
+  "tuningSplit": "dev",
+  "selectionMetric": "F1 for manipulated using the candidate uncalibrated organic-probability threshold 0.50",
+  "tieBreak": "choose the smaller C (stronger regularization)",
+  "refitRows": "train+dev after hyperparameter selection",
+  "calibrationAndTest": "not loaded by this training command",
+  "languageDetector": {
+    "choice": "local fastText lid.176",
+    "minimumConfidence": 0.8,
+    "liveTextNetworkCalls": false
+  }
+}

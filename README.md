@@ -25,16 +25,18 @@ It does not verify purchases, identify reviewers, prove fraud, or rate products.
 
 ## Test harness
 
-Run all four phase suites from the repository root in PowerShell (Python 3.12+, JDK 21+, Maven 3.9+, and Node 24+):
+Run the complete checks for the current project state from the repository root in PowerShell (Python 3.12+, JDK 21+, Maven 3.9+, and Node 24+):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\test-phase0.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\test-project.ps1
 ```
 
-The same four suites run on every pull request and on pushes to `main` via
+This rebuilds the dataset splits and experimental candidate, then runs all four
+component suites. The original Phase 0-only harness remains at
+`scripts/test-phase0.ps1`. CI runs the component suites on every pull request and
+on pushes to `main` via
 `.github/workflows/phase-0-harness.yml`. The runner stops at the first failing
-command; contract tests install their small standalone requirements from
-`contracts/requirements.txt`.
+command.
 
 ## Status
 

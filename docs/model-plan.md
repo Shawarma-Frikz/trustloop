@@ -98,6 +98,18 @@ The manual sample is never used for adaptation, feature selection, threshold tun
 
 **MVP model:** TF-IDF (word 1–2 grams plus character 3–5 grams) with logistic regression, class weights balanced, regularisation tuned on the dev split.
 
+The executable baseline configuration is frozen in
+[`scoring-service/evaluation/training-v1.json`](../scoring-service/evaluation/training-v1.json):
+both vectorizers use `min_df=2`; logistic-regression `C` candidates are
+`0.01, 0.1, 1, 10`; choose by dev-only F1 for the manipulated class using the
+candidate's **uncalibrated** organic-class probability at threshold `0.50`,
+breaking ties toward the smaller `C` (stronger regularisation). Use deterministic `liblinear`, class weights balanced, and
+2,000 maximum iterations. Fit the final candidate on train + dev after choosing
+`C`; never load calibration or test data during this command. The selected
+language detector is local fastText `lid.176` with confidence ≥0.80; live review
+text is never sent to a remote detector. This model step records a candidate only:
+no language ships `MODEL` before its frozen manual in-domain gate passes.
+
 Why this baseline:
 
 - It works on small labelled datasets and CPU-only student hardware.

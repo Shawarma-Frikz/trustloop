@@ -1,6 +1,8 @@
 import csv
 import hashlib
+import io
 import json
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -69,6 +71,7 @@ def _fixture_repo(tmp_path: Path, *, tamper_after_manifest: bool = False) -> tup
                 "language": "language",
                 "pageId": "page_id",
                 "productId": "product_id",
+                "sourceGroup": None,
             },
         },
         "sources": [{
@@ -143,11 +146,11 @@ def test_near_duplicate_injected_across_train_and_test_fails_leakage_check():
 
 def test_rows_from_same_product_page_are_assigned_to_one_split():
     rows = [
-        {"record_id": "p1-a", "source_id": "s", "language": "en", "product_id": "p1", "page_id": "a"},
-        {"record_id": "p1-b", "source_id": "s", "language": "en", "product_id": "p1", "page_id": "b"},
-        {"record_id": "p2", "source_id": "s", "language": "en", "product_id": "p2", "page_id": "c"},
-        {"record_id": "p3", "source_id": "s", "language": "en", "product_id": "p3", "page_id": "d"},
-        {"record_id": "p4", "source_id": "s", "language": "en", "product_id": "p4", "page_id": "e"},
+        {"record_id": "p1-a", "source_id": "s", "source_group": "origin-a", "language": "en", "product_id": "p1", "page_id": "a"},
+        {"record_id": "p1-b", "source_id": "s", "source_group": "origin-a", "language": "en", "product_id": "p1", "page_id": "b"},
+        {"record_id": "p2", "source_id": "s", "source_group": "origin-a", "language": "en", "product_id": "p2", "page_id": "c"},
+        {"record_id": "p3", "source_id": "s", "source_group": "origin-a", "language": "en", "product_id": "p3", "page_id": "d"},
+        {"record_id": "p4", "source_id": "s", "source_group": "origin-a", "language": "en", "product_id": "p5", "page_id": "e"},
     ]
 
     _assign_splits(rows, 17, FRACTIONS)
@@ -181,3 +184,75 @@ def test_missing_acquired_files_do_not_create_fake_split_counts(tmp_path):
     manifest.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(PipelineError, match="no hash-pinned"):
         build_splits(manifest, repo / "data" / "processed" / "splits")
+
+
+def test_zip_source_filter_maps_only_approved_positive_polarity(tmp_path):
+    manifest_path, repo = _fixture_repo(tmp_path)
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    source = data["sources"][0]
+    source["inputColumns"] = {
+        "recordId": None,
+        "text": "text",
+        "label": "deceptive",
+        "language": None,
+        "pageId": "hotel",
+        "productId": "hotel",
+        "sourceGroup": "source",
+    }
+    source["rowIdFields"] = ["hotel", "source", "deceptive"]
+    source["rowFilter"] = {"field": "polarity", "equals": "positive"}
+    rows = []
+    positive_texts = [
+        "Copper lantern glows beside the balcony door while rain taps against empty flowerpots.",
+        "Basketball practice starts before sunrise because the neighborhood court becomes crowded later.",
+        "A yellow recipe notebook contains handwritten soup measurements from several winter evenings.",
+        "Mountain bicycles need replacement brake pads after dusty trails and steep downhill rides.",
+        "The ceramic teapot pours slowly but keeps jasmine leaves warm through afternoon conversations.",
+        "A wool scarf feels soft outdoors although its narrow fringe catches on coat buttons.",
+        "Portable speakers connect easily in the kitchen and remain audible beside the running faucet.",
+        "Garden gloves protect both palms when pruning thorny roses near the wooden fence.",
+    ]
+    for index, hotel in enumerate([f"hotel-{n}" for n in range(8)]):
+        rows.append({
+            "deceptive": "truthful" if index % 2 == 0 else "deceptive",
+            "hotel": hotel,
+            "polarity": "positive",
+            "source": "TripAdvisor",
+            "text": positive_texts[index],
+        })
+    # The negative-polarity partition is present in the Kaggle archive but is not
+    # part of the verified Ott 2011 positive-only source in the manifest.
+    rows.append({
+        "deceptive": "not-a-approved-label",
+        "hotel": "hotel-negative",
+        "polarity": "negative",
+        "source": "TripAdvisor",
+        "text": "This row must be filtered before labels are mapped.",
+    })
+    csv_stream = io.StringIO(newline="")
+    writer = csv.DictWriter(csv_stream, fieldnames=rows[0].keys())
+    writer.writeheader()
+    writer.writerows(rows)
+    archive_path = repo / "data" / "raw" / "fixture-source" / "fixture.zip"
+    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("deceptive-opinion.csv", csv_stream.getvalue().encode("utf-8"))
+    archive_bytes = archive_path.read_bytes()
+    source["files"] = [{
+        "path": "fixture.zip",
+        "format": "zip-member-csv",
+        "member": "deceptive-opinion.csv",
+        "sha256": hashlib.sha256(archive_bytes).hexdigest(),
+        "bytes": len(archive_bytes),
+    }]
+    manifest_path.write_text(json.dumps(data), encoding="utf-8")
+
+    result = build_splits(manifest_path, repo / "data" / "processed" / "splits")
+
+    assert sum(split["total"] for split in result.counts.values()) == 8
+    assert "fixture-source/fixture.zip" in result.source_hashes
+    build_manifest = json.loads((result.output_dir / "split-manifest.json").read_text(encoding="utf-8"))
+    assert build_manifest["sourceRowCounts"]["fixture-source/fixture.zip"] == {
+        "read": 9,
+        "selected": 8,
+        "filtered": 1,
+    }
