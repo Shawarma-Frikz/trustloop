@@ -10,7 +10,7 @@ import json
 import platform
 import sys
 from collections import Counter
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import PackageNotFoundError, distributions, version
 from pathlib import Path
 
 from joblib import dump
@@ -117,7 +117,12 @@ def _package_version(package: str) -> str:
 def _runtime_lock() -> tuple[dict[str, str], str]:
     packages = ("scikit-learn", "joblib", "numpy", "scipy", "threadpoolctl")
     versions = {package: _package_version(package) for package in packages}
-    lines = [f"{package}=={package_version}" for package, package_version in versions.items()]
+    exact_packages = {}
+    for distribution in distributions():
+        name = distribution.metadata.get("Name")
+        if name:
+            exact_packages[name.lower().replace("_", "-")] = (name, distribution.version)
+    lines = [f"{name}=={package_version}" for name, package_version in sorted(exact_packages.values(), key=lambda pair: pair[0].lower())]
     lines.insert(0, f"# Python {platform.python_version()}")
     return versions, "\n".join(lines) + "\n"
 

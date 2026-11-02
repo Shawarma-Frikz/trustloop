@@ -43,6 +43,8 @@ scoring-service/artifacts/<modelVersion>/
 
 The backend is configured with an expected `modelVersion`. A mismatch, a malformed response, or an artifact that fails its hash check is treated as `SCORING_UNAVAILABLE`, not as a valid result. Scored results carry `engine` and `modelVersion`; `SIGNALS_ONLY` carries its engine/status and no `modelVersion`, so the UI can identify what produced every result.
 
+Phase 1.4 builds `tl-text-1.1.0` as a local experimental bundle. The bundle is ignored by Git because this project does not redistribute artifacts derived from the non-commercial CC BY-NC-SA training corpus. The builder is reproducible from the hash-pinned local data; its model card and aggregate evidence are versioned in `docs/evidence/`. The backend pins the expected version, and the scoring service verifies the bundle manifest and file checksums at startup. A valid hash does not change the `UNKNOWN` production gate decision or enable scoring.
+
 The scoring service warms the model at startup and only reports ready on `/health` after the artifact is loaded. This avoids a cold first request in a demo.
 
 ## 3. Label definition

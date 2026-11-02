@@ -33,6 +33,7 @@ function Invoke-CheckedCommand {
 Invoke-CheckedCommand $scoringDir $python @("-m", "app.data_pipeline")
 Invoke-CheckedCommand $scoringDir $python @("-m", "app.train_baseline")
 Invoke-CheckedCommand $scoringDir $python @("-m", "app.calibrate_explain")
+Invoke-CheckedCommand $scoringDir $python @("-m", "app.build_artifact")
 Invoke-CheckedCommand $scoringDir $python @("-m", "pytest", "-q")
 Invoke-CheckedCommand (Join-Path $repoRoot "contracts") $python @("-m", "pytest", "-q")
 Invoke-CheckedCommand (Join-Path $repoRoot "backend") "mvn" @("-B", "verify")

@@ -69,6 +69,27 @@ full-result determinism. Outputs go to ignored
 `artifacts/candidates/calibration-v1/`. Public hotel-review results are transfer
 evidence only; they do not pass the manual Amazon gate or enable serving.
 
+## Versioned experimental artifact (Phase 1.4)
+
+Build and verify the local, ignored bundle after the baseline and calibration
+steps:
+
+```powershell
+Push-Location scoring-service
+.\.venv\Scripts\python.exe -m app.build_artifact
+Pop-Location
+```
+
+The builder pins `tl-text-1.1.0`, packages the model, calibration, metrics with
+public-transfer confidence intervals, model card, dataset manifest, and exact
+runtime lock, then verifies every file hash. The bundle is local and ignored by
+Git because the source corpus is non-commercial and the project does not
+redistribute derived model artifacts. The model card and aggregate evidence are
+committed separately. The scoring service verifies a present bundle against
+`TRUSTLOOP_EXPECTED_MODEL_VERSION` at startup and fails startup on corruption or
+version mismatch. It still returns not-ready and exposes no scoring endpoint:
+the model is experimental until the manual in-domain gate passes.
+
 ## Test
 
 ```bat
