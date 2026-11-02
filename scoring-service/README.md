@@ -2,19 +2,55 @@
 
 Internal FastAPI service. Binds to loopback; the extension never calls it directly.
 
-## Run (cmd.exe)
+## Install (cmd.exe)
 
 ```bat
 cd scoring-service
 py -3 -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 In Git Bash the activation line is `source .venv/Scripts/activate`.
 
-`GET /health` returns `503` until a model artifact is loaded. That is the expected state in Phase 0.
+`GET /health` returns `not_ready` until the version-pinned artifact is verified,
+warmed, and an internal token is configured. Readiness means the process can
+handle internal calls; it does not mean the model has passed its product gate.
+
+## Internal scoring API (Phase 1.5)
+
+From the repository root, run in PowerShell with a per-session token. The service launcher rejects a
+non-loopback bind address, and Uvicorn access logging is disabled so request
+content cannot leak through access logs:
+
+```powershell
+$env:TRUSTLOOP_SCORING_TOKEN = [guid]::NewGuid().ToString("N")
+Push-Location scoring-service
+.\.venv\Scripts\python.exe -m app.main
+Pop-Location
+```
+
+The service exposes `POST /score`, `GET /health`, and `GET /version`. `/score`
+requires `X-Internal-Token`, accepts 1–10 reviews (at most 2,000 characters
+each), propagates or creates `X-Request-Id`, and returns results in input order.
+Request errors use the shared safe error envelope. Logs contain only request ID,
+method, path, status, and exception type; they never include bodies or tokens.
+
+The bundled `tl-text-1.1.0` artifact is still `UNKNOWN` and explicitly
+not-for-serving. Accordingly, the service returns `UNKNOWN` with
+`SCORING_UNAVAILABLE` for adequate-length reviews, and `INSUFFICIENT_TEXT` for
+short reviews. It will not turn public hotel-review transfer metrics into
+Amazon scores. `/health` can report ready when the local artifact is warmed and
+the service token is set; that indicates the internal process is responsive,
+not that a model score is approved.
+
+Run the service boundary tests with:
+
+```powershell
+Push-Location scoring-service
+.\.venv\Scripts\python.exe -m pytest -q tests/test_scoring_service.py tests/test_artifact_loader.py
+Pop-Location
+```
 
 ## Dataset preparation (Phase 1.1)
 
@@ -87,8 +123,9 @@ Git because the source corpus is non-commercial and the project does not
 redistribute derived model artifacts. The model card and aggregate evidence are
 committed separately. The scoring service verifies a present bundle against
 `TRUSTLOOP_EXPECTED_MODEL_VERSION` at startup and fails startup on corruption or
-version mismatch. It still returns not-ready and exposes no scoring endpoint:
-the model is experimental until the manual in-domain gate passes.
+version mismatch. The internal `/score` route returns contract-shaped `UNKNOWN`
+results while the model is experimental and the manual in-domain gate remains
+pending.
 
 ## Test
 

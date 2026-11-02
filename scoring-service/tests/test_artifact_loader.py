@@ -98,10 +98,15 @@ def test_bundle_rejects_corruption_and_version_mismatch(tmp_path):
         verify_artifact_bundle(bundle, "tl-text-9.9.9")
 
 
-def test_startup_artifact_initialization_loads_candidate_without_marking_ready(tmp_path, monkeypatch):
+def test_startup_artifact_initialization_warms_candidate_without_enabling_serving(tmp_path, monkeypatch):
     bundle = tmp_path / "bundle"
     bundle.mkdir()
-    sentinel = {"manifest": {"servingEnabled": False}}
+    class WarmModel:
+        def predict_proba(self, texts):
+            assert texts == ["TrustLoop startup warm-up review text."]
+            return [[0.5, 0.5]]
+
+    sentinel = {"manifest": {"servingEnabled": False}, "model": WarmModel()}
     calls = []
 
     def fake_loader(path, expected_version):
@@ -114,6 +119,8 @@ def test_startup_artifact_initialization_loads_candidate_without_marking_ready(t
 
     initialize_candidate_artifact(app, bundle, VERSION)
     assert app.state.artifact_bundle_verified is True
+    assert app.state.artifact_warmed is True
     assert app.state.candidate_artifact is sentinel
-    assert app.state.model_loaded is False
+    assert app.state.model_loaded is True
+    assert app.state.model_serving_enabled is False
     assert calls == [(bundle, VERSION)]
