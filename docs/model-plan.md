@@ -135,6 +135,7 @@ No off-the-shelf "fake review detector" is trusted without in-domain validation.
 
 - Fit Platt scaling or isotonic regression on the dedicated calibration split; choose the method by reliability on dev, then report on test.
 - Report expected calibration error (ECE), Brier score, and a reliability curve, per language and overall.
+- The executable Phase 1.3 protocol is frozen in `scoring-service/evaluation/calibration-explanation-v1.json`. It fits each candidate calibrator on calibration predictions from the selected-C model trained on train, selects by dev ECE (then Brier, then method name), refits that method on calibration predictions from the train+dev candidate, and evaluates once on test. This preserves the test boundary; public-corpus results remain transfer evidence only.
 - **Calibration scope:** `p_organic` is calibrated to the evaluation distribution, not to the prevalence of manipulation on Amazon. Because public corpora are balanced by construction, the score is a text-pattern estimate, not a real-world probability. The report and UI must state this limitation; do not present `73` as "73% of Amazon reviews like this are fake/organic."
 - If calibration does not reach the gate in §9, the numeric score is not shipped as a calibrated probability. Use the fallback ladder in §12.
 
@@ -162,6 +163,8 @@ The gate is a point-estimate check with confidence intervals reported and is eva
 ## 10. Explanation method and signals
 
 For the linear baseline, the contribution of a feature is its signed coefficient multiplied by its normalized value. Token features are aggregated into named, human-readable signal groups. Signed contributions are normalized across the full feature set so that the total absolute contribution is 1. Only the top five signals are returned, with their original normalized values; do not renormalize the returned subset. Direction is preserved. A numeric contribution is shown only when the explanation passes the stability and determinism checks; otherwise the signal is qualitative.
+
+The Phase 1.3 implementation groups repeated word bigrams, explicit English promotional/extreme/generic/concrete lexicons, and unique non-stopword unigram features into the frozen signal vocabulary. Character features are assigned only when their span matches a configured lexicon phrase; unmatched active features still remain in the normalization denominator. `CROSS_REVIEW_DUPLICATE` can be emitted only as qualitative request-batch context because the current text-only candidate was not trained with that flag. Three source-group/page-cluster bootstrap refits measure top-five signal-set Jaccard on fixed public test inputs; numeric contributions remain disabled unless mean pairwise Jaccard is at least 0.80 and canonical full-result hashes are identical.
 
 | Code | EN summary template | Direction | Definition | Limits |
 |---|---|---|---|---|

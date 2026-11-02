@@ -50,6 +50,25 @@ calibration or test CSVs. Candidate artifacts are ignored by Git and are not
 loaded for serving. The per-language `UNKNOWN` decisions remain until the frozen
 manual in-domain gates pass.
 
+## Calibration and explanation (Phase 1.3)
+
+After training the baseline candidate, run the frozen calibration/evaluation
+protocol:
+
+```powershell
+Push-Location scoring-service
+.\.venv\Scripts\python.exe -m app.calibrate_explain
+Pop-Location
+```
+
+This fits sigmoid and isotonic candidates on calibration predictions, selects by
+dev reliability (ECE, then Brier), refits the selected calibrator on the final
+candidate, and reports once on the public-corpus test split. It also evaluates
+coefficient-to-signal aggregation, source/page-cluster bootstrap stability, and
+full-result determinism. Outputs go to ignored
+`artifacts/candidates/calibration-v1/`. Public hotel-review results are transfer
+evidence only; they do not pass the manual Amazon gate or enable serving.
+
 ## Test
 
 ```bat

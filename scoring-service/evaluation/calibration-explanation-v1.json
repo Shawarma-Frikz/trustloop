@@ -1,0 +1,21 @@
+{
+  "calibrationVersion": "v1",
+  "language": "en",
+  "methods": ["sigmoid", "isotonic"],
+  "calibratorFitSplit": "calibration",
+  "methodSelectionSplit": "dev",
+  "selectionOrder": ["lowest ECE", "lowest Brier score", "alphabetical method name"],
+  "reliabilityBins": 10,
+  "finalReportingSplit": "test",
+  "testReadPolicy": "one final public-corpus transfer evaluation; never a training, tuning, or production gate split",
+  "explanation": {
+    "aggregation": "signed coefficient times normalized TF-IDF feature value, grouped by the frozen seven named signals",
+    "normalization": "divide grouped values by total absolute contribution across all active model features before selecting top five",
+    "bootstrapRuns": 3,
+    "bootstrapSeeds": [20261102, 20261103, 20261104],
+    "bootstrapUnit": ["source_id", "source_group", "page_id or product_id"],
+    "minimumMeanPairwiseTop5JaccardForNumericContributions": 0.8,
+    "fullResultDeterminism": "canonical JSON SHA-256 for identical fixed input and candidate version"
+  },
+  "productionGate": "manual in-domain sample only; public Ott corpus results are transfer evidence"
+}

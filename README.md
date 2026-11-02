@@ -31,8 +31,8 @@ Run the complete checks for the current project state from the repository root i
 powershell -ExecutionPolicy Bypass -File .\scripts\test-project.ps1
 ```
 
-This rebuilds the dataset splits and experimental candidate, then runs all four
-component suites. The original Phase 0-only harness remains at
+This rebuilds the dataset splits, baseline candidate, and calibration/evaluation
+report, then runs all four component suites. The original Phase 0-only harness remains at
 `scripts/test-phase0.ps1`. CI runs the component suites on every pull request and
 on pushes to `main` via
 `.github/workflows/phase-0-harness.yml`. The runner stops at the first failing
