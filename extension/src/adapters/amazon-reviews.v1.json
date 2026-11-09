@@ -1,0 +1,26 @@
+{
+  "id": "amazon.reviews.v1",
+  "supportedPages": [
+    "https://www.amazon.com/dp/<ASIN>",
+    "https://www.amazon.com/product-reviews/<ASIN>",
+    "https://www.amazon.fr/dp/<ASIN>",
+    "https://www.amazon.fr/product-reviews/<ASIN>"
+  ],
+  "hosts": ["www.amazon.com", "www.amazon.fr"],
+  "pathPattern": "^/(?:[^/]+/)?(?:dp|product-reviews)/[A-Z0-9]{6,14}(?:/|$)",
+  "cardSelectors": ["[data-hook=\"review\"]", "[data-review-card]"],
+  "bodySelectors": ["[data-hook=\"review-body\"]", "[data-hook=\"reviewText\"]", "[data-review-body]"],
+  "stableIdAttributes": ["data-review-id", "id"],
+  "fixturePaths": [
+    "mock/fixtures/amazon/standard.html",
+    "mock/fixtures/amazon/collapsed.html",
+    "mock/fixtures/amazon/compact.html",
+    "mock/fixtures/amazon/unsupported.html",
+    "mock/fixtures/amazon/dom-hook.html"
+  ],
+  "minimumWords": 20,
+  "maximumCharacters": 2000,
+  "batchSize": 10,
+  "scanDebounceMs": 750,
+  "minimumRescanIntervalMs": 2000
+}

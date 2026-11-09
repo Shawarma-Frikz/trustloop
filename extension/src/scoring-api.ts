@@ -7,6 +7,11 @@ export interface PublicResult {
   signals: unknown[];
 }
 
+export interface ReviewInput {
+  reviewKey: string;
+  text: string;
+}
+
 export class AnalyzeRequestError extends Error {
   constructor(message: string, readonly retryable: boolean) {
     super(message);
@@ -31,6 +36,15 @@ export async function analyzeOneReview(
   text: string,
   fetcher: typeof fetch = fetch,
 ): Promise<PublicResult> {
+  const response = await analyzeReviewBatch([{ reviewKey: "manual-1", text }], "en", fetcher);
+  return response[0];
+}
+
+export async function analyzeReviewBatch(
+  reviews: ReviewInput[],
+  languageHint: "en" | "fr",
+  fetcher: typeof fetch = fetch,
+): Promise<PublicResult[]> {
   let response: Response;
   try {
     response = await fetcher("http://127.0.0.1:8080/api/v1/analyze", {
@@ -41,8 +55,8 @@ export async function analyzeOneReview(
       },
       body: JSON.stringify({
         adapterId: "amazon.reviews.v1",
-        languageHint: "en",
-        reviews: [{ reviewKey: "manual-1", text }],
+        languageHint,
+        reviews,
       }),
     });
   } catch {
@@ -63,8 +77,9 @@ export async function analyzeOneReview(
     throw new AnalyzeRequestError("The API returned an unreadable response.", true);
   }
   const results = (body as { results?: unknown } | null)?.results;
-  if (!Array.isArray(results) || results.length !== 1 || !isPublicResult(results[0])) {
+  if (!Array.isArray(results) || results.length !== reviews.length || !results.every(isPublicResult)
+    || results.some((result, index) => result.reviewKey !== reviews[index].reviewKey)) {
     throw new AnalyzeRequestError("The API response did not match the expected contract.", true);
   }
-  return results[0];
+  return results;
 }
