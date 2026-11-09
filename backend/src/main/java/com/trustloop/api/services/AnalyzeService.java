@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.text.Normalizer;
+import java.net.SocketTimeoutException;
+import java.net.http.HttpTimeoutException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,12 +60,23 @@ public class AnalyzeService {
                     .toList();
             return new AnalyzeResponse(requestId, results);
         } catch (ResourceAccessException exception) {
-            LOGGER.warn("scoring call failed requestId={} failureType={}", requestId, exception.getClass().getSimpleName());
-            return unavailable(request, requestId, "SCORING_TIMEOUT");
+            String reasonCode = isTimeout(exception) ? "SCORING_TIMEOUT" : "SCORING_UNAVAILABLE";
+            LOGGER.warn("scoring call failed requestId={} failureType={} reasonCode={}",
+                    requestId, exception.getClass().getSimpleName(), reasonCode);
+            return unavailable(request, requestId, reasonCode);
         } catch (RuntimeException exception) {
             LOGGER.warn("scoring call failed requestId={} failureType={}", requestId, exception.getClass().getSimpleName());
             return unavailable(request, requestId);
         }
+    }
+
+    private boolean isTimeout(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SocketTimeoutException || cause instanceof HttpTimeoutException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ScoreRequest toScoringRequest(AnalyzeRequest request) {

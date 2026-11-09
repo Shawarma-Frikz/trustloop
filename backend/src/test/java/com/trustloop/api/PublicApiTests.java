@@ -18,6 +18,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.web.client.ResourceAccessException;
+
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 
 import java.util.List;
 
@@ -57,6 +61,7 @@ class PublicApiTests {
     void scoringServiceIsReady() {
         scoringClient.setReady(true);
         scoringClient.setResponse(unknownResponse());
+        scoringClient.setFailure(null);
     }
 
     @Test
@@ -157,6 +162,84 @@ class PublicApiTests {
     }
 
     @Test
+    void modelVersionMismatchFailsClosedForTheEntireBatch() throws Exception {
+        scoringClient.setResponse(new ScoreResponse(List.of(
+                new ScoreResponse.Result("review-1", "SCORED", 73, 0.731,
+                        "LIKELY_ORGANIC", "ADEQUATE", null, List.of(), "tl-text-1.1.0", "MODEL"),
+                new ScoreResponse.Result("review-2", "SCORED", 73, 0.731,
+                        "LIKELY_ORGANIC", "ADEQUATE", null, List.of(), "tl-text-9.9.9", "MODEL"))));
+        String batch = """
+                {"adapterId":"amazon.reviews.v1","languageHint":"en","reviews":[
+                  {"reviewKey":"review-1","text":"Review text long enough for the analyzer to accept and forward to the scoring service."},
+                  {"reviewKey":"review-2","text":"Another review text long enough for this batch request to meet minimum length."}
+                ]}
+                """;
+
+        MvcResult result = mockMvc.perform(post("/api/v1/analyze")
+                        .with(remote("192.0.2.33"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(batch))
+                .andExpect(status().isOk()).andReturn();
+        JsonNode results = objectMapper.readTree(result.getResponse().getContentAsByteArray()).path("results");
+
+        assertEquals(2, results.size());
+        for (JsonNode item : results) {
+            assertEquals("UNKNOWN", item.path("status").asText());
+            assertEquals("SCORING_UNAVAILABLE", item.path("reasonCode").asText());
+            assertFalse(item.has("trustScore"));
+        }
+    }
+
+    @Test
+    void scoringTimeoutMarksEveryReviewUnknownWithTimeoutReason() throws Exception {
+        scoringClient.setFailure(new ResourceAccessException("read timed out", new SocketTimeoutException()));
+        String batch = """
+                {"adapterId":"amazon.reviews.v1","languageHint":"en","reviews":[
+                  {"reviewKey":"review-1","text":"Review text long enough for the analyzer to accept and forward to the scoring service."},
+                  {"reviewKey":"review-2","text":"Another review text long enough for this batch request to meet minimum length."}
+                ]}
+                """;
+        MvcResult result = mockMvc.perform(post("/api/v1/analyze")
+                        .with(remote("192.0.2.31"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(batch))
+                .andExpect(status().isOk()).andReturn();
+
+        JsonNode results = objectMapper.readTree(result.getResponse().getContentAsByteArray()).path("results");
+        assertEquals(2, results.size());
+        for (JsonNode item : results) {
+            assertEquals("UNKNOWN", item.path("status").asText());
+            assertEquals("SCORING_TIMEOUT", item.path("reasonCode").asText());
+            assertFalse(item.has("trustScore"));
+            assertFalse(item.has("verdict"));
+        }
+    }
+
+    @Test
+    void connectionRefusedMarksEveryReviewUnknownAsUnavailable() throws Exception {
+        scoringClient.setFailure(new ResourceAccessException("connection refused", new ConnectException()));
+        String batch = """
+                {"adapterId":"amazon.reviews.v1","languageHint":"en","reviews":[
+                  {"reviewKey":"review-1","text":"Review text long enough for the analyzer to accept and forward to the scoring service."},
+                  {"reviewKey":"review-2","text":"Another review text long enough for this batch request to meet minimum length."}
+                ]}
+                """;
+        MvcResult result = mockMvc.perform(post("/api/v1/analyze")
+                        .with(remote("192.0.2.32"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(batch))
+                .andExpect(status().isOk()).andReturn();
+
+        JsonNode results = objectMapper.readTree(result.getResponse().getContentAsByteArray()).path("results");
+        assertEquals(2, results.size());
+        for (JsonNode item : results) {
+            assertEquals("UNKNOWN", item.path("status").asText());
+            assertEquals("SCORING_UNAVAILABLE", item.path("reasonCode").asText());
+            assertFalse(item.has("trustScore"));
+        }
+    }
+
+    @Test
     void localRateLimitReturnsARequestIdAndSafeError() throws Exception {
         scoringClient.setResponse(unknownResponse());
         for (int index = 0; index < 2; index++) {
@@ -236,11 +319,15 @@ class PublicApiTests {
         private volatile ScoreResponse response;
         private volatile ScoreRequest lastRequest;
         private volatile String lastRequestId;
+        private volatile RuntimeException failure;
 
         @Override
         public ScoreResponse score(ScoreRequest request, String requestId) {
             lastRequest = request;
             lastRequestId = requestId;
+            if (failure != null) {
+                throw failure;
+            }
             return response;
         }
 
@@ -255,6 +342,10 @@ class PublicApiTests {
 
         void setResponse(ScoreResponse response) {
             this.response = response;
+        }
+
+        void setFailure(RuntimeException failure) {
+            this.failure = failure;
         }
 
         ScoreRequest lastRequest() {

@@ -5,7 +5,8 @@
   "version": "0.0.1",
   "minimum_chrome_version": "116",
   "action": {
-    "default_title": "TrustLoop"
+    "default_title": "TrustLoop",
+    "default_popup": "popup.html"
   },
   "background": {
     "service_worker": "background.js"
@@ -20,5 +21,6 @@
       "run_at": "document_idle"
     }
   ],
+  "host_permissions": ["http://127.0.0.1:8080/*"],
   "permissions": ["storage"]
 }

@@ -1,0 +1,26 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, "Segoe UI", sans-serif;
+  color: #153d39;
+  background: #faf8f1;
+}
+
+* { box-sizing: border-box; }
+body { width: 360px; margin: 0; }
+main { padding: 20px; }
+header { border-bottom: 1px solid #d9d2c3; margin-bottom: 16px; padding-bottom: 12px; }
+.eyebrow { color: #a83e20; font: 700 10px/1.4 ui-monospace, monospace; letter-spacing: .12em; }
+h1 { margin: 4px 0 8px; font: 600 26px/1.1 Georgia, serif; }
+.notice, .privacy, #result-message { font-size: 12px; line-height: 1.5; }
+.notice { margin: 0; }
+label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 650; }
+textarea { display: block; width: 100%; min-height: 120px; resize: vertical; border: 1px solid #b9b09e; border-radius: 3px; padding: 9px; color: inherit; background: #fffefa; font-family: inherit; font-size: 13px; line-height: 1.5; }
+textarea:focus, button:focus-visible { outline: 3px solid #cf7955; outline-offset: 2px; }
+.privacy { color: #52615d; margin: 6px 0 12px; }
+button { min-height: 36px; border: 0; border-radius: 3px; padding: 8px 14px; color: white; background: #14544d; font-weight: 650; cursor: pointer; }
+button:disabled { opacity: .6; cursor: wait; }
+#result { margin-top: 16px; border-left: 3px solid #14544d; padding: 10px 12px; background: #e7efeb; }
+#result[data-state="error"] { border-color: #a83e20; background: #f3e7e0; }
+h2 { margin: 0 0 5px; font-size: 15px; }
+#result-message { margin: 0 0 10px; overflow-wrap: anywhere; }
+#retry-button { min-height: 32px; }

@@ -2,19 +2,26 @@ package com.trustloop.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trustloop.api.config.ScoringProperties;
+import com.trustloop.api.model.AnalyzeRequest;
+import com.trustloop.api.model.AnalyzeResponse;
 import com.trustloop.api.model.ScoreRequest;
 import com.trustloop.api.services.HttpScoringClient;
+import com.trustloop.api.services.AnalyzeService;
+import com.trustloop.api.services.ContractValues;
+import com.trustloop.api.services.ScoringUnavailableException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -79,5 +86,79 @@ class HttpScoringClientTests {
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
         assertFalse(unavailableClient.ready());
         unavailableServer.verify();
+    }
+
+    @Test
+    void malformedJsonIsRejectedAsAnUnavailableScoringResponse() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://scoring.test");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        HttpScoringClient client = new HttpScoringClient(
+                builder.build(), new ScoringProperties("http://scoring.test", "local-token", "tl-text-1.1.0"),
+                new ObjectMapper());
+        server.expect(requestTo("http://scoring.test/score"))
+                .andRespond(withSuccess("{not-json", MediaType.APPLICATION_JSON));
+
+        assertThrows(ScoringUnavailableException.class, () -> client.score(
+                new ScoreRequest(List.of(new ScoreRequest.Review("review-1", "long enough text", false))),
+                "request-bad-json"));
+        server.verify();
+    }
+
+    @Test
+    void malformedJsonProducesUnknownForEveryReviewInTheBatch() {
+        AnalyzeResponse response = analyzeBatchWithFailure(
+                withSuccess("{not-json", MediaType.APPLICATION_JSON));
+        assertUnknownForWholeBatch(response, "SCORING_UNAVAILABLE");
+    }
+
+    @Test
+    void non2xxScoringResponseIsRejectedInsteadOfParsedAsAScore() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://scoring.test");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        HttpScoringClient client = new HttpScoringClient(
+                builder.build(), new ScoringProperties("http://scoring.test", "local-token", "tl-text-1.1.0"),
+                new ObjectMapper());
+        server.expect(requestTo("http://scoring.test/score"))
+                .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        assertThrows(RestClientResponseException.class, () -> client.score(
+                new ScoreRequest(List.of(new ScoreRequest.Review("review-1", "long enough text", false))),
+                "request-server-error"));
+        server.verify();
+    }
+
+    @Test
+    void serverErrorProducesUnknownForEveryReviewInTheBatch() {
+        AnalyzeResponse response = analyzeBatchWithFailure(
+                withStatus(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertUnknownForWholeBatch(response, "SCORING_UNAVAILABLE");
+    }
+
+    private AnalyzeResponse analyzeBatchWithFailure(
+            org.springframework.test.web.client.ResponseCreator failureResponse) {
+        RestClient.Builder builder = RestClient.builder().baseUrl("http://scoring.test");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("http://scoring.test/score")).andRespond(failureResponse);
+        ScoringProperties properties = new ScoringProperties("http://scoring.test", "local-token", "tl-text-1.1.0");
+        ObjectMapper mapper = new ObjectMapper();
+        AnalyzeService service = new AnalyzeService(
+                new HttpScoringClient(builder.build(), properties, mapper), properties, new ContractValues(mapper));
+        AnalyzeRequest request = new AnalyzeRequest("amazon.reviews.v1", "en", List.of(
+                new AnalyzeRequest.AnalyzeReview("review-1", "A first review with enough text for the scoring path."),
+                new AnalyzeRequest.AnalyzeReview("review-2", "A second review with enough text for the scoring path.")));
+
+        AnalyzeResponse response = service.analyze(request, "request-failure-test");
+        server.verify();
+        return response;
+    }
+
+    private void assertUnknownForWholeBatch(AnalyzeResponse response, String expectedReason) {
+        assertEquals(2, response.results().size());
+        response.results().forEach(result -> {
+            assertEquals("UNKNOWN", result.status());
+            assertEquals(expectedReason, result.reasonCode());
+            assertEquals(null, result.trustScore());
+            assertEquals(null, result.verdict());
+        });
     }
 }
