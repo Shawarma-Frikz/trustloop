@@ -29,10 +29,15 @@ for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%ROOT%.env") do (
     if not "%%A"=="" set "%%A=%%B"
 )
 
-echo Starting the scoring service in the background in this console...
-pushd "%ROOT%scoring-service"
-start "" /b cmd.exe /c ".venv\Scripts\python.exe -m app.main"
-popd
+ powershell.exe -NoProfile -Command "if (Get-NetTCPConnection -State Listen -LocalPort 8000 -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" >nul 2>nul
+if errorlevel 1 (
+    echo Starting the scoring service in the background in this console...
+    pushd "%ROOT%scoring-service"
+    start "" /b cmd.exe /c ".venv\Scripts\python.exe -m app.main"
+    popd
+) else (
+    echo A service is already listening on port 8000; reusing it.
+)
 
 echo Starting Spring Boot in this console. Press Ctrl+C to stop it.
 cd /d "%ROOT%backend"
