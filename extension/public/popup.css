@@ -22,5 +22,6 @@ button:disabled { opacity: .6; cursor: wait; }
 #result { margin-top: 16px; border-left: 3px solid #14544d; padding: 10px 12px; background: #e7efeb; }
 #result[data-state="error"] { border-color: #a83e20; background: #f3e7e0; }
 h2 { margin: 0 0 5px; font-size: 15px; }
+.status-label { display: inline-block; border: 1px solid currentColor; margin: 0 0 6px; padding: 2px 6px; font-size: 11px; font-weight: 700; }
 #result-message { margin: 0 0 10px; overflow-wrap: anywhere; }
 #retry-button { min-height: 32px; }

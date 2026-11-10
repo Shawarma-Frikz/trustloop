@@ -23,7 +23,21 @@
     "retryAction": "Réessayer",
     "reloadAction": "Recharger",
     "historyLabel": "Historique",
-    "clearHistoryAction": "Effacer l'historique"
+    "clearHistoryAction": "Effacer l'historique",
+    "reviewLabel": "Avis",
+    "scoreLabel": "Score de confiance",
+    "verdictLabel": "Verdict",
+    "evidenceLabel": "Niveau de preuve",
+    "engineLabel": "Moteur",
+    "modelEngine": "Modèle",
+    "signalsOnlyEngine": "Signaux seulement",
+    "scoredStatus": "Estimation",
+    "signalsOnlyStatus": "Signaux seulement",
+    "unknownStatus": "Aucune estimation",
+    "reasonLabel": "Motif",
+    "noScore": "Aucun score",
+    "noVerdict": "Aucun verdict",
+    "noEvidence": "Indisponible"
   },
   "signal": {
     "REPEATED_PHRASING": "Répète les mêmes formulations",

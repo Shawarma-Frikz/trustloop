@@ -30,6 +30,13 @@ interval. A user-triggered **Retry** is available for transient unknown results;
 there are no automatic retries. Review text and fingerprints are not written
 to extension storage.
 
+Result cards expose the status in text, not colour alone. Scored results show
+score, verdict, evidence quality, engine, and named signals; low evidence keeps
+the score and verdict and adds the normative qualifier. Signals-only results
+show no score or verdict. Unknown results show their reason and no numeric
+placeholder. The page panel and popup support keyboard focus with a visible
+focus indicator and announce result changes to assistive technology.
+
 The Amazon selectors have fixture coverage, but the live Phase 0.5 spike failed
 because the review section required sign-in. Treat real-page extraction as
 unverified until the live spike is repeated successfully; the saved synthetic

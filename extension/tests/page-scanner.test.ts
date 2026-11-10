@@ -57,7 +57,8 @@ describe("page scanning, batching, and session dedup", () => {
         ok: true,
         results: reviews.map(({ reviewKey }) => ({
           reviewKey, status: "SCORED" as const, trustScore: 75,
-          verdict: "LIKELY_ORGANIC", signals: [],
+          verdict: "LIKELY_ORGANIC", evidenceQuality: "ADEQUATE" as const,
+          engine: "MODEL" as const, modelVersion: "tl-text-1.1.0", signals: [],
         })),
       };
     });
@@ -85,6 +86,7 @@ describe("page scanning, batching, and session dedup", () => {
       ok: true,
       results: reviews.map(({ reviewKey }) => ({
         reviewKey, status: "UNKNOWN" as const, reasonCode: "SCORING_UNAVAILABLE", signals: [],
+        engine: "MODEL" as const,
       })),
     }));
     const scanner = createPageScanner({ document, getUrl: () => page, sendBatch, render: vi.fn(), observe: false, isRendered: () => true });
@@ -104,7 +106,8 @@ describe("page scanning, batching, and session dedup", () => {
       ok: true,
       results: reviews.map(({ reviewKey }) => ({
         reviewKey, status: "SCORED" as const, trustScore: 74,
-        verdict: "LIKELY_ORGANIC", signals: [],
+        verdict: "LIKELY_ORGANIC", evidenceQuality: "ADEQUATE" as const,
+        engine: "MODEL" as const, modelVersion: "tl-text-1.1.0", signals: [],
       })),
     }));
     const render = vi.fn<(state: PageState) => void>();

@@ -20,7 +20,8 @@
         <p class="privacy">Sent to the local API for this request only. It is not saved by this extension.</p>
         <button id="analyze-button" type="submit">Analyze</button>
       </form>
-      <section id="result" aria-live="polite" aria-atomic="true" hidden>
+      <section id="result" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="result-title" hidden>
+        <p id="result-status" class="status-label"></p>
         <h2 id="result-title"></h2>
         <p id="result-message"></p>
         <button id="retry-button" type="button" hidden>Retry</button>

@@ -11,6 +11,9 @@ const fr = JSON.parse(readFileSync(join(EXT, "src", "i18n", "fr.json"), "utf8"))
 const tokensCss = readFileSync(join(EXT, "src", "styles", "tokens.css"), "utf8");
 const charterTokensCss = readFileSync(join(REPO, "docs", "design", "tokens.css"), "utf8");
 const constants = JSON.parse(readFileSync(join(CONTRACTS, "constants.json"), "utf8"));
+const popupHtml = readFileSync(join(EXT, "public", "popup.html"), "utf8");
+const popupCss = readFileSync(join(EXT, "public", "popup.css"), "utf8");
+const overlaySource = readFileSync(join(EXT, "src", "page-overlay.ts"), "utf8");
 
 function flattenKeys(node: unknown, prefix = ""): string[] {
   if (node === null || typeof node !== "object") return [prefix];
@@ -104,5 +107,20 @@ describe("design system in code", () => {
       .sort();
     const transportCodes = Object.keys(en.transport).sort();
     expect(transportCodes).toEqual(requestErrorCodes);
+  });
+
+  it("keeps the popup keyboard operable with visible focus and a labelled live result region", () => {
+    expect(popupHtml).toContain('<label for="review-text">');
+    expect(popupHtml).toContain('id="result" role="status" aria-live="polite"');
+    expect(popupHtml).toContain('type="button"');
+    expect(popupCss).toContain("textarea:focus");
+    expect(popupCss).toContain("button:focus-visible");
+  });
+
+  it("gives the page panel a named region, live status, and visible retry focus", () => {
+    expect(overlaySource).toContain('panel.setAttribute("role", "region")');
+    expect(overlaySource).toContain('panel.setAttribute("aria-live", "polite")');
+    expect(overlaySource).toContain('article.setAttribute("aria-label"');
+    expect(overlaySource).toContain("button:focus-visible");
   });
 });

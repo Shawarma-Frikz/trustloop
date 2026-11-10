@@ -5,6 +5,7 @@ const unknown: PublicResult = {
   reviewKey: "manual-1",
   status: "UNKNOWN",
   reasonCode: "SCORING_UNAVAILABLE",
+  engine: "MODEL",
   signals: [],
 };
 
@@ -30,5 +31,34 @@ describe("manual scoring retry", () => {
       headers: expect.objectContaining({ "X-Request-Id": expect.stringMatching(/^ext-/) }),
     }));
     expect(result).toMatchObject({ status: "UNKNOWN", reasonCode: "SCORING_UNAVAILABLE" });
+  });
+
+  it("accepts contract-shaped unknowns with nullable optional fields without turning them into a score", async () => {
+    const responseResult = {
+      ...unknown,
+      trustScore: null,
+      verdict: null,
+      evidenceQuality: null,
+      modelVersion: "tl-text-1.1.0",
+    };
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ results: [responseResult] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }));
+
+    const result = await analyzeOneReview("A sufficiently long review body used for this contract test.", fetcher);
+
+    expect(result.status).toBe("UNKNOWN");
+    expect(result.trustScore).toBeNull();
+    expect(canManuallyRetry(result)).toBe(true);
+  });
+
+  it("rejects an unknown result that tries to carry a numeric placeholder", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ results: [{ ...unknown, trustScore: 0 }] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }));
+    await expect(analyzeOneReview("A sufficiently long review body used for this contract test.", fetcher))
+      .rejects.toMatchObject({ retryable: true });
   });
 });

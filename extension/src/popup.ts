@@ -1,4 +1,5 @@
-import { analyzeOneReview, AnalyzeRequestError, canManuallyRetry, type PublicResult } from "./scoring-api.js";
+import { analyzeOneReview, AnalyzeRequestError, type PublicResult } from "./scoring-api.js";
+import { presentResult as makePresentation } from "./result-presentation.js";
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -10,6 +11,7 @@ const form = required<HTMLFormElement>("#analysis-form");
 const textInput = required<HTMLTextAreaElement>("#review-text");
 const analyzeButton = required<HTMLButtonElement>("#analyze-button");
 const resultRegion = required<HTMLElement>("#result");
+const resultStatus = required<HTMLElement>("#result-status");
 const resultTitle = required<HTMLElement>("#result-title");
 const resultMessage = required<HTMLElement>("#result-message");
 const retryButton = required<HTMLButtonElement>("#retry-button");
@@ -19,25 +21,26 @@ let lastText: string | null = null;
 function presentError(message: string, retryable: boolean): void {
   resultRegion.hidden = false;
   resultRegion.dataset.state = "error";
+  resultRegion.setAttribute("aria-label", `No estimate. ${message}`);
+  resultStatus.textContent = "No estimate";
   resultTitle.textContent = "No estimate";
   resultMessage.textContent = message;
   retryButton.hidden = !retryable;
 }
 
-function presentResult(result: PublicResult): void {
+function renderResult(result: PublicResult): void {
+  const language = navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+  const view = makePresentation(result, language);
   resultRegion.hidden = false;
   resultRegion.dataset.state = result.status === "UNKNOWN" ? "error" : "ready";
-  resultTitle.textContent = result.status === "SCORED" && result.trustScore !== undefined
-    ? `Estimated trust score: ${result.trustScore}/100`
-    : result.status === "SIGNALS_ONLY" ? "Descriptive signals only" : "No estimate";
-  resultMessage.textContent = result.status === "UNKNOWN"
-    ? result.reasonCode === "SCORING_TIMEOUT"
-      ? "Analysis timed out. You can retry this review manually."
-      : result.reasonCode === "SCORING_UNAVAILABLE"
-        ? "Analysis is unavailable right now. You can retry this review manually."
-        : "There is not enough supported evidence to provide an estimate."
-    : result.verdict ?? "Estimated from text patterns; this does not establish whether a review is genuine.";
-  retryButton.hidden = !canManuallyRetry(result);
+  resultStatus.textContent = view.statusLabel;
+  resultRegion.setAttribute("aria-label", view.accessibleLabel);
+  resultTitle.textContent = view.headline;
+  resultMessage.textContent = [
+    view.scoreLine, view.verdictLine, view.qualifier, view.reasonLine,
+    view.evidenceLine, view.engineLine, ...view.signals,
+  ].filter(Boolean).join(". ");
+  retryButton.hidden = !view.retryAvailable;
 }
 
 async function submit(text: string): Promise<void> {
@@ -45,15 +48,18 @@ async function submit(text: string): Promise<void> {
   retryButton.disabled = true;
   resultRegion.hidden = false;
   resultRegion.dataset.state = "ready";
+  resultRegion.setAttribute("aria-busy", "true");
   resultTitle.textContent = "Analyzing…";
+  resultStatus.textContent = "Analyzing";
   resultMessage.textContent = "Text is sent to the local API for this request.";
   retryButton.hidden = true;
   try {
-    presentResult(await analyzeOneReview(text));
+    renderResult(await analyzeOneReview(text));
   } catch (error) {
     const retryable = error instanceof AnalyzeRequestError ? error.retryable : true;
     presentError(error instanceof Error ? error.message : "Analysis is unavailable.", retryable);
   } finally {
+    resultRegion.setAttribute("aria-busy", "false");
     analyzeButton.disabled = false;
     retryButton.disabled = false;
   }
