@@ -97,7 +97,7 @@ export function createPageScanner(options: ScannerOptions) {
       const fresh = extracted.reviews.filter((review) => session.markSeen(review.reviewKey));
       if (fresh.length > 0) {
         await send(fresh);
-      } else if (results.size > 0) {
+      } else {
         options.render(state(retryQueue.length > 0 ? "UNAVAILABLE" : "COMPLETE"));
       }
     } finally {
