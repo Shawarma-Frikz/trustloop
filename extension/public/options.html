@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrustLoop history</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">TRUSTLOOP · PRIVACY</p>
+        <h1 id="history-title"></h1>
+      </header>
+      <section class="preferences" aria-labelledby="history-title">
+        <label class="toggle-row" for="history-enabled">
+          <input id="history-enabled" type="checkbox" />
+          <span id="toggle-label"></span>
+        </label>
+        <p id="privacy-helper" class="helper"></p>
+        <p id="disabled-helper" class="helper"></p>
+      </section>
+      <section class="history-section" aria-labelledby="history-list-title">
+        <div class="section-heading">
+          <h2 id="history-list-title"></h2>
+          <button id="clear-history" class="secondary" type="button"></button>
+        </div>
+        <p id="empty-state" class="empty-state" hidden></p>
+        <ol id="history-list" aria-live="polite" aria-relevant="additions removals"></ol>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

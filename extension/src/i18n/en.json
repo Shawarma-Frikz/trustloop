@@ -70,8 +70,17 @@
     "openInPanel": "Open in TrustLoop."
   },
   "history": {
+    "title": "Local history",
+    "toggleLabel": "Save analysis history on this device",
+    "privacyHelper": "Off by default. Stores host, time, and result — never review text.",
+    "disabledHelper": "Turning history off stops new entries; existing entries remain until cleared.",
     "noScans": "No scans yet.",
-    "emptyGuidance": "Open a supported product page to start."
+    "emptyGuidance": "Open a supported product page to start.",
+    "clearConfirm": "Clear all saved local history?",
+    "scored": "Scored",
+    "signalsOnly": "Signals only",
+    "unknown": "No estimate",
+    "manual": "Manual entry"
   },
   "action": {
     "supportedPages": "See supported pages",

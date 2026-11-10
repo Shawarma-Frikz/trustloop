@@ -1,4 +1,5 @@
 import { analyzeReviewBatch, type ReviewInput } from "./scoring-api.js";
+import { recordHistoryResults } from "./history-store.js";
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "PING") {
@@ -17,7 +18,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return;
     }
     void analyzeReviewBatch(reviews, languageHint)
-      .then((results) => sendResponse({ ok: true, results }))
+      .then(async (results) => {
+        let hostname = "unknown";
+        try {
+          hostname = new URL(_sender.url ?? "").hostname || hostname;
+        } catch {
+          // Keep only a host label; never retain the sender URL.
+        }
+        await recordHistoryResults(results, hostname, "amazon.reviews.v1").catch(() => undefined);
+        sendResponse({ ok: true, results });
+      })
       .catch(() => sendResponse({ ok: false, reasonCode: "SCORING_UNAVAILABLE" }));
     return true;
   }

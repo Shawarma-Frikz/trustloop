@@ -1,0 +1,36 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, "Segoe UI", sans-serif;
+  color: #153d39;
+  background: #faf8f1;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(680px, 100%); margin: 0 auto; padding: 24px 16px 40px; }
+header { border-bottom: 1px solid #d9d2c3; margin-bottom: 18px; padding-bottom: 14px; }
+.eyebrow { color: #a83e20; font: 700 10px/1.4 ui-monospace, monospace; letter-spacing: .12em; }
+h1 { margin: 5px 0 0; font: 600 30px/1.1 Georgia, serif; }
+h2 { margin: 0; font-size: 16px; }
+.preferences, .history-section { border-bottom: 1px solid #d9d2c3; padding: 16px 0; }
+.toggle-row { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 650; cursor: pointer; }
+.toggle-row input { width: 18px; height: 18px; accent-color: #14544d; }
+input:focus-visible, button:focus-visible { outline: 3px solid #cf7955; outline-offset: 3px; }
+.helper { margin: 8px 0 0 28px; color: #52615d; font-size: 12px; line-height: 1.5; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+button { min-height: 36px; border: 0; border-radius: 3px; padding: 8px 14px; color: white; background: #14544d; font-weight: 650; cursor: pointer; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.secondary { color: #14544d; border: 1px solid #14544d; background: transparent; }
+.empty-state { margin: 22px 0; font-weight: 650; }
+.empty-state span { display: block; margin-top: 5px; color: #52615d; font-size: 13px; font-weight: 400; }
+#history-list { display: grid; gap: 0; margin: 8px 0 0; padding: 0; list-style: none; }
+.history-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; border-bottom: 1px solid #e3ddcf; padding: 13px 2px; }
+.host { overflow-wrap: anywhere; font: 11px/1.4 ui-monospace, monospace; }
+.timestamp { color: #66716d; font: 10px/1.4 ui-monospace, monospace; text-align: right; }
+.result { grid-column: 1 / -1; font: 12px/1.45 ui-monospace, monospace; }
+.details { grid-column: 1 / -1; color: #52615d; font-size: 11px; line-height: 1.45; }
+@media (max-width: 420px) {
+  .history-row { grid-template-columns: 1fr; }
+  .timestamp { text-align: left; }
+  .result, .details { grid-column: 1; }
+}

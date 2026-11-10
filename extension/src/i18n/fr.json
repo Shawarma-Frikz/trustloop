@@ -70,8 +70,17 @@
     "openInPanel": "Ouvrir dans TrustLoop."
   },
   "history": {
+    "title": "Historique local",
+    "toggleLabel": "Enregistrer l'historique sur cet appareil",
+    "privacyHelper": "Désactivé par défaut. Enregistre le site, l'heure et le résultat — jamais le texte de l'avis.",
+    "disabledHelper": "Désactiver l'historique arrête les nouveaux enregistrements; les anciens restent jusqu'à leur suppression.",
     "noScans": "Aucun scan pour l'instant.",
-    "emptyGuidance": "Ouvrez une page produit prise en charge pour commencer."
+    "emptyGuidance": "Ouvrez une page produit prise en charge pour commencer.",
+    "clearConfirm": "Effacer tout l'historique local enregistré ?",
+    "scored": "Analysé",
+    "signalsOnly": "Signaux seulement",
+    "unknown": "Aucune estimation",
+    "manual": "Saisie manuelle"
   },
   "action": {
     "supportedPages": "Voir les pages prises en charge",

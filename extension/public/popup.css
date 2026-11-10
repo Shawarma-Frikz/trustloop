@@ -25,3 +25,5 @@ h2 { margin: 0 0 5px; font-size: 15px; }
 .status-label { display: inline-block; border: 1px solid currentColor; margin: 0 0 6px; padding: 2px 6px; font-size: 11px; font-weight: 700; }
 #result-message { margin: 0 0 10px; overflow-wrap: anywhere; }
 #retry-button { min-height: 32px; }
+#history-button { margin-top: 14px; }
+.secondary { color: #14544d; border: 1px solid #14544d; background: transparent; }

@@ -4,6 +4,11 @@
   "description": "Estimates whether review text looks organic or manipulated.",
   "version": "0.0.1",
   "minimum_chrome_version": "116",
+  "permissions": ["storage"],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "action": {
     "default_title": "TrustLoop",
     "default_popup": "popup.html"

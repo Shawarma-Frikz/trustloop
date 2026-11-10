@@ -1,5 +1,8 @@
 import { analyzeOneReview, AnalyzeRequestError, type PublicResult } from "./scoring-api.js";
 import { presentResult as makePresentation } from "./result-presentation.js";
+import { recordHistoryResults } from "./history-store.js";
+import en from "./i18n/en.json";
+import fr from "./i18n/fr.json";
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -15,6 +18,10 @@ const resultStatus = required<HTMLElement>("#result-status");
 const resultTitle = required<HTMLElement>("#result-title");
 const resultMessage = required<HTMLElement>("#result-message");
 const retryButton = required<HTMLButtonElement>("#retry-button");
+const historyButton = required<HTMLButtonElement>("#history-button");
+historyButton.textContent = navigator.language.toLowerCase().startsWith("fr")
+  ? fr.ui.historyLabel
+  : en.ui.historyLabel;
 
 let lastText: string | null = null;
 
@@ -54,7 +61,9 @@ async function submit(text: string): Promise<void> {
   resultMessage.textContent = "Text is sent to the local API for this request.";
   retryButton.hidden = true;
   try {
-    renderResult(await analyzeOneReview(text));
+    const result = await analyzeOneReview(text);
+    renderResult(result);
+    await recordHistoryResults([result], "manual", "manual.input").catch(() => undefined);
   } catch (error) {
     const retryable = error instanceof AnalyzeRequestError ? error.retryable : true;
     presentError(error instanceof Error ? error.message : "Analysis is unavailable.", retryable);
@@ -78,4 +87,8 @@ form.addEventListener("submit", (event) => {
 
 retryButton.addEventListener("click", () => {
   if (lastText !== null) void submit(lastText);
+});
+
+historyButton.addEventListener("click", () => {
+  void chrome.runtime.openOptionsPage();
 });

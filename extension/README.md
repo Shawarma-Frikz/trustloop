@@ -37,6 +37,13 @@ show no score or verdict. Unknown results show their reason and no numeric
 placeholder. The page panel and popup support keyboard focus with a visible
 focus indicator and announce result changes to assistive technology.
 
+Local history is available from the popup's **History** button. It is off by
+default. When enabled, Chrome local storage keeps only timestamp, hostname,
+adapter ID, result metadata, and reason code for at most 100 entries or 30 days.
+It never stores review text, review keys, reviewer names, URL paths, or text
+fingerprints. Disabling history stops new entries but leaves existing entries
+until the user clears them. History is not synchronized.
+
 The Amazon selectors have fixture coverage, but the live Phase 0.5 spike failed
 because the review section required sign-in. Treat real-page extraction as
 unverified until the live spike is repeated successfully; the saved synthetic
