@@ -5,7 +5,7 @@ await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 
 await build({
-  entryPoints: ["src/background.ts", "src/content.ts"],
+  entryPoints: ["src/background.ts", "src/content.ts", "src/popup.ts"],
   outdir: "dist",
   bundle: true,
   format: "iife",

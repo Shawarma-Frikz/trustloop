@@ -3,6 +3,7 @@ declare module "jsdom" {
     constructor(html?: string);
     window: {
       document: Document;
+      HTMLElement: typeof HTMLElement;
     };
   }
 }

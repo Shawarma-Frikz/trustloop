@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrustLoop</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">LOCAL REVIEW ANALYSIS</p>
+        <h1>TrustLoop</h1>
+        <p class="notice">Text-pattern estimate only. It does not verify a purchase, identity, or truth.</p>
+      </header>
+      <form id="analysis-form">
+        <label for="review-text">Review text</label>
+        <textarea id="review-text" name="review-text" rows="7" maxlength="2000" required
+          placeholder="Paste one review to analyze"></textarea>
+        <p class="privacy">Sent to the local API for this request only. It is not saved by this extension.</p>
+        <button id="analyze-button" type="submit">Analyze</button>
+      </form>
+      <section id="result" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="result-title" hidden>
+        <p id="result-status" class="status-label"></p>
+        <h2 id="result-title"></h2>
+        <p id="result-message"></p>
+        <button id="retry-button" type="button" hidden>Retry</button>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
