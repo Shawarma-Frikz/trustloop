@@ -83,7 +83,9 @@ export async function extractEligibleReviews(
     if (!body || !isRendered(body)) continue;
     hadVisibleReviewBody = true;
     const text = normalizeReviewText(body.innerText || body.textContent || "");
-    if (text.length === 0 || text.length > manifest.maximumCharacters || wordCount(text) < manifest.minimumWords) continue;
+    if (text.length === 0
+      || text.length > manifest.eligibility.maximumCharacters
+      || wordCount(text) < manifest.eligibility.minimumWords) continue;
 
     const identity = stableCardIdentity(card) ?? `text:${text.toLocaleLowerCase("und")}`;
     const reviewKey = await saltedKey(identity, salt);

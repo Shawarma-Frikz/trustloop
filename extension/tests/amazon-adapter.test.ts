@@ -2,10 +2,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
-import { extractEligibleReviews, supportsAmazonReviewPage } from "../src/adapters/amazon.js";
+import { amazonReviewAdapterManifest, extractEligibleReviews, supportsAmazonReviewPage } from "../src/adapters/amazon.js";
 
 const FIXTURES = join(import.meta.dirname, "../mock/fixtures/amazon");
-const variants = ["standard", "collapsed", "compact", "dom-hook"] as const;
+const manifest = amazonReviewAdapterManifest;
+const fixtureName = (path: string) => path.split("/").at(-1)!.replace(/\.html$/u, "");
+const supportedFixtures = manifest.fixtures.supported.map(fixtureName);
 const pageUrl = new URL("https://www.amazon.com/product-reviews/B012345678");
 
 function fixtureDocument(variant: string): Document {
@@ -18,8 +20,29 @@ function fixtureDocument(variant: string): Document {
 
 const fixedSalt = new Uint8Array(32).fill(7);
 
-describe("Amazon adapter v1", () => {
-  it.each(variants)("extracts five eligible reviews from the %s saved fixture", async (variant) => {
+describe("Amazon adapter manifest and fixtures", () => {
+  it("declares a versioned scope, selectors, eligibility rules, and existing fixtures", () => {
+    expect(manifest.id).toBe("amazon.reviews.v1");
+    expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/u);
+    expect(manifest.description.trim().length).toBeGreaterThan(30);
+    expect(manifest.supportedPages).toContain("https://www.amazon.com/dp/<ASIN>");
+    expect(manifest.supportedPages).toContain("https://www.amazon.fr/product-reviews/<ASIN>");
+    expect(manifest.cardSelectors.length).toBeGreaterThan(0);
+    expect(manifest.bodySelectors.length).toBeGreaterThan(0);
+    expect(manifest.eligibility).toMatchObject({
+      renderedOnly: true,
+      excludeHiddenAncestors: true,
+      requireNonEmptyBody: true,
+      normalization: "NFKC_WHITESPACE_COLLAPSE",
+      minimumWords: 20,
+      maximumCharacters: 2000,
+    });
+    for (const fixture of [...manifest.fixtures.supported, manifest.fixtures.unsupported]) {
+      expect(readFileSync(join(import.meta.dirname, "..", fixture), "utf8")).toContain("data-fixture-source=\"synthetic\"");
+    }
+  });
+
+  it.each(supportedFixtures)("extracts five eligible reviews from the %s saved fixture", async (variant) => {
     const result = await extractEligibleReviews(fixtureDocument(variant), pageUrl, { salt: fixedSalt });
     expect(result.status).toBe("READY");
     if (result.status !== "READY") return;
@@ -64,7 +87,22 @@ describe("Amazon adapter v1", () => {
   });
 
   it("returns the explicit unsupported state for an unsupported fixture URL", async () => {
-    const result = await extractEligibleReviews(fixtureDocument("unsupported"), new URL("https://www.amazon.com/gp/bestsellers"), { salt: fixedSalt });
+    const result = await extractEligibleReviews(
+      fixtureDocument(fixtureName(manifest.fixtures.unsupported)),
+      new URL(manifest.fixtures.unsupportedTestUrl),
+      { salt: fixedSalt },
+    );
     expect(result).toEqual({ status: "UNSUPPORTED_PAGE", reviews: [] });
+  });
+
+  it("accepts each documented host only on its documented review/product route", () => {
+    for (const host of manifest.hosts) {
+      const supported = manifest.supportedPages
+        .filter((page) => page.startsWith(`https://${host}/`))
+        .map((page) => page.replace("<ASIN>", "B012345678"));
+      expect(supported.length).toBeGreaterThan(0);
+      for (const page of supported) expect(supportsAmazonReviewPage(new URL(page))).toBe(true);
+      expect(supportsAmazonReviewPage(new URL(`https://${host}/gp/bestsellers`))).toBe(false);
+    }
   });
 });

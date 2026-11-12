@@ -1,0 +1,29 @@
+{
+  "benchmark": "offline experimental candidate inference plus calibration, score mapping, and explanations",
+  "servingEnabled": false,
+  "modelVersion": "tl-text-1.1.0",
+  "batchSize": 10,
+  "syntheticInputsOnly": true,
+  "inputTextRetained": false,
+  "cpuOnly": true,
+  "cpuAffinity": "process affinity limited",
+  "effectiveCpuCount": 4,
+  "physicalMemoryGiB": 23.7,
+  "targetProfile": "4 vCPU / 8 GB RAM, CPU-only, warm model",
+  "targetProfileMatched": false,
+  "artifactLoadAndVerificationMs": 145.041,
+  "warmupBatches": 10,
+  "measuredBatches": 100,
+  "warmBatchLatencyMs": {
+    "p50": 174.751,
+    "p95NearestRank": 211.911,
+    "max": 237.792
+  },
+  "targetP95Ms": 1500,
+  "latencyTargetMetOnThisRun": true,
+  "phaseGateEvidenceEligible": false,
+  "limitation": "Offline experimental candidate benchmark; it does not enable serving or measure Spring/HTTP/network overhead.",
+  "pythonVersion": "3.14.5",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel"
+}

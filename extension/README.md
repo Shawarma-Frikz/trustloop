@@ -49,6 +49,16 @@ because the review section required sign-in. Treat real-page extraction as
 unverified until the live spike is repeated successfully; the saved synthetic
 fixtures establish behavior only for their documented markup.
 
+## Adapter discipline
+
+The bundled `amazon.reviews.v1` adapter is versioned independently in
+`src/adapters/amazon-reviews.v1.json`. Its manifest records supported routes,
+selectors, eligibility and identity rules, and supported/unsupported fixture
+paths. A new adapter must add all of those items, at least one passing fixture,
+and a deliberately wrong-page fixture that returns `UNSUPPORTED_PAGE`. Generic
+page scraping is not an adapter. Do not add a site until its own fixture proof
+exists; passing synthetic fixtures does not establish live-site accuracy.
+
 For local popup requests, configure Spring Boot to allow the exact installed
 extension origin. Copy the extension ID from `chrome://extensions`, then set
 the origin before starting the backend:
