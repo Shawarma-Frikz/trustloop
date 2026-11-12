@@ -13,6 +13,9 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTRACTS = ROOT / "contracts" / "v1"
 VERSION = "tl-text-1.1.0"
 SENTINEL = "private-review-sentinel-9f31"
+REVIEW_KEY_SENTINEL = "private-review-key-sentinel-9f31"
+URL_SENTINEL = "private-url-sentinel-9f31"
+HOST_SENTINEL = "private-host-sentinel-9f31.example"
 
 
 class WarmModel:
@@ -154,14 +157,19 @@ def test_invalid_request_and_oversized_payload_have_safe_error_envelopes(monkeyp
 def test_logs_and_responses_never_contain_review_text(monkeypatch, tmp_path, caplog):
     application, _model = make_ready_client(monkeypatch, tmp_path)
     caplog.set_level(logging.INFO, logger="trustloop.scoring")
-    request = {"reviews": [{"reviewKey": "r1", "text": f"{SENTINEL} this is enough words in a longer review text to pass the service minimum word check.", "batchDuplicate": False}]}
+    request = {"reviews": [{"reviewKey": REVIEW_KEY_SENTINEL, "text": f"{SENTINEL} this is enough words in a longer review text to pass the service minimum word check.", "batchDuplicate": False}]}
     (response,) = requests(application, [
-        ("POST", "/score", {"json": request, "headers": {"X-Internal-Token": "test-internal-secret"}}),
+        ("POST", "/score", {"json": request, "headers": {
+            "X-Internal-Token": "test-internal-secret",
+            "X-Page-Url": f"https://{URL_SENTINEL}.example/private/path?query=hidden",
+            "X-Page-Hostname": HOST_SENTINEL,
+        }}),
     ])
 
     assert response.status_code == 200
     assert SENTINEL not in response.text
-    assert SENTINEL not in caplog.text
+    for private_value in (SENTINEL, REVIEW_KEY_SENTINEL, URL_SENTINEL, HOST_SENTINEL):
+        assert private_value not in caplog.text
     assert "test-internal-secret" not in caplog.text
 
 

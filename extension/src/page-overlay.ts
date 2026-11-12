@@ -3,17 +3,25 @@ import { presentResult } from "./result-presentation.js";
 import en from "./i18n/en.json";
 import fr from "./i18n/fr.json";
 
-function element<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
+function element<K extends keyof HTMLElementTagNameMap>(
+  documentRef: Document,
+  tag: K,
+  text?: string,
+): HTMLElementTagNameMap[K] {
+  const node = documentRef.createElement(tag);
   if (text !== undefined) node.textContent = text;
   return node;
 }
 
-export function installPageOverlay(onRetry: () => void): (state: PageState) => void {
-  const host = document.createElement("div");
+export function installPageOverlay(
+  onRetry: () => void,
+  documentRef: Document = document,
+  shadowMode: ShadowRootMode = "closed",
+): (state: PageState) => void {
+  const host = documentRef.createElement("div");
   host.id = "trustloop-overlay-host";
-  const shadow = host.attachShadow({ mode: "closed" });
-  const style = element("style");
+  const shadow = host.attachShadow({ mode: shadowMode });
+  const style = element(documentRef, "style");
   style.textContent = `
     :host { all: initial; }
     .panel { position: fixed; z-index: 2147483647; right: 18px; bottom: 18px; width: 360px;
@@ -33,29 +41,29 @@ export function installPageOverlay(onRetry: () => void): (state: PageState) => v
     button:focus-visible { outline: 3px solid #cf7955; outline-offset: 2px; }
     .note { color: #52615d; font-size: 11px; }
   `;
-  const panel = element("section");
+  const panel = element(documentRef, "section");
   panel.className = "panel";
   panel.setAttribute("role", "region");
   panel.setAttribute("aria-label", "TrustLoop review analysis");
   panel.setAttribute("aria-live", "polite");
   panel.setAttribute("aria-relevant", "text additions");
-  const title = element("h2", "TrustLoop");
-  const status = element("p");
+  const title = element(documentRef, "h2", "TrustLoop");
+  const status = element(documentRef, "p");
   status.setAttribute("role", "status");
-  const results = element("div");
+  const results = element(documentRef, "div");
   results.className = "results";
-  const disclaimer = element("p", "Text-pattern estimates only; they do not verify a purchase, identity, or truth.");
+  const disclaimer = element(documentRef, "p", "Text-pattern estimates only; they do not verify a purchase, identity, or truth.");
   disclaimer.className = "note";
-  const retry = element("button", "Retry");
+  const retry = element(documentRef, "button", "Retry");
   retry.type = "button";
   retry.hidden = true;
   retry.addEventListener("click", onRetry);
   panel.append(title, status, results, disclaimer, retry);
   shadow.append(style, panel);
-  (document.body ?? document.documentElement).append(host);
+  (documentRef.body ?? documentRef.documentElement).append(host);
 
   return (state: PageState) => {
-    const language = document.documentElement.lang.toLowerCase().startsWith("fr") ? "fr" : "en";
+    const language = documentRef.documentElement.lang.toLowerCase().startsWith("fr") ? "fr" : "en";
     const copy = language === "fr" ? fr : en;
     disclaimer.textContent = copy.ui.estimateDisclaimer;
     retry.textContent = copy.ui.retryAction;
@@ -72,23 +80,23 @@ export function installPageOverlay(onRetry: () => void): (state: PageState) => v
     }
     results.replaceChildren(...state.results.map((result, index) => {
       const view = presentResult(result, language);
-      const article = element("article");
+      const article = element(documentRef, "article");
       article.className = "result";
       article.setAttribute("aria-label", `${copy.ui.reviewLabel} ${index + 1}. ${view.accessibleLabel}`);
-      const badge = element("span", view.statusLabel);
+      const badge = element(documentRef, "span", view.statusLabel);
       badge.className = "badge";
-      const heading = element("h3", view.headline);
+      const heading = element(documentRef, "h3", view.headline);
       article.append(badge, heading);
       for (const detail of [view.scoreLine, view.verdictLine, view.qualifier, view.reasonLine, view.evidenceLine, view.engineLine]) {
         if (!detail) continue;
-        const paragraph = element("p", detail);
+        const paragraph = element(documentRef, "p", detail);
         paragraph.className = detail === view.qualifier ? "detail qualifier" : "detail";
         article.append(paragraph);
       }
       if (view.signals.length > 0) {
-        const list = element("ul");
+        const list = element(documentRef, "ul");
         list.className = "signals";
-        view.signals.forEach((signal) => list.append(element("li", signal)));
+        view.signals.forEach((signal) => list.append(element(documentRef, "li", signal)));
         article.append(list);
       }
       return article;

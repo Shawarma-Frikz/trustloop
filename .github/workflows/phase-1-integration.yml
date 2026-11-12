@@ -1,0 +1,68 @@
+name: phase-1-integration
+
+on:
+  pull_request:
+    paths:
+      - "extension/**"
+      - "backend/**"
+      - "scoring-service/**"
+      - "contracts/**"
+      - ".github/workflows/phase-1-integration.yml"
+  push:
+    branches: [main]
+    paths:
+      - "extension/**"
+      - "backend/**"
+      - "scoring-service/**"
+      - "contracts/**"
+      - ".github/workflows/phase-1-integration.yml"
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scoring-service/requirements.txt
+
+      - name: Install extension dependencies
+        working-directory: extension
+        run: npm ci
+
+      - name: Install Python test dependencies
+        run: python -m pip install -r scoring-service/requirements.txt
+
+      - name: Typecheck, build, and run fixture-to-panel integration suite
+        working-directory: extension
+        run: |
+          npm run typecheck
+          npm run build
+          npm test
+
+      - name: Validate shared API contract fixtures and capture scoring logs
+        working-directory: scoring-service
+        run: >-
+          python -m pytest -q
+          tests/test_scoring_service.py::test_logs_and_responses_never_contain_review_text
+          ../contracts/tests/test_contract.py
+
+      - name: Run backend contract and request-boundary integration tests
+        working-directory: backend
+        run: mvn -B test

@@ -2,6 +2,9 @@ package com.trustloop.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.trustloop.api.model.ScoreRequest;
 import com.trustloop.api.model.ScoreResponse;
 import com.trustloop.api.services.ScoringClient;
@@ -19,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.client.ResourceAccessException;
+import org.slf4j.LoggerFactory;
 
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
@@ -88,6 +92,44 @@ class PublicApiTests {
         assertFalse(response.at("/results/0").has("pOrganic"));
         assertEquals(REQUEST_ID, scoringClient.lastRequestId());
         assertEquals("review-1", scoringClient.lastRequest().reviews().getFirst().reviewKey());
+    }
+
+    @Test
+    void capturedApplicationLogsNeverContainReviewTextKeysUrlsOrHostnames() throws Exception {
+        String requestId = "privacy-log-test-44";
+        String reviewKey = "private-review-key-sentinel";
+        String reviewText = "private-review-text-sentinel I have used this item every day for three weeks and the battery still lasts through my commute.";
+        String url = "https://private-url-sentinel.example/private/path?secret=query";
+        String hostname = "private-host-sentinel.example";
+        scoringClient.setFailure(new IllegalStateException("stubbed scoring failure"));
+
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        rootLogger.addAppender(appender);
+        try {
+            mockMvc.perform(post("/api/v1/analyze")
+                            .with(remote("192.0.2.44"))
+                            .header("Host", hostname)
+                            .header("Referer", url)
+                            .header("X-Request-Id", requestId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"adapterId":"amazon.reviews.v1","languageHint":"en","reviews":[
+                                      {"reviewKey":"%s","text":"%s"}
+                                    ]}
+                                    """.formatted(reviewKey, reviewText)))
+                    .andExpect(status().isOk());
+        } finally {
+            rootLogger.detachAppender(appender);
+            appender.stop();
+        }
+
+        String logs = appender.list.stream().map(ILoggingEvent::getFormattedMessage).reduce("", (left, right) -> left + "\n" + right);
+        assertTrue(logs.contains("requestId=" + requestId));
+        for (String privateValue : List.of(reviewKey, "private-review-text-sentinel", "private-url-sentinel", hostname)) {
+            assertFalse(logs.contains(privateValue), "logs must not contain " + privateValue);
+        }
     }
 
     @Test
