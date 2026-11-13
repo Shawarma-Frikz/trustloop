@@ -17,6 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.BufferedReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.Charset;
@@ -90,13 +92,16 @@ public class ApiBoundaryFilter extends OncePerRequestFilter {
 
         String origin = request.getHeader("Origin");
         if (origin != null) {
-            if (!allowedOrigins.contains(origin)) {
+            boolean configuredCrossOrigin = allowedOrigins.contains(origin);
+            if (!configuredCrossOrigin && !isSameOrigin(origin, request)) {
                 writeError(response, requestId, HttpServletResponse.SC_FORBIDDEN,
                         "INVALID_REQUEST", "Request rejected.");
                 return;
             }
-            response.setHeader("Access-Control-Allow-Origin", origin);
-            response.addHeader("Vary", "Origin");
+            if (configuredCrossOrigin) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+                response.addHeader("Vary", "Origin");
+            }
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())
                     && request.getHeader("Access-Control-Request-Method") != null) {
                 String requestedMethod = request.getHeader("Access-Control-Request-Method");
@@ -114,16 +119,37 @@ public class ApiBoundaryFilter extends OncePerRequestFilter {
                             "INVALID_REQUEST", "Request rejected.");
                     return;
                 }
-                response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-                response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Request-Id");
-                response.setHeader("Access-Control-Expose-Headers", "X-Request-Id");
+                if (configuredCrossOrigin) {
+                    response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                    response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Request-Id");
+                    response.setHeader("Access-Control-Expose-Headers", "X-Request-Id");
+                }
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 return;
             }
-            response.setHeader("Access-Control-Expose-Headers", "X-Request-Id");
+            if (configuredCrossOrigin) response.setHeader("Access-Control-Expose-Headers", "X-Request-Id");
         }
 
         filterChain.doFilter(new SizeLimitedRequest(request, contractValues.maxRequestBytes()), response);
+    }
+
+    private static boolean isSameOrigin(String origin, HttpServletRequest request) {
+        try {
+            URI parsed = new URI(origin);
+            if (parsed.getScheme() == null || parsed.getHost() == null
+                    || parsed.getRawUserInfo() != null || parsed.getRawQuery() != null
+                    || parsed.getRawFragment() != null
+                    || (parsed.getRawPath() != null && !parsed.getRawPath().isEmpty())) return false;
+            if (!parsed.getScheme().equalsIgnoreCase(request.getScheme())
+                    || !parsed.getHost().equalsIgnoreCase(request.getServerName())) return false;
+            int originPort = parsed.getPort() >= 0 ? parsed.getPort()
+                    : "https".equalsIgnoreCase(parsed.getScheme()) ? 443 : 80;
+            int requestPort = request.getServerPort() >= 0 ? request.getServerPort()
+                    : "https".equalsIgnoreCase(request.getScheme()) ? 443 : 80;
+            return originPort == requestPort;
+        } catch (URISyntaxException exception) {
+            return false;
+        }
     }
 
     private void writeError(HttpServletResponse response, String requestId, int status, String code, String message)

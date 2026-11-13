@@ -4,61 +4,147 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <title>TrustLoop local inspection</title>
+  <title>TrustLoop · Local inspection</title>
   <style>
-    :root { color-scheme: light; --ink:#173d3a; --green:#14564e; --paper:#faf8f2; --line:#d8d1c3; --muted:#536762; --accent:#bd4e2e; }
+    :root {
+      color-scheme: light;
+      --ink:#163d39; --green:#14564e; --deep:#103d38; --paper:#f6f4ed;
+      --surface:#fffefa; --line:#ded9cc; --muted:#64736e; --accent:#bd4e2e;
+      --soft-green:#e7f0ec; --soft-red:#f5e8e1; --shadow:0 10px 28px rgba(27,55,50,.07);
+    }
     * { box-sizing:border-box; }
-    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 system-ui,sans-serif; }
-    header { background:#103d38; color:#fffaf0; padding:2rem max(1rem,calc((100% - 1100px)/2)); border-top:4px solid var(--accent); }
-    header p { max-width:760px; margin:.4rem 0 0; }
-    main { max-width:1100px; margin:2rem auto; padding:0 1rem 3rem; display:grid; gap:1.25rem; }
-    section { background:#fffdf8; border:1px solid var(--line); padding:1.25rem; }
-    h1,h2 { margin:0 0 .5rem; } h1 { font:600 2rem Georgia,serif; } h2 { font:600 1.35rem Georgia,serif; }
-    .notice { border-left:4px solid var(--accent); background:#f3e6df; padding:.8rem 1rem; }
-    .toolbar,.row { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-    .adapter { border-top:1px solid var(--line); padding:1rem 0; }
-    code,pre { font: .88rem ui-monospace,Consolas,monospace; } code { overflow-wrap:anywhere; }
-    button,select { font:inherit; color:var(--ink); background:#fffdf8; border:1px solid var(--green); border-radius:3px; padding:.45rem .75rem; }
-    button { cursor:pointer; } button:hover { background:#e6efeb; } button:focus-visible,select:focus-visible,a:focus-visible { outline:3px solid #bd4e2e; outline-offset:2px; }
-    a { color:#14564e; } .muted { color:var(--muted); } .fixture-links { display:flex; flex-wrap:wrap; gap:.75rem; margin:.8rem 0; }
-    iframe { width:100%; height:360px; border:1px solid var(--line); background:white; } pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#f1eee6; padding:1rem; }
-    #message { min-height:1.5em; color:var(--muted); } .bad { color:#9d321d !important; }
-    @media (min-width:850px) { main { grid-template-columns:1fr 1fr; } .wide { grid-column:1/-1; } }
+    body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    header { color:#fffaf0; background:var(--deep); border-top:5px solid var(--accent); }
+    .hero { max-width:1180px; margin:auto; padding:2.4rem 1.4rem 2.2rem; }
+    .eyebrow { margin:0 0 .45rem; color:#efb095; font:700 .72rem/1.3 ui-monospace,Consolas,monospace; letter-spacing:.16em; text-transform:uppercase; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { margin-bottom:.35rem; font:600 clamp(2rem,4vw,3rem)/1.1 Georgia,serif; letter-spacing:-.025em; }
+    .hero-copy { max-width:720px; margin:0; color:#e4efeb; }
+    .hero-tags { display:flex; gap:.55rem; flex-wrap:wrap; margin-top:1.2rem; }
+    .hero-tags span { border:1px solid rgba(255,250,240,.24); border-radius:999px; padding:.25rem .65rem; color:#f8e9dc; font-size:.78rem; }
+    main { max-width:1180px; margin:1.5rem auto 3rem; padding:0 1.4rem; display:grid; gap:1.1rem; }
+    .notice { display:flex; align-items:flex-start; gap:.75rem; padding:.85rem 1rem; background:var(--soft-red); border:1px solid #e8d1c5; border-left:4px solid var(--accent); color:#55382c; }
+    .notice-mark { flex:none; display:grid; place-items:center; width:1.45rem; height:1.45rem; border-radius:50%; background:#ead0c3; color:#713b29; font-weight:800; }
+    .notice p { margin:0; }
+    .panel { min-width:0; padding:1.25rem; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); }
+    .panel-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+    .panel-head h2 { margin:0; font:600 1.45rem/1.2 Georgia,serif; }
+    .panel-head p { margin:.3rem 0 0; color:var(--muted); font-size:.9rem; }
+    .eyebrow-dark { margin-bottom:.35rem; color:var(--accent); font:700 .68rem/1.3 ui-monospace,Consolas,monospace; letter-spacing:.13em; text-transform:uppercase; }
+    button,select { font:inherit; color:var(--ink); background:var(--surface); border:1px solid #aebbb4; border-radius:5px; padding:.55rem .8rem; }
+    button { cursor:pointer; transition:background .15s ease,border-color .15s ease,transform .15s ease; }
+    button:hover:not(:disabled) { background:var(--soft-green); border-color:var(--green); }
+    button:active:not(:disabled) { transform:translateY(1px); }
+    button:disabled { cursor:wait; opacity:.65; }
+    button:focus-visible,select:focus-visible,a:focus-visible { outline:3px solid #bd4e2e; outline-offset:2px; }
+    select { min-width:min(100%,250px); }
+    .primary-button { background:var(--green); border-color:var(--green); color:white; }
+    .primary-button:hover:not(:disabled) { background:#0e453e; color:white; }
+    .adapter-card { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:1.2rem; padding:1.2rem; border:1px solid var(--line); background:#fcfbf6; }
+    .adapter-title { display:flex; align-items:center; gap:.65rem; flex-wrap:wrap; margin:0 0 .4rem; font-size:1.12rem; }
+    .adapter-title code { font:700 1.05rem ui-monospace,Consolas,monospace; }
+    .version { border-radius:999px; padding:.14rem .55rem; background:#ece9df; color:#4e5c57; font:600 .75rem ui-monospace,Consolas,monospace; }
+    .adapter-description { max-width:780px; margin:0; color:var(--muted); }
+    .adapter-state { display:flex; align-items:center; gap:.55rem; align-self:start; white-space:nowrap; color:var(--muted); font-size:.85rem; }
+    .state-dot { width:.6rem; height:.6rem; border-radius:50%; background:#44876b; box-shadow:0 0 0 3px #e0eee7; }
+    .state-dot.off { background:#9a6a50; box-shadow:0 0 0 3px #f4e9e1; }
+    .adapter-foot { display:grid; grid-template-columns:1fr auto; align-items:center; gap:1rem; margin-top:1rem; padding-top:.9rem; border-top:1px solid var(--line); }
+    .route-label { margin:0 0 .45rem; color:var(--muted); font-size:.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .chips { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .chip { display:inline-block; max-width:100%; padding:.25rem .55rem; border:1px solid #d9e1db; border-radius:4px; background:#f0f5f1; color:#31514a; font:.77rem ui-monospace,Consolas,monospace; overflow-wrap:anywhere; }
+    details { margin-top:.8rem; color:var(--muted); }
+    summary { width:max-content; max-width:100%; cursor:pointer; color:var(--green); font-size:.88rem; font-weight:650; }
+    .details-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.85rem; padding:.9rem 0 .2rem; }
+    .details-grid h3 { margin:0 0 .45rem; font-size:.8rem; color:var(--ink); }
+    .details-grid p { margin:0; font-size:.82rem; overflow-wrap:anywhere; }
+    .workspace { display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr); gap:1.1rem; align-items:start; }
+    .fixture-toolbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.8rem; margin-bottom:.7rem; }
+    .fixture-meta { display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem; color:var(--muted); font-size:.83rem; }
+    .expected { border-radius:999px; padding:.2rem .6rem; background:var(--soft-green); color:#20584c; font:700 .72rem ui-monospace,Consolas,monospace; }
+    .expected.unsupported { background:var(--soft-red); color:#8e3d25; }
+    .review-list { display:grid; gap:.7rem; max-height:490px; overflow:auto; padding:.1rem .25rem .1rem 0; }
+    .review-card { padding:.85rem .95rem; border:1px solid var(--line); border-left:3px solid #60937e; background:#fff; }
+    .review-card-head { display:flex; justify-content:space-between; gap:.8rem; align-items:center; margin-bottom:.45rem; }
+    .review-card-head strong { font-size:.82rem; }
+    .review-card-head span { color:var(--muted); font:.7rem ui-monospace,Consolas,monospace; }
+    .review-card p { margin:0; color:#263e39; font-size:.91rem; }
+    .empty-state { padding:1.2rem; border:1px dashed #d1cabc; background:#faf8f1; color:var(--muted); text-align:center; }
+    .metrics-panel { display:grid; gap:1rem; }
+    .metric-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
+    .metric-tile { padding:.8rem .9rem; background:#f3f5ef; border:1px solid #e1e6dc; }
+    .metric-tile span { display:block; color:var(--muted); font-size:.76rem; }
+    .metric-tile strong { display:block; margin-top:.12rem; font:600 1.55rem/1.2 Georgia,serif; color:var(--green); }
+    .metric-groups { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+    .metric-group { min-width:0; padding:.85rem; border:1px solid var(--line); background:#fff; }
+    .metric-group h3 { margin:0 0 .65rem; font-size:.86rem; }
+    .bar-row { display:grid; grid-template-columns:minmax(70px,.8fr) minmax(35px,1fr) 2.1rem; align-items:center; gap:.5rem; margin:.42rem 0; font-size:.72rem; }
+    .bar-label { overflow:hidden; color:var(--muted); text-overflow:ellipsis; white-space:nowrap; }
+    .bar-track { height:.42rem; overflow:hidden; border-radius:999px; background:#edf0e9; }
+    .bar-fill { height:100%; min-width:0; border-radius:inherit; background:#3b806d; }
+    .bar-count { text-align:right; font:600 .7rem ui-monospace,Consolas,monospace; }
+    .metric-foot { margin:0; color:var(--muted); font-size:.78rem; }
+    #message { min-height:1.5rem; margin:0; color:var(--muted); font-size:.86rem; }
+    .bad { color:#9d321d !important; }
+    @media (max-width:850px) { .workspace { grid-template-columns:1fr; } }
+    @media (max-width:600px) {
+      .hero { padding:1.7rem 1rem; } main { padding:0 1rem; margin-top:1rem; }
+      .panel { padding:1rem; } .adapter-card { grid-template-columns:1fr; }
+      .adapter-state { grid-row:1; } .adapter-foot { grid-template-columns:1fr; }
+      .adapter-foot button { justify-self:start; } .details-grid,.metric-groups { grid-template-columns:1fr; }
+      .panel-head { align-items:center; } .panel-head h2 { font-size:1.25rem; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>TrustLoop local inspection</h1>
-    <p>Development-only view of bundled adapters, saved fixtures, local inspection toggles, and in-memory request metrics.</p>
+    <div class="hero">
+      <p class="eyebrow">Developer workspace · Local only</p>
+      <h1>TrustLoop inspection</h1>
+      <p class="hero-copy">Explore bundled adapters, review saved fixtures one review at a time, and check privacy-safe runtime totals.</p>
+      <div class="hero-tags" aria-label="Environment details"><span>dev-admin</span><span>Loopback only</span><span>Volatile data</span></div>
+    </div>
   </header>
   <main>
-    <section class="wide notice" aria-label="Development-only warning">
-      <strong>Local development tool.</strong> Available only with the <code>dev-admin</code> profile on loopback. Toggle changes exist in memory, reset when the backend restarts, and do not change extension scanning. No accounts, persistence, or adapter authoring.
-    </section>
-    <section class="wide">
-      <div class="toolbar"><h2>Bundled adapters</h2><button id="reload-adapters" type="button">Refresh</button></div>
+    <aside class="notice" aria-label="Development-only warning">
+      <span class="notice-mark" aria-hidden="true">i</span>
+      <p><strong>Local development tool.</strong> Adapter toggles apply to this inspection catalog only; they do not change extension scanning. Changes and metrics reset when the backend restarts. No review text is retained by metrics.</p>
+    </aside>
+
+    <section class="panel" aria-labelledby="adapters-title">
+      <div class="panel-head">
+        <div><p class="eyebrow-dark">Configuration</p><h2 id="adapters-title">Bundled adapters</h2><p>Versioned adapters and the pages they explicitly support.</p></div>
+        <button id="reload-adapters" type="button">Refresh</button>
+      </div>
       <div id="adapters" aria-live="polite">Loading adapters…</div>
     </section>
-    <section>
-      <div class="toolbar"><h2>Fixture preview</h2><label for="fixture-select">Fixture</label></div>
-      <select id="fixture-select" aria-label="Select a saved adapter fixture" disabled><option>Select an adapter first</option></select>
-      <p id="fixture-state" class="muted">Fixtures are saved synthetic markup. Previewing does not send data to the scoring service.</p>
-      <iframe id="fixture-preview" title="Selected saved fixture" sandbox=""></iframe>
-    </section>
-    <section>
-      <div class="toolbar"><h2>In-memory metrics</h2><button id="reload-metrics" type="button">Refresh metrics</button></div>
-      <p class="muted">Counts analyze requests, HTTP and result statuses, fixed reason codes, engine and configured model version labels, and latency buckets. No per-review data is retained. Resets on restart.</p>
-      <pre id="metrics" aria-live="polite">Loading metrics…</pre>
-    </section>
-    <p id="message" class="wide" role="status" aria-live="polite"></p>
+
+    <div class="workspace">
+      <section class="panel" aria-labelledby="fixtures-title">
+        <div class="panel-head">
+          <div><p class="eyebrow-dark">Saved markup · synthetic</p><h2 id="fixtures-title">Fixture preview</h2><p>Extracted review text is shown as separate cards.</p></div>
+        </div>
+        <div class="fixture-toolbar"><label for="fixture-select"><strong>Choose fixture</strong></label><select id="fixture-select" aria-label="Select a saved adapter fixture" disabled><option>Select an adapter first</option></select></div>
+        <div id="fixture-meta" class="fixture-meta" aria-live="polite">Loading fixture details…</div>
+        <div id="review-list" class="review-list" aria-live="polite"><div class="empty-state">Select a fixture to preview its reviews.</div></div>
+      </section>
+
+      <section class="panel" aria-labelledby="metrics-title">
+        <div class="panel-head">
+          <div><p class="eyebrow-dark">Privacy-safe runtime view</p><h2 id="metrics-title">Operational metrics</h2><p>Aggregates only. No review-level records.</p></div>
+          <button id="reload-metrics" type="button">Refresh</button>
+        </div>
+        <div id="metrics" class="metrics-panel" aria-live="polite"><div class="empty-state">Loading metrics…</div></div>
+      </section>
+    </div>
+    <p id="message" role="status" aria-live="polite"></p>
   </main>
   <script>
     "use strict";
     const base = "/api/v1/admin";
     const adapterRoot = document.querySelector("#adapters");
     const fixtureSelect = document.querySelector("#fixture-select");
-    const fixturePreview = document.querySelector("#fixture-preview");
-    const fixtureState = document.querySelector("#fixture-state");
+    const fixtureMeta = document.querySelector("#fixture-meta");
+    const reviewList = document.querySelector("#review-list");
     const message = document.querySelector("#message");
     let currentAdapter = null;
     const element = (tag, text, className) => {
@@ -72,72 +158,157 @@
       if (!response.ok) throw new Error("Inspection request failed (" + response.status + ").");
       return response.json();
     }
+    function renderAdapter(adapter) {
+      const card = element("article", undefined, "adapter-card");
+      const info = element("div");
+      const title = element("h3", undefined, "adapter-title");
+      title.append(element("code", adapter.id), element("span", adapter.version, "version"));
+      info.append(title, element("p", adapter.description, "adapter-description"));
+      const state = element("div", undefined, "adapter-state");
+      state.append(element("span", undefined, "state-dot" + (adapter.enabled ? "" : " off")), element("span", adapter.enabled ? "Enabled for inspection" : "Disabled for inspection"));
+      const foot = element("div", undefined, "adapter-foot");
+      const routes = element("div");
+      routes.append(element("p", "Supported page patterns", "route-label"));
+      const chips = element("div", undefined, "chips");
+      for (const route of adapter.supportedPages) chips.append(element("span", route, "chip"));
+      routes.append(chips);
+      const toggle = element("button", adapter.enabled ? "Disable inspection" : "Enable inspection", adapter.enabled ? "" : "primary-button");
+      toggle.type = "button";
+      toggle.setAttribute("aria-pressed", String(adapter.enabled));
+      toggle.addEventListener("click", async () => {
+        toggle.disabled = true;
+        message.textContent = "Updating the local inspection catalog…";
+        message.className = "";
+        try {
+          const response = await fetch(base + "/adapters/" + encodeURIComponent(adapter.id) + "/enabled", {
+            method: "PUT", credentials: "same-origin", cache: "no-store",
+            headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !adapter.enabled })
+          });
+          if (!response.ok) throw new Error("Toggle was rejected (" + response.status + ").");
+          const result = await response.json();
+          await loadAdapters(false);
+          message.textContent = "Inspection catalog " + (result.enabled ? "enabled" : "disabled") + " for this backend session. Extension scanning is unaffected.";
+          message.className = "";
+        } catch (error) { message.textContent = error.message; message.className = "bad"; }
+      });
+      foot.append(routes, toggle);
+      const disclosure = element("details");
+      disclosure.append(element("summary", "Selectors and extraction rules"));
+      const detailGrid = element("div", undefined, "details-grid");
+      const cardSelectors = element("div");
+      cardSelectors.append(element("h3", "Review cards"), element("p", adapter.selectors.cards.join(" · ")));
+      const bodySelectors = element("div");
+      bodySelectors.append(element("h3", "Review text"), element("p", adapter.selectors.reviewBodies.join(" · ")));
+      detailGrid.append(cardSelectors, bodySelectors);
+      disclosure.append(detailGrid);
+      card.append(info, state, foot);
+      card.style.gridColumn = "1 / -1";
+      adapterRoot.append(card, disclosure);
+    }
     async function loadFixture() {
       if (!currentAdapter || !fixtureSelect.value) return;
       const fixture = currentAdapter.fixtures.find((item) => item.name === fixtureSelect.value);
       if (!fixture) return;
-      fixturePreview.src = base + "/adapters/" + encodeURIComponent(currentAdapter.id) + "/fixtures/" + encodeURIComponent(fixture.name);
-      fixtureState.textContent = fixture.name + " · expected adapter state: " + fixture.expectedState + (fixture.supportedFixture ? " · synthetic supported-page example" : " · deliberately unsupported-page example");
+      reviewList.replaceChildren(element("div", "Loading saved fixture…", "empty-state"));
+      fixtureMeta.replaceChildren(
+        element("span", fixture.name),
+        element("span", fixture.expectedState, "expected" + (fixture.supportedFixture ? "" : " unsupported")),
+        element("span", fixture.supportedFixture ? "Supported-page fixture" : "Deliberately unsupported page")
+      );
+      try {
+        const response = await fetch(base + "/adapters/" + encodeURIComponent(currentAdapter.id) + "/fixtures/" + encodeURIComponent(fixture.name), { cache: "no-store", credentials: "same-origin" });
+        if (!response.ok) throw new Error("Fixture could not be loaded (" + response.status + ").");
+        const markup = await response.text();
+        const parsed = new DOMParser().parseFromString(markup, "text/html");
+        const selectors = currentAdapter.selectors.cards.join(",");
+        const bodySelectors = currentAdapter.selectors.reviewBodies.join(",");
+        const cards = [...parsed.querySelectorAll(selectors)];
+        const reviews = cards.map((card) => card.querySelector(bodySelectors)?.textContent?.replace(/\s+/g, " ").trim()).filter(Boolean);
+        reviewList.replaceChildren();
+        if (!reviews.length) {
+          reviewList.append(element("div", fixture.supportedFixture ? "No review cards matched this adapter’s selectors." : "This unsupported fixture intentionally has no extractable reviews.", "empty-state"));
+          return;
+        }
+        reviews.forEach((text, index) => {
+          const review = element("article", undefined, "review-card");
+          const head = element("div", undefined, "review-card-head");
+          head.append(element("strong", "Extracted review " + (index + 1)), element("span", text.length + " characters"));
+          review.append(head, element("p", text));
+          reviewList.append(review);
+        });
+      } catch (error) { reviewList.replaceChildren(element("div", error.message, "empty-state")); }
     }
     async function loadAdapters(showLoadedMessage = true) {
       try {
         const data = await getJson("/adapters");
-        adapterRoot.replaceChildren();
         const adapters = data.adapters || [];
-        if (!adapters.length) adapterRoot.append(element("p", "No adapters are bundled."));
-        for (const adapter of adapters) {
-          const card = element("article", undefined, "adapter");
-          const title = element("h3", adapter.id + " · " + adapter.version);
-          const description = element("p", adapter.description);
-          const scope = element("p", "Supported pages: " + adapter.supportedPages.join(" · "));
-          const selectorInfo = element("p", "Card selectors: " + adapter.selectors.cards.join(", ") + " | Review body selectors: " + adapter.selectors.reviewBodies.join(", "));
-          const toggleRow = element("div", undefined, "row");
-          const status = element("span", "Inspection catalog: " + (adapter.enabled ? "enabled" : "disabled"));
-          const toggle = element("button", adapter.enabled ? "Disable in inspection catalog" : "Enable in inspection catalog");
-          toggle.type = "button";
-          toggle.addEventListener("click", async () => {
-            toggle.disabled = true;
-            try {
-              const response = await fetch(base + "/adapters/" + encodeURIComponent(adapter.id) + "/enabled", {
-                method: "PUT", credentials: "same-origin", cache: "no-store",
-                headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !adapter.enabled })
-              });
-              if (!response.ok) throw new Error("Toggle was rejected (" + response.status + ").");
-              const result = await response.json();
-              const refreshed = await loadAdapters(false);
-              if (refreshed) {
-                message.textContent = "Inspection catalog " + (result.enabled ? "enabled" : "disabled") + " for this backend session. Extension scanning is unaffected.";
-                message.className = "";
-              }
-            } catch (error) { message.textContent = error.message; message.className = "bad"; }
-            finally { toggle.disabled = false; }
-          });
-          toggleRow.append(status, toggle);
-          const fixtureList = element("p", "Fixtures: " + adapter.fixtures.map((item) => item.name + " (" + item.expectedState + ")").join(", "));
-          card.append(title, description, scope, selectorInfo, toggleRow, fixtureList);
-          adapterRoot.append(card);
-          currentAdapter = adapter;
-        }
-        if (currentAdapter) {
+        adapterRoot.replaceChildren();
+        currentAdapter = adapters[0] || null;
+        if (!currentAdapter) {
+          adapterRoot.append(element("div", "No adapters are bundled yet.", "empty-state"));
+          fixtureSelect.disabled = true;
+        } else {
+          adapters.forEach(renderAdapter);
+          const selected = fixtureSelect.value;
           fixtureSelect.replaceChildren(...currentAdapter.fixtures.map((fixture) => {
-            const option = element("option", fixture.name + " · " + fixture.expectedState);
+            const option = element("option", fixture.name);
             option.value = fixture.name;
             return option;
           }));
           fixtureSelect.disabled = false;
+          if (currentAdapter.fixtures.some((fixture) => fixture.name === selected)) fixtureSelect.value = selected;
           await loadFixture();
         }
         if (showLoadedMessage) {
-          message.textContent = "Loaded " + adapters.length + " bundled adapter(s).";
+          message.textContent = adapters.length + " bundled adapter" + (adapters.length === 1 ? "" : "s") + " loaded.";
           message.className = "";
         }
         return true;
-      } catch (error) { message.textContent = error.message; message.className = "bad"; }
+      } catch (error) { message.textContent = error.message; message.className = "bad"; return false; }
+    }
+    function addBars(container, title, values) {
+      const group = element("section", undefined, "metric-group");
+      group.append(element("h3", title));
+      const entries = Object.entries(values || {});
+      const max = Math.max(1, ...entries.map(([, count]) => Number(count) || 0));
+      if (!entries.length) group.append(element("p", "No observations yet.", "metric-foot"));
+      entries.forEach(([label, count]) => {
+        const row = element("div", undefined, "bar-row");
+        const name = element("span", label.replaceAll("_", " "), "bar-label");
+        const track = element("span", undefined, "bar-track");
+        const fill = element("span", undefined, "bar-fill");
+        fill.style.width = Math.max(Number(count) > 0 ? 3 : 0, (Number(count) / max) * 100) + "%";
+        track.append(fill);
+        row.append(name, track, element("span", String(count), "bar-count"));
+        group.append(row);
+      });
+      container.append(group);
+    }
+    function renderMetrics(data) {
+      const output = document.querySelector("#metrics");
+      output.replaceChildren();
+      const totals = Object.values(data.statusCounts || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+      const latency = data.latencyBuckets || {};
+      const under100 = Number(latency.le_10_ms || 0) + Number(latency.le_50_ms || 0) + Number(latency.le_100_ms || 0);
+      const summary = element("div", undefined, "metric-summary");
+      [["Analyze requests", data.requestCount || 0], ["Review results", totals], ["≤ 100 ms", under100], ["> 1,000 ms", latency.gt_1000_ms || 0]].forEach(([label, value]) => {
+        const tile = element("div", undefined, "metric-tile");
+        tile.append(element("span", label), element("strong", String(value)));
+        summary.append(tile);
+      });
+      const groups = element("div", undefined, "metric-groups");
+      addBars(groups, "Result status", data.statusCounts);
+      addBars(groups, "Reason codes", data.reasonCodeCounts);
+      addBars(groups, "Engine", data.engineCounts);
+      addBars(groups, "Model version", data.modelVersionCounts);
+      addBars(groups, "HTTP status", data.httpStatusCounts);
+      addBars(groups, "Latency buckets", latency);
+      output.append(summary, groups, element("p", "Counts are in memory and reset when the backend restarts. Labels are bounded; no review text, keys, URLs, or per-review records are shown.", "metric-foot"));
     }
     async function loadMetrics() {
       const output = document.querySelector("#metrics");
-      try { output.textContent = JSON.stringify(await getJson("/metrics"), null, 2); }
-      catch (error) { output.textContent = error.message; }
+      try { renderMetrics(await getJson("/metrics")); }
+      catch (error) { output.replaceChildren(element("div", error.message, "empty-state")); }
     }
     fixtureSelect.addEventListener("change", () => void loadFixture());
     document.querySelector("#reload-adapters").addEventListener("click", () => void loadAdapters());

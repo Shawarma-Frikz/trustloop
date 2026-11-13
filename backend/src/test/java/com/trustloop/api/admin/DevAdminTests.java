@@ -62,7 +62,7 @@ class DevAdminTests {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Development-only view")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Developer workspace")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("do not change extension scanning")));
 
         mockMvc.perform(get("/api/v1/admin/adapters"))

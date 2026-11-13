@@ -324,6 +324,13 @@ class PublicApiTests {
     }
 
     @Test
+    void sameOriginRequestsDoNotNeedToBeListedAsCorsOrigins() throws Exception {
+        mockMvc.perform(get("/api/v1/version").header("Origin", "http://localhost"))
+                .andExpect(status().isOk())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+    }
+
+    @Test
     void healthAndVersionMatchTheFrozenContractShape() throws Exception {
         mockMvc.perform(get("/api/v1/health"))
                 .andExpect(status().isOk())
