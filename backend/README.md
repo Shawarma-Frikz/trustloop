@@ -46,7 +46,8 @@ controls.
 
 The optional inspection page is a development-only tool. It is absent (404)
 unless the `dev-admin` Spring profile is active, and that profile refuses to
-start unless `server.address` is `127.0.0.1` or `::1`. It lists bundled adapter
+start unless `app.admin.local-only=true` and `server.address` is a loopback
+address (`127.0.0.1` by default). It lists bundled adapter
 metadata, previews only bundled synthetic fixtures, offers a volatile
 inspection-catalog toggle, and reports in-memory counts/status/latency buckets
 for analyze requests. The toggle resets on restart and does not change

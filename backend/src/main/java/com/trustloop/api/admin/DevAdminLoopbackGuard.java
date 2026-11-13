@@ -9,15 +9,20 @@ import org.springframework.stereotype.Component;
 @Profile("dev-admin")
 public class DevAdminLoopbackGuard {
     private final String serverAddress;
+    private final boolean localOnly;
 
-    public DevAdminLoopbackGuard(@Value("${server.address:}") String serverAddress) {
+    public DevAdminLoopbackGuard(
+            @Value("${server.address:}") String serverAddress,
+            @Value("${app.admin.local-only:false}") boolean localOnly) {
         this.serverAddress = serverAddress;
+        this.localOnly = localOnly;
     }
 
     @PostConstruct
     void requireLoopback() {
-        if (!"127.0.0.1".equals(serverAddress) && !"::1".equals(serverAddress)) {
-            throw new IllegalStateException("The dev-admin profile must bind to 127.0.0.1; refusing to start.");
+        boolean loopback = "127.0.0.1".equals(serverAddress) || "::1".equals(serverAddress);
+        if (!localOnly || !loopback) {
+            throw new IllegalStateException("The dev-admin profile requires app.admin.local-only=true and a loopback server.address; refusing to start.");
         }
     }
 }

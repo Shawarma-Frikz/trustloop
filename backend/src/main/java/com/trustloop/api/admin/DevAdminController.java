@@ -55,7 +55,7 @@ public class DevAdminController {
     public ResponseEntity<String> fixture(@PathVariable String adapterId, @PathVariable String fixtureName) throws IOException {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).contentType(MediaType.TEXT_HTML)
                 .header("X-Content-Type-Options", "nosniff")
-                .header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+                .header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'")
                 .body(adapters.fixtureHtml(adapterId, fixtureName));
     }
 

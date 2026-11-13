@@ -4,11 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trustloop.api.model.ScoreRequest;
 import com.trustloop.api.model.ScoreResponse;
+import com.trustloop.api.TrustLoopApiApplication;
 import com.trustloop.api.services.ScoringClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -42,6 +47,13 @@ class DevAdminTests {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
+    @Autowired Environment environment;
+
+    @Test
+    void developmentAdminProfilePinsLoopbackAndRequiresLocalOnlyFlag() {
+        assertEquals("127.0.0.1", environment.getProperty("server.address"));
+        assertEquals("true", environment.getProperty("app.admin.local-only"));
+    }
 
     @Test
     void localDashboardListsAdapterAndExplainsItsDevelopmentOnlyScope() throws Exception {
@@ -70,6 +82,7 @@ class DevAdminTests {
         mockMvc.perform(get("/api/v1/admin/adapters/{id}/fixtures/{name}", ADAPTER_ID, "standard"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string("Content-Security-Policy", org.hamcrest.Matchers.containsString("frame-ancestors 'self'")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("data-fixture-source=\"synthetic\"")));
 
         mockMvc.perform(get("/api/v1/admin/adapters"))
@@ -117,10 +130,41 @@ class DevAdminTests {
 
     @Test
     void loopbackGuardRejectsAnyNonLoopbackBind() {
-        new DevAdminLoopbackGuard("127.0.0.1").requireLoopback();
-        new DevAdminLoopbackGuard("::1").requireLoopback();
-        assertThrows(IllegalStateException.class, () -> new DevAdminLoopbackGuard("0.0.0.0").requireLoopback());
-        assertThrows(IllegalStateException.class, () -> new DevAdminLoopbackGuard("192.168.1.20").requireLoopback());
+        new DevAdminLoopbackGuard("127.0.0.1", true).requireLoopback();
+        new DevAdminLoopbackGuard("::1", true).requireLoopback();
+        assertThrows(IllegalStateException.class, () -> new DevAdminLoopbackGuard("0.0.0.0", true).requireLoopback());
+        assertThrows(IllegalStateException.class, () -> new DevAdminLoopbackGuard("192.168.1.20", true).requireLoopback());
+        assertThrows(IllegalStateException.class, () -> new DevAdminLoopbackGuard("127.0.0.1", false).requireLoopback());
+    }
+
+    @Test
+    void springApplicationStartupFailsWhenDevAdminIsConfiguredForANonLoopbackAddress() {
+        RuntimeException failure = assertThrows(RuntimeException.class, () -> {
+            try (ConfigurableApplicationContext ignored = new SpringApplicationBuilder(TrustLoopApiApplication.class)
+                    .web(WebApplicationType.NONE)
+                    .profiles("dev-admin")
+                    .run(
+                            "--server.address=0.0.0.0",
+                            "--app.admin.local-only=true",
+                            "--spring.main.banner-mode=off",
+                            "--spring.main.log-startup-info=false",
+                            "--logging.level.root=OFF")) {
+                throw new AssertionError("Application started with a non-loopback dev-admin bind.");
+            }
+        });
+
+        Throwable cause = failure;
+        boolean guardRejectedStartup = false;
+        while (cause != null) {
+            if (cause instanceof IllegalStateException
+                    && cause.getMessage() != null
+                    && cause.getMessage().contains("loopback server.address")) {
+                guardRejectedStartup = true;
+                break;
+            }
+            cause = cause.getCause();
+        }
+        assertTrue(guardRejectedStartup, "startup must fail specifically because the admin bind is not loopback");
     }
 
     @TestConfiguration
