@@ -12,7 +12,7 @@ and calibration reports. The builder verified all 8 files against
 the artifact manifest and loaded the pipeline offline. The manifest checksum is:
 
 ```text
-c7ec55715148a0829ffdf4bef52100f754d37a04312bfbd395ac50d77de32f0a
+889b899a943bed3c50ec43c5ef0c21cbbcfffc3d103cd71b3fb19ca89e1ef149
 ```
 
 The confidence intervals use only **4** independent
