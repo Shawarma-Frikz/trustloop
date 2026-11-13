@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>TrustLoop local inspection</title>
+  <style>
+    :root { color-scheme: light; --ink:#173d3a; --green:#14564e; --paper:#faf8f2; --line:#d8d1c3; --muted:#536762; --accent:#bd4e2e; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 system-ui,sans-serif; }
+    header { background:#103d38; color:#fffaf0; padding:2rem max(1rem,calc((100% - 1100px)/2)); border-top:4px solid var(--accent); }
+    header p { max-width:760px; margin:.4rem 0 0; }
+    main { max-width:1100px; margin:2rem auto; padding:0 1rem 3rem; display:grid; gap:1.25rem; }
+    section { background:#fffdf8; border:1px solid var(--line); padding:1.25rem; }
+    h1,h2 { margin:0 0 .5rem; } h1 { font:600 2rem Georgia,serif; } h2 { font:600 1.35rem Georgia,serif; }
+    .notice { border-left:4px solid var(--accent); background:#f3e6df; padding:.8rem 1rem; }
+    .toolbar,.row { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    .adapter { border-top:1px solid var(--line); padding:1rem 0; }
+    code,pre { font: .88rem ui-monospace,Consolas,monospace; } code { overflow-wrap:anywhere; }
+    button,select { font:inherit; color:var(--ink); background:#fffdf8; border:1px solid var(--green); border-radius:3px; padding:.45rem .75rem; }
+    button { cursor:pointer; } button:hover { background:#e6efeb; } button:focus-visible,select:focus-visible,a:focus-visible { outline:3px solid #bd4e2e; outline-offset:2px; }
+    a { color:#14564e; } .muted { color:var(--muted); } .fixture-links { display:flex; flex-wrap:wrap; gap:.75rem; margin:.8rem 0; }
+    iframe { width:100%; height:360px; border:1px solid var(--line); background:white; } pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#f1eee6; padding:1rem; }
+    #message { min-height:1.5em; color:var(--muted); } .bad { color:#9d321d !important; }
+    @media (min-width:850px) { main { grid-template-columns:1fr 1fr; } .wide { grid-column:1/-1; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TrustLoop local inspection</h1>
+    <p>Development-only view of bundled adapters, saved fixtures, local inspection toggles, and in-memory request metrics.</p>
+  </header>
+  <main>
+    <section class="wide notice" aria-label="Development-only warning">
+      <strong>Local development tool.</strong> Available only with the <code>dev-admin</code> profile on loopback. Toggle changes exist in memory, reset when the backend restarts, and do not change extension scanning. No accounts, persistence, or adapter authoring.
+    </section>
+    <section class="wide">
+      <div class="toolbar"><h2>Bundled adapters</h2><button id="reload-adapters" type="button">Refresh</button></div>
+      <div id="adapters" aria-live="polite">Loading adapters…</div>
+    </section>
+    <section>
+      <div class="toolbar"><h2>Fixture preview</h2><label for="fixture-select">Fixture</label></div>
+      <select id="fixture-select" aria-label="Select a saved adapter fixture" disabled><option>Select an adapter first</option></select>
+      <p id="fixture-state" class="muted">Fixtures are saved synthetic markup. Previewing does not send data to the scoring service.</p>
+      <iframe id="fixture-preview" title="Selected saved fixture" sandbox=""></iframe>
+    </section>
+    <section>
+      <div class="toolbar"><h2>In-memory metrics</h2><button id="reload-metrics" type="button">Refresh metrics</button></div>
+      <p class="muted">Counts only public analyze requests, response statuses, and fixed latency buckets. Resets on restart.</p>
+      <pre id="metrics" aria-live="polite">Loading metrics…</pre>
+    </section>
+    <p id="message" class="wide" role="status" aria-live="polite"></p>
+  </main>
+  <script>
+    "use strict";
+    const base = "/api/v1/admin";
+    const adapterRoot = document.querySelector("#adapters");
+    const fixtureSelect = document.querySelector("#fixture-select");
+    const fixturePreview = document.querySelector("#fixture-preview");
+    const fixtureState = document.querySelector("#fixture-state");
+    const message = document.querySelector("#message");
+    let currentAdapter = null;
+    const element = (tag, text, className) => {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    };
+    async function getJson(path) {
+      const response = await fetch(base + path, { cache: "no-store", credentials: "same-origin" });
+      if (!response.ok) throw new Error("Inspection request failed (" + response.status + ").");
+      return response.json();
+    }
+    async function loadFixture() {
+      if (!currentAdapter || !fixtureSelect.value) return;
+      const fixture = currentAdapter.fixtures.find((item) => item.name === fixtureSelect.value);
+      if (!fixture) return;
+      fixturePreview.src = base + "/adapters/" + encodeURIComponent(currentAdapter.id) + "/fixtures/" + encodeURIComponent(fixture.name);
+      fixtureState.textContent = fixture.name + " · expected adapter state: " + fixture.expectedState + (fixture.supportedFixture ? " · synthetic supported-page example" : " · deliberately unsupported-page example");
+    }
+    async function loadAdapters() {
+      try {
+        const data = await getJson("/adapters");
+        adapterRoot.replaceChildren();
+        const adapters = data.adapters || [];
+        if (!adapters.length) adapterRoot.append(element("p", "No adapters are bundled."));
+        for (const adapter of adapters) {
+          const card = element("article", undefined, "adapter");
+          const title = element("h3", adapter.id + " · " + adapter.version);
+          const description = element("p", adapter.description);
+          const scope = element("p", "Supported pages: " + adapter.supportedPages.join(" · "));
+          const selectorInfo = element("p", "Card selectors: " + adapter.selectors.cards.join(", ") + " | Review body selectors: " + adapter.selectors.reviewBodies.join(", "));
+          const toggleRow = element("div", undefined, "row");
+          const status = element("span", "Inspection catalog: " + (adapter.enabled ? "enabled" : "disabled"));
+          const toggle = element("button", adapter.enabled ? "Disable in inspection catalog" : "Enable in inspection catalog");
+          toggle.type = "button";
+          toggle.addEventListener("click", async () => {
+            toggle.disabled = true;
+            try {
+              await fetch(base + "/adapters/" + encodeURIComponent(adapter.id) + "/enabled", {
+                method: "PUT", credentials: "same-origin", cache: "no-store",
+                headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !adapter.enabled })
+              }).then((response) => { if (!response.ok) throw new Error("Toggle was rejected."); });
+              message.textContent = "The in-memory inspection toggle changed. Extension scanning is unaffected.";
+              await loadAdapters();
+            } catch (error) { message.textContent = error.message; message.className = "bad"; }
+            finally { toggle.disabled = false; }
+          });
+          toggleRow.append(status, toggle);
+          const fixtureList = element("p", "Fixtures: " + adapter.fixtures.map((item) => item.name + " (" + item.expectedState + ")").join(", "));
+          card.append(title, description, scope, selectorInfo, toggleRow, fixtureList);
+          adapterRoot.append(card);
+          currentAdapter = adapter;
+        }
+        if (currentAdapter) {
+          fixtureSelect.replaceChildren(...currentAdapter.fixtures.map((fixture) => {
+            const option = element("option", fixture.name + " · " + fixture.expectedState);
+            option.value = fixture.name;
+            return option;
+          }));
+          fixtureSelect.disabled = false;
+          await loadFixture();
+        }
+        message.textContent = "Loaded " + adapters.length + " bundled adapter(s).";
+        message.className = "";
+      } catch (error) { message.textContent = error.message; message.className = "bad"; }
+    }
+    async function loadMetrics() {
+      const output = document.querySelector("#metrics");
+      try { output.textContent = JSON.stringify(await getJson("/metrics"), null, 2); }
+      catch (error) { output.textContent = error.message; }
+    }
+    fixtureSelect.addEventListener("change", () => void loadFixture());
+    document.querySelector("#reload-adapters").addEventListener("click", () => void loadAdapters());
+    document.querySelector("#reload-metrics").addEventListener("click", () => void loadMetrics());
+    void loadAdapters();
+    void loadMetrics();
+  </script>
+</body>
+</html>

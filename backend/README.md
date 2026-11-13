@@ -42,6 +42,28 @@ per minute per remote address. CORS accepts only the explicitly configured
 origins. Both controls are local development safeguards, not production edge
 controls.
 
+## Local inspection surface
+
+The optional inspection page is a development-only tool. It is absent (404)
+unless the `dev-admin` Spring profile is active, and that profile refuses to
+start unless `server.address` is `127.0.0.1` or `::1`. It lists bundled adapter
+metadata, previews only bundled synthetic fixtures, offers a volatile
+inspection-catalog toggle, and reports in-memory counts/status/latency buckets
+for analyze requests. The toggle resets on restart and does not change
+extension scanning. No account, database, or file persistence is used.
+
+Run it locally with:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = "dev-admin"
+Push-Location backend
+mvn spring-boot:run
+Pop-Location
+```
+
+Then open `http://127.0.0.1:8080/api/v1/admin`. Do not activate this profile in
+a hosted or shared environment.
+
 ## Test
 
 ```powershell

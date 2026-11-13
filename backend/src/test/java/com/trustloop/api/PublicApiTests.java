@@ -335,6 +335,16 @@ class PublicApiTests {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.status").value("not_ready"));
     }
 
+    @Test
+    void adminInspectionSurfaceIsAbsentFromTheDefaultProfile() throws Exception {
+        mockMvc.perform(get("/api/v1/admin"))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/admin/adapters"))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/admin/metrics"))
+                .andExpect(status().isNotFound());
+    }
+
     private ScoreResponse unknownResponse() {
         return new ScoreResponse(List.of(new ScoreResponse.Result("review-1", "UNKNOWN", null,
                 null, null, null, "SCORING_UNAVAILABLE", List.of(), "tl-text-1.1.0", "MODEL")));

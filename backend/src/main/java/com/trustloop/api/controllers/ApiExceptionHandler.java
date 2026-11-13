@@ -16,6 +16,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
@@ -27,8 +28,7 @@ public class ApiExceptionHandler {
             BindException.class,
             HandlerMethodValidationException.class,
             MissingServletRequestParameterException.class,
-            HttpRequestMethodNotSupportedException.class,
-            NoResourceFoundException.class
+            HttpRequestMethodNotSupportedException.class
     })
     public ResponseEntity<ApiError> invalidRequest(Exception exception, HttpServletRequest request) {
         return error(request, HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
@@ -49,6 +49,18 @@ public class ApiExceptionHandler {
     @ExceptionHandler(RequestBodyTooLargeException.class)
     public ResponseEntity<ApiError> oversizedStream(RequestBodyTooLargeException exception, HttpServletRequest request) {
         return error(request, HttpStatus.PAYLOAD_TOO_LARGE, "PAYLOAD_TOO_LARGE");
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> notFound(NoResourceFoundException exception, HttpServletRequest request) {
+        return error(request, HttpStatus.NOT_FOUND, "INVALID_REQUEST");
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiError> statusException(ResponseStatusException exception, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.valueOf(exception.getStatusCode().value());
+        String code = status == HttpStatus.NOT_FOUND ? "INVALID_REQUEST" : "INTERNAL_ERROR";
+        return error(request, status, code);
     }
 
     @ExceptionHandler(Exception.class)

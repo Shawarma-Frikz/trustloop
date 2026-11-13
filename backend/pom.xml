@@ -65,6 +65,20 @@
           <include>constants.json</include>
         </includes>
       </resource>
+      <resource>
+        <directory>../extension/src/adapters</directory>
+        <targetPath>inspection/adapters</targetPath>
+        <includes>
+          <include>amazon-reviews.v1.json</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>../extension/mock/fixtures/amazon</directory>
+        <targetPath>inspection/fixtures/amazon</targetPath>
+        <includes>
+          <include>*.html</include>
+        </includes>
+      </resource>
     </resources>
     <plugins>
       <plugin>
