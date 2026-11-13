@@ -47,7 +47,7 @@
     </section>
     <section>
       <div class="toolbar"><h2>In-memory metrics</h2><button id="reload-metrics" type="button">Refresh metrics</button></div>
-      <p class="muted">Counts only public analyze requests, response statuses, and fixed latency buckets. Resets on restart.</p>
+      <p class="muted">Counts analyze requests, HTTP and result statuses, fixed reason codes, engine and configured model version labels, and latency buckets. No per-review data is retained. Resets on restart.</p>
       <pre id="metrics" aria-live="polite">Loading metrics…</pre>
     </section>
     <p id="message" class="wide" role="status" aria-live="polite"></p>
@@ -79,7 +79,7 @@
       fixturePreview.src = base + "/adapters/" + encodeURIComponent(currentAdapter.id) + "/fixtures/" + encodeURIComponent(fixture.name);
       fixtureState.textContent = fixture.name + " · expected adapter state: " + fixture.expectedState + (fixture.supportedFixture ? " · synthetic supported-page example" : " · deliberately unsupported-page example");
     }
-    async function loadAdapters() {
+    async function loadAdapters(showLoadedMessage = true) {
       try {
         const data = await getJson("/adapters");
         adapterRoot.replaceChildren();
@@ -98,12 +98,17 @@
           toggle.addEventListener("click", async () => {
             toggle.disabled = true;
             try {
-              await fetch(base + "/adapters/" + encodeURIComponent(adapter.id) + "/enabled", {
+              const response = await fetch(base + "/adapters/" + encodeURIComponent(adapter.id) + "/enabled", {
                 method: "PUT", credentials: "same-origin", cache: "no-store",
                 headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !adapter.enabled })
-              }).then((response) => { if (!response.ok) throw new Error("Toggle was rejected."); });
-              message.textContent = "The in-memory inspection toggle changed. Extension scanning is unaffected.";
-              await loadAdapters();
+              });
+              if (!response.ok) throw new Error("Toggle was rejected (" + response.status + ").");
+              const result = await response.json();
+              const refreshed = await loadAdapters(false);
+              if (refreshed) {
+                message.textContent = "Inspection catalog " + (result.enabled ? "enabled" : "disabled") + " for this backend session. Extension scanning is unaffected.";
+                message.className = "";
+              }
             } catch (error) { message.textContent = error.message; message.className = "bad"; }
             finally { toggle.disabled = false; }
           });
@@ -122,8 +127,11 @@
           fixtureSelect.disabled = false;
           await loadFixture();
         }
-        message.textContent = "Loaded " + adapters.length + " bundled adapter(s).";
-        message.className = "";
+        if (showLoadedMessage) {
+          message.textContent = "Loaded " + adapters.length + " bundled adapter(s).";
+          message.className = "";
+        }
+        return true;
       } catch (error) { message.textContent = error.message; message.className = "bad"; }
     }
     async function loadMetrics() {

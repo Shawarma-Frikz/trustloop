@@ -1,11 +1,13 @@
 package com.trustloop.api.config;
 
+import com.trustloop.api.admin.DevMetrics;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trustloop.api.model.ApiError;
 import com.trustloop.api.services.ContractValues;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,15 +23,18 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     private final ContractValues contractValues;
     private final Clock clock;
     private final int configuredLimit;
+    private final ObjectProvider<DevMetrics> devMetrics;
 
     public RateLimitInterceptor(
             ObjectMapper objectMapper,
             ContractValues contractValues,
-            @Value("${trustloop.api.rate-limit-per-minute:60}") int configuredLimit) {
+            @Value("${trustloop.api.rate-limit-per-minute:60}") int configuredLimit,
+            ObjectProvider<DevMetrics> devMetrics) {
         this.objectMapper = objectMapper;
         this.contractValues = contractValues;
         this.clock = Clock.systemUTC();
         this.configuredLimit = Math.max(1, Math.min(configuredLimit, contractValues.rateLimitPerMinute()));
+        this.devMetrics = devMetrics;
     }
 
     @Override
@@ -49,6 +54,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         if (window.count() <= configuredLimit) {
             return true;
         }
+        DevMetrics metrics = devMetrics.getIfAvailable();
+        if (metrics != null) metrics.recordReasonCode("RATE_LIMITED");
         String requestId = (String) request.getAttribute(ApiBoundaryFilter.REQUEST_ID_ATTRIBUTE);
         response.setStatus(429);
         response.setContentType("application/json");

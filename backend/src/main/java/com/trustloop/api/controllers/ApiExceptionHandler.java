@@ -1,6 +1,7 @@
 package com.trustloop.api.controllers;
 
 import com.trustloop.api.config.ApiBoundaryFilter;
+import com.trustloop.api.admin.DevMetrics;
 import com.trustloop.api.config.ApiBoundaryFilter.RequestBodyTooLargeException;
 import com.trustloop.api.model.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -22,6 +24,11 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 public class ApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiExceptionHandler.class);
+    private final ObjectProvider<DevMetrics> devMetrics;
+
+    public ApiExceptionHandler(ObjectProvider<DevMetrics> devMetrics) {
+        this.devMetrics = devMetrics;
+    }
 
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
@@ -71,6 +78,8 @@ public class ApiExceptionHandler {
     }
 
     private ResponseEntity<ApiError> error(HttpServletRequest request, HttpStatus status, String code) {
+        DevMetrics metrics = devMetrics.getIfAvailable();
+        if (metrics != null) metrics.recordReasonCode(code);
         return ResponseEntity.status(status)
                 .body(new ApiError(requestId(request), new ApiError.Error(code, "Request rejected.")));
     }

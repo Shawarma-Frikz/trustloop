@@ -49,9 +49,13 @@ unless the `dev-admin` Spring profile is active, and that profile refuses to
 start unless `app.admin.local-only=true` and `server.address` is a loopback
 address (`127.0.0.1` by default). It lists bundled adapter
 metadata, previews only bundled synthetic fixtures, offers a volatile
-inspection-catalog toggle, and reports in-memory counts/status/latency buckets
-for analyze requests. The toggle resets on restart and does not change
-extension scanning. No account, database, or file persistence is used.
+inspection-catalog toggle, and reports in-memory analyze request and HTTP
+status counts, result status/reason/engine/model-version counts, and fixed
+latency buckets. Metric labels are drawn from bounded contract values and the
+configured model version; review text, keys, scores, signals, URLs, and other
+per-review data are never retained. The toggle and counters reset on restart
+and do not change extension scanning. No account, database, or file persistence
+is used.
 
 Run it locally with:
 

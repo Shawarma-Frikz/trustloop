@@ -48,6 +48,7 @@ class DevAdminTests {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired Environment environment;
+    @Autowired DevMetrics devMetrics;
 
     @Test
     void developmentAdminProfilePinsLoopbackAndRequiresLocalOnlyFlag() {
@@ -115,17 +116,46 @@ class DevAdminTests {
                                 """))
                 .andExpect(status().isOk());
 
+        mockMvc.perform(post("/api/v1/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("not-json"))
+                .andExpect(status().isBadRequest());
+
         var result = mockMvc.perform(get("/api/v1/admin/metrics"))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         JsonNode metrics = objectMapper.readTree(body);
-        assertTrue(metrics.path("requestCount").asLong() >= 1);
-        assertTrue(metrics.path("statusCounts").path("200").asLong() >= 1);
+        assertTrue(metrics.path("requestCount").asLong() >= 2);
+        assertTrue(metrics.path("httpStatusCounts").path("200").asLong() >= 1);
+        assertTrue(metrics.path("httpStatusCounts").path("400").asLong() >= 1);
+        assertEquals(1, metrics.path("statusCounts").path("UNKNOWN").asInt());
+        assertEquals(1, metrics.path("reasonCodeCounts").path("SCORING_UNAVAILABLE").asInt());
+        assertEquals(1, metrics.path("reasonCodeCounts").path("INVALID_REQUEST").asInt());
+        assertEquals(1, metrics.path("engineCounts").path("MODEL").asInt());
+        assertEquals(1, metrics.path("modelVersionCounts").path("tl-text-1.1.0").asInt());
         assertEquals(7, metrics.path("latencyBuckets").size());
         for (String forbidden : List.of("private-key-sentinel", "private-text-sentinel", "reviewKey", "hostname", "url")) {
             assertFalse(body.toLowerCase().contains(forbidden.toLowerCase()));
         }
+    }
+
+    @Test
+    void metricsWhitelistLabelsAndCollapseUnexpectedValuesWithoutRetainingReviewFields() throws Exception {
+        devMetrics.recordResults(List.of(new com.trustloop.api.model.AnalyzeResponse.AnalyzeResult(
+                "private-review-key-sentinel", "private-status-sentinel", 42, "private-verdict-sentinel",
+                "ADEQUATE", "private-reason-sentinel", List.of(), "private-model-sentinel", "private-engine-sentinel")));
+        String serialized = objectMapper.writeValueAsString(devMetrics.snapshot());
+        for (String privateValue : List.of(
+                "private-review-key-sentinel", "private-status-sentinel", "private-verdict-sentinel",
+                "private-reason-sentinel", "private-model-sentinel", "private-engine-sentinel", "42")) {
+            assertFalse(serialized.contains(privateValue));
+        }
+        JsonNode metrics = objectMapper.readTree(serialized);
+        assertEquals(1, metrics.path("statusCounts").path("OTHER").asInt());
+        assertEquals(1, metrics.path("reasonCodeCounts").path("OTHER").asInt());
+        assertEquals(1, metrics.path("engineCounts").path("OTHER").asInt());
+        assertEquals(1, metrics.path("modelVersionCounts").path("OTHER").asInt());
     }
 
     @Test

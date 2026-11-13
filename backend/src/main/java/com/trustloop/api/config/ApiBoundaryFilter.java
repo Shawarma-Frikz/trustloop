@@ -1,6 +1,7 @@
 package com.trustloop.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trustloop.api.admin.DevMetrics;
 import com.trustloop.api.model.ApiError;
 import com.trustloop.api.services.ContractValues;
 import jakarta.servlet.FilterChain;
@@ -8,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -39,17 +41,20 @@ public class ApiBoundaryFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final ContractValues contractValues;
     private final Set<String> allowedOrigins;
+    private final ObjectProvider<DevMetrics> devMetrics;
 
     public ApiBoundaryFilter(
             ObjectMapper objectMapper,
             ContractValues contractValues,
-            @Value("${trustloop.allowed-origins:}") String allowedOrigins) {
+            @Value("${trustloop.allowed-origins:}") String allowedOrigins,
+            ObjectProvider<DevMetrics> devMetrics) {
         this.objectMapper = objectMapper;
         this.contractValues = contractValues;
         this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .collect(Collectors.toUnmodifiableSet());
+        this.devMetrics = devMetrics;
     }
 
     @Override
@@ -123,6 +128,8 @@ public class ApiBoundaryFilter extends OncePerRequestFilter {
 
     private void writeError(HttpServletResponse response, String requestId, int status, String code, String message)
             throws IOException {
+        DevMetrics metrics = devMetrics.getIfAvailable();
+        if (metrics != null) metrics.recordReasonCode(code);
         response.setStatus(status);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/json");

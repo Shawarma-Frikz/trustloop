@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.client.ResourceAccessException;
@@ -43,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "trustloop.allowed-origins=chrome-extension://trustloop-test",
         "trustloop.api.rate-limit-per-minute=2"
 })
+@ActiveProfiles("default")
 @AutoConfigureMockMvc
 @Import(PublicApiTests.StubConfiguration.class)
 class PublicApiTests {
